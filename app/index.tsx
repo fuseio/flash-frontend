@@ -1,0 +1,108 @@
+import { Image } from 'expo-image'
+import { Link } from 'expo-router'
+import { useState } from 'react'
+import { TextInput, View } from 'react-native'
+
+import { Button } from '@/components/ui/button'
+import { Text } from '@/components/ui/text'
+import { IconSymbol } from '@/components/ui/IconSymbol'
+import useUser from '@/hooks/useUser'
+import { Status } from '@/lib/types'
+
+export default function Home() {
+  const [username, setUsername] = useState('')
+  const { signupInfo, handleSignup, loginStatus, handleLogin } = useUser()
+
+  const handleSignupForm = () => {
+    handleSignup(username)
+  }
+
+  return (
+    <View className="bg-background text-foreground flex-1 justify-between p-4">
+      <View className="flex-1 justify-center items-center gap-20 w-full max-w-lg mx-auto">
+        <View className="flex-row items-center gap-5">
+          <Image
+            source={require("@/assets/images/flash-logo.svg")}
+            alt="Flash logo"
+            style={{ width: 73, height: 73 }}
+            contentFit="contain"
+          />
+          <Image
+            source={require("@/assets/images/flash.svg")}
+            alt="Flash"
+            style={{ width: 153, height: 78 }}
+            contentFit="contain"
+          />
+        </View>
+
+        <View className='w-full flex-col gap-10'>
+          <View className='flex-col gap-5'>
+            <TextInput
+              id="username"
+              value={username}
+              onChangeText={setUsername}
+              placeholder='Choose a username'
+              className="h-14 px-6 rounded-twice border border-border text-lg font-semibold placeholder:text-muted-foreground"
+            />
+            <Button
+              onPress={handleSignupForm}
+              disabled={signupInfo.status === Status.PENDING || !username}
+              className="rounded-twice h-14"
+            >
+              <Text className="text-lg font-semibold">
+                {signupInfo.status === Status.ERROR ?
+                  signupInfo.message || 'Error creating account' :
+                  signupInfo.status === Status.PENDING ?
+                    'Creating' :
+                    'Create Account'
+                }
+              </Text>
+              {signupInfo.status === Status.PENDING &&
+                <IconSymbol
+                  size={28}
+                  name="rays"
+                  color="white"
+                />
+              }
+            </Button>
+          </View>
+
+          <Text className="text-center">OR</Text>
+
+          <Button
+            onPress={handleLogin}
+            disabled={loginStatus === Status.PENDING}
+            variant="outline"
+            className="rounded-twice h-14"
+          >
+            <Text className="text-lg font-semibold">
+              {loginStatus === Status.ERROR ?
+                'Error logging in' :
+                loginStatus === Status.PENDING ?
+                  'Logging in' :
+                  'Login'
+              }
+            </Text>
+            {loginStatus === Status.PENDING &&
+              <IconSymbol
+                size={28}
+                name="rays"
+                color="white"
+              />
+            }
+          </Button>
+
+          <Text className='text-center text-sm text-muted-foreground max-w-64 mx-auto'>
+            By continuing, you agree with Flash{' '}
+            <Link href="/" className='hover:underline'>Terms of Use</Link> and{' '}
+            <Link href="/" className='hover:underline'>Privacy Policy</Link>.
+          </Text>
+        </View>
+      </View>
+      <Text className="text-center text-sm text-muted-foreground max-w-[19rem] mx-auto">
+        Your Flash Account is secured with a passkey - a safer replacement for passwords.{' '}
+        <Link href="/" className='hover:underline'>Learn more</Link>
+      </Text>
+    </View>
+  )
+}

@@ -5,7 +5,7 @@ import { Text } from "@/components/ui/text";
 export default function Dashboard() {
   return (
     <View className="flex-1 justify-center items-center">
-      <Text>Deposit</Text>
+      <Text>Dashboard</Text>
     </View>
   )
 }

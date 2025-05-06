@@ -33,6 +33,14 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "node_modules/@expo-google-fonts/mona-sans/MonaSans_400Regular.ttf"
+          ]
+        }
       ]
     ],
     "experiments": {
