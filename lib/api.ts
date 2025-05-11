@@ -1,8 +1,8 @@
 import axios from "axios";
-import { AuthenticationResponseJSON } from "@simplewebauthn/browser";
+import { AuthenticationResponseJSON, RegistrationResponseJSON } from "react-native-passkeys/src/ReactNativePasskeys.types";
 
 import { EXPO_PUBLIC_COIN_GECKO_API_KEY, EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL, EXPO_PUBLIC_FLASH_API_BASE_URL } from "./config";
-import { RegistrationResponse, TokenPriceUsd, TokenTransfer, User } from "./types";
+import { TokenPriceUsd, TokenTransfer, User } from "./types";
 
 export const refreshToken = () => {
   return fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/refresh-token`, {
@@ -26,7 +26,7 @@ export const generateRegistrationOptions = async (username: string) => {
   return response.json();
 };
 
-export const verifyRegistration = async (registrationResponse: RegistrationResponse): Promise<User> => {
+export const verifyRegistration = async (registrationResponse: RegistrationResponseJSON): Promise<User> => {
   const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/passkeys/registration/verify`, {
     method: 'POST',
     headers: {
