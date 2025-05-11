@@ -43,3 +43,17 @@ export const withRefreshToken = async <T>(
     }
   }
 }
+
+// see: https://github.com/MasterKale/SimpleWebAuthn/blob/736ea0360953d7ce6a0b4390ce260d0bcab1e191/packages/browser/src/helpers/bufferToBase64URLString.ts
+export function bufferToBase64URLString(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+
+  for (const charCode of bytes) {
+    str += String.fromCharCode(charCode);
+  }
+
+  const base64String = btoa(str);
+
+  return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}

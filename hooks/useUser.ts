@@ -1,76 +1,144 @@
 import { useRouter } from "expo-router"
 import { useCallback, useEffect, useState } from "react"
+import { Address } from "viem";
+import * as passkeys from "react-native-passkeys"
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { USER } from "@/lib/config"
 import { Status, User } from "@/lib/types"
+import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils"
 import { path } from "@/constants/path"
+import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api"
 
 const initUser = {
   username: "",
-  safeAddress: "",
+  safeAddress: "" as Address,
   passkey: {
     rawId: "",
     coordinates: {
       x: "",
-      y: ""
-    }
-  }
-}
+      y: "",
+    },
+  },
+};
 
 const useUser = () => {
-  const [signupInfo, setSignupInfo] = useState<{ status: Status; message?: string }>({ status: Status.IDLE, message: "" })
-  const [loginStatus, setLoginStatus] = useState<Status>(Status.IDLE)
-  const [userStatus, setUserStatus] = useState<Status>(Status.IDLE)
-  const [user, setUser] = useState<User>()
-  const router = useRouter()
+  const [signupInfo, setSignupInfo] = useState<{
+    status: Status;
+    message?: string;
+  }>({ status: Status.IDLE, message: "" });
+  const [loginStatus, setLoginStatus] = useState<Status>(Status.IDLE);
+  const [userStatus, setUserStatus] = useState<Status>(Status.IDLE);
+  const [user, setUser] = useState<User>();
+  const router = useRouter();
 
-  function storeUser(user: { [K in keyof User]?: User[K] }) {
+  async function storeUser(user: { [K in keyof User]?: User[K] }) {
+    let newUser = null;
     setUser((prevUser) => {
-      const newUser = {
+      newUser = {
         ...prevUser,
-        ...user
-      } as User
-      localStorage.setItem(USER.storageKey, JSON.stringify(newUser))
-      document.cookie = `${USER.storageKey}=${newUser.username}; path=/;`
-      return newUser
-    })
+        ...user,
+      } as User;
+      return newUser;
+    });
+    await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUser));
   }
 
-  const loadUser = useCallback(() => {
+  const loadUser = useCallback(async () => {
     try {
-      setUserStatus(Status.PENDING)
-      const user = localStorage.getItem(USER.storageKey)
+      setUserStatus(Status.PENDING);
+      const user = await AsyncStorage.getItem(USER.storageKey);
       if (!user) {
-        throw new Error("User not found")
+        throw new Error("User not found");
       }
 
-      const parsedUser = JSON.parse(user)
-      setUser(parsedUser)
-      setUserStatus(Status.SUCCESS)
+      const parsedUser = JSON.parse(user);
+      setUser(parsedUser);
+      setUserStatus(Status.SUCCESS);
 
-      return parsedUser
+      return parsedUser;
     } catch (error) {
-      console.log(error)
-      setUserStatus(Status.ERROR)
+      console.log(error);
+      setUserStatus(Status.ERROR);
     }
-  }, [])
+  }, []);
 
-  async function handleSignup(username: string) {}
+  async function handleSignup(username: string) {
+    try {
+      setSignupInfo({ status: Status.PENDING });
 
-  async function handleLogin() {
-    router.navigate("/card")
+      const optionsJSON = await generateRegistrationOptions(username);
+      const authenticatorReponse = await passkeys.create(optionsJSON)
+      if (!authenticatorReponse) {
+        throw new Error("Error while creating passkey registration");
+      }
+
+      const publicKey = bufferToBase64URLString(authenticatorReponse.response.getPublicKey())
+
+      const user = await withRefreshToken(
+        verifyRegistration({
+          ...authenticatorReponse,
+          response: {
+            ...authenticatorReponse.response,
+            publicKey,
+          },
+        }),
+        { onError: handleLogin }
+      );
+
+      if (user) {
+        storeUser(user);
+        setSignupInfo({ status: Status.SUCCESS });
+        router.push(path.DEPOSIT);
+      } else {
+        throw new Error("Error while verifying passkey registration");
+      }
+    } catch (error: any) {
+      if (error?.status === 409) {
+        setSignupInfo({
+          status: Status.ERROR,
+          message: "Username already exists",
+        });
+      } else {
+        setSignupInfo({ status: Status.ERROR });
+      }
+      console.error(error);
+    }
   }
 
-  function handleLogout() {
-    const date = new Date(0)
-    document.cookie = `${USER.storageKey}=; path=/; expires=${date.toUTCString()}`
-    storeUser(initUser)
-    router.push(path.HOME)
+  async function handleLogin() {
+    try {
+      setLoginStatus(Status.PENDING);
+      const optionsJSON = await generateAuthenticationOptions();
+      const authenticatorReponse = await passkeys.get(optionsJSON);
+      if (!authenticatorReponse) {
+        throw new Error("Error while creating passkey authentication");
+      }
+
+      const user = await verifyAuthentication(authenticatorReponse);
+
+      if (user) {
+        storeUser(user);
+        setSignupInfo({ status: Status.SUCCESS });
+        router.push(path.DEPOSIT);
+      } else {
+        throw new Error("Error while verifying passkey authentication");
+      }
+    } catch (error) {
+      console.error(error);
+      setLoginStatus(Status.ERROR);
+    }
+  }
+
+  async function handleLogout() {
+    await AsyncStorage.removeItem(USER.storageKey);
+    storeUser(initUser);
+    router.push(path.HOME);
   }
 
   useEffect(() => {
-    loadUser()
-  }, [])
+    loadUser();
+  }, []);
 
   return {
     signupInfo,
@@ -80,7 +148,7 @@ const useUser = () => {
     loginStatus,
     handleLogin,
     handleLogout,
-  }
-}
+  };
+};
 
 export default useUser;

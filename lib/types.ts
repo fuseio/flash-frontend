@@ -1,6 +1,4 @@
-import { PasskeyCoordinates } from "@safe-global/protocol-kit"
 import { Address } from "viem"
-import type { RegistrationResponseJSON } from "@simplewebauthn/browser"
 
 export enum Status {
   IDLE = "idle",
@@ -9,6 +7,19 @@ export enum Status {
   ERROR = "error",
 }
 
+// from @safe-global/protocol-kit as the package
+// is throwing static class blocks error
+export type PasskeyCoordinates = {
+  x: string;
+  y: string;
+};
+
+export type PasskeyArgType = {
+  rawId: string;
+  coordinates: PasskeyCoordinates;
+  customVerifierAddress?: string;
+};
+
 export interface User {
   username: string
   safeAddress: Address
@@ -16,10 +27,6 @@ export interface User {
     rawId: string
     coordinates: PasskeyCoordinates
   }
-}
-
-export interface RegistrationResponse extends RegistrationResponseJSON {
-  safeAddress: Address
 }
 
 export interface TokenTransfer {
