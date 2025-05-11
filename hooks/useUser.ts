@@ -57,7 +57,9 @@ const useUser = () => {
 
   async function handleSignup(username: string) {}
 
-  async function handleLogin() {}
+  async function handleLogin() {
+    router.navigate("/card")
+  }
 
   function handleLogout() {
     const date = new Date(0)
