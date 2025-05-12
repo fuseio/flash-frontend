@@ -40,7 +40,7 @@
         "expo-font",
         {
           "fonts": [
-            "node_modules/@expo-google-fonts/mona-sans/MonaSans_400Regular.ttf"
+            "node_modules/@expo-google-fonts/mona-sans"
           ]
         }
       ]

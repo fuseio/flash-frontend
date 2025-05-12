@@ -1,4 +1,4 @@
-import { platformSelect } from "nativewind/theme"
+import { platformSelect } from "nativewind/theme";
 
 const { hairlineWidth } = require('nativewind/theme');
 
@@ -10,9 +10,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['MonaSans', 'sans-serif'],
         system: platformSelect({
           ios: 'MonaSans',
-          android: 'MonaSans_400Regular',
+          android: 'MonaSans',
+          web: 'MonaSans',
         }),
       },
       borderRadius: {
