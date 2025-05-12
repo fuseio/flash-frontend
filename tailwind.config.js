@@ -1,3 +1,5 @@
+import { platformSelect } from "nativewind/theme"
+
 const { hairlineWidth } = require('nativewind/theme');
 
 /** @type {import('tailwindcss').Config} */
@@ -7,6 +9,12 @@ module.exports = {
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
+      fontFamily: {
+        system: platformSelect({
+          ios: 'MonaSans',
+          android: 'MonaSans_400Regular',
+        }),
+      },
       borderRadius: {
         'twice': '1.25rem',
       },
