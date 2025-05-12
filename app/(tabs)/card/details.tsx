@@ -19,7 +19,7 @@ export default function CardDetails() {
       {/* Balance Information */}
       <View className="items-center mb-6">
         <View className="flex-row items-baseline">
-          <Text className="text-[18px] font-semibold">$</Text>
+          <Text className="text-xl font-semibold">$</Text>
           <Text className="text-[50px] font-semibold">{cardData.balance.substring(1)}</Text>
         </View>
         <Text className="text-[14px] opacity-70 mt-2">Spendable balance</Text>
