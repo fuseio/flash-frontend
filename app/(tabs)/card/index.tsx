@@ -16,7 +16,7 @@ export default function Card() {
     <View className="flex-1 justify-between items-center p-6 bg-background">
       <View className="mt-4">
         <Text className="text-[36px] font-bold text-center">Introducing the Flash card</Text>
-        <Text className="text-[16px] font-medium text-center text-white/70">The world&apos;s first self-custodial{'\n'}Mastercard by Flash</Text>
+        <Text className="text-lg mt-2 font-medium text-center text-white/70 leading-[20px]">The world&apos;s first self-custodial{'\n'}Mastercard by Flash</Text>
       </View>
       
       <View className="flex-1 justify-center items-center w-full">

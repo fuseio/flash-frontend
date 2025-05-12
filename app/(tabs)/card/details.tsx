@@ -22,7 +22,7 @@ export default function CardDetails() {
           <Text className="text-xl font-semibold">$</Text>
           <Text className="text-[50px] font-semibold">{cardData.balance.substring(1)}</Text>
         </View>
-        <Text className="text-[14px] opacity-70 mt-2">Spendable balance</Text>
+        <Text className="text-base opacity-70 mt-2">Spendable balance</Text>
       </View>
       
       <Button 
