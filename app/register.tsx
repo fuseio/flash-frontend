@@ -2,10 +2,10 @@ import { Image } from 'expo-image'
 import { Link } from 'expo-router'
 import { useState } from 'react'
 import { TextInput, View } from 'react-native'
+import { Loader2 } from 'lucide-react-native'
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
-import { IconSymbol } from '@/components/ui/IconSymbol'
 import useUser from '@/hooks/useUser'
 import { Status } from '@/lib/types'
 
@@ -58,10 +58,10 @@ export default function Register() {
                 }
               </Text>
               {signupInfo.status === Status.PENDING &&
-                <IconSymbol
+                <Loader2
                   size={28}
-                  name="rays"
                   color="white"
+                  className="animate-spin"
                 />
               }
             </Button>
@@ -84,10 +84,10 @@ export default function Register() {
               }
             </Text>
             {loginStatus === Status.PENDING &&
-              <IconSymbol
+              <Loader2
                 size={28}
-                name="rays"
                 color="white"
+                className="animate-spin"
               />
             }
           </Button>

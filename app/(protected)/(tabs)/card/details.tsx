@@ -1,9 +1,9 @@
 import { Image } from "expo-image";
 import React from "react";
 import { View } from "react-native";
+import { Plus } from "lucide-react-native";
 
 import { Button } from "@/components/ui/button";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Text } from "@/components/ui/text";
 
 export default function CardDetails() {
@@ -24,12 +24,12 @@ export default function CardDetails() {
         </View>
         <Text className="text-base opacity-70 mt-2">Spendable balance</Text>
       </View>
-      
-      <Button 
+
+      <Button
         className="rounded-3xl h-14 w-auto self-center mb-6"
       >
         <View className="flex-row">
-          <IconSymbol name="plus" color="black" />
+          <Plus color="black" />
           <Text className="font-bold text-base ml-2">Add funds</Text>
         </View>
       </Button>

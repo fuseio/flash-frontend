@@ -40,9 +40,14 @@ export type Token = {
   address: Address;
   symbol: string;
   decimals: number;
-  image: string;
+  imageId: string;
   coingeckoId: string;
   isComingSoon?: boolean;
+}
+
+export type TokenWithBalance = Token & {
+  balance: number;
+  balanceUSD: number;
 }
 
 export type TokenMap = {
