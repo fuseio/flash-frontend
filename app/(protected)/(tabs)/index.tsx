@@ -18,18 +18,15 @@ import { useTokenPriceUsd } from "@/hooks/useToken";
 import { Status } from "@/lib/types";
 import { compactNumberFormat } from "@/lib/utils";
 
-export default function Home() {
+export default function Deposit() {
   const [amount, setAmount] = useState<string>("");
   const {
-    allowance,
     balance,
-    approve,
     deposit,
-    approveStatus,
     depositStatus
   } = useDeposit();
   const { data: price } = useTokenPriceUsd("usd-coin");
-  const isLoading = approveStatus === Status.PENDING || depositStatus === Status.PENDING;
+  const isLoading = depositStatus === Status.PENDING;
   const { data: totalAPY } = useTotalAPY()
 
   const amountWei = parseUnits(amount, 6);
@@ -38,11 +35,6 @@ export default function Home() {
   const getButtonText = () => {
     if (!amount) return "Enter an amount";
     if (!balance || balance < amountWei) return "Insufficient balance";
-    if (!allowance || allowance < amountWei) {
-      if (approveStatus === Status.PENDING) return "Approving";
-      if (approveStatus === Status.ERROR) return "Error while approving";
-      return "Approve";
-    }
     if (depositStatus === Status.PENDING) return "Depositing";
     if (depositStatus === Status.ERROR) return "Error while depositing";
     if (depositStatus === Status.SUCCESS) return "Successfully deposited";
@@ -52,11 +44,7 @@ export default function Home() {
   const handleClick = async () => {
     if (!amount) return;
     if (!balance || balance < amountWei) return;
-    if (!allowance || allowance < amountWei) {
-      await approve(amount);
-    } else {
-      await deposit(amount);
-    }
+    await deposit(amount);
   };
 
   return (
