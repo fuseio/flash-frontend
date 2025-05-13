@@ -1,14 +1,17 @@
 import { useRouter } from "expo-router"
 import { useCallback, useEffect, useState } from "react"
+import { Safe4337Pack } from '@safe-global/relay-kit'
+import { mainnet } from "viem/chains"
 import { Address } from "viem";
 import * as passkeys from "react-native-passkeys"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { USER } from "@/lib/config"
-import { Status, User } from "@/lib/types"
+import { PasskeyArgType, Status, User } from "@/lib/types"
 import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils"
 import { path } from "@/constants/path"
 import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api"
+import { rpcUrls } from "@/lib/wagmi";
 
 const initUser = {
   username: "",
@@ -89,7 +92,7 @@ const useUser = () => {
       if (user) {
         storeUser(user);
         setSignupInfo({ status: Status.SUCCESS });
-        router.push(path.DEPOSIT);
+        router.replace(path.DEPOSIT);
       } else {
         throw new Error("Error while verifying passkey registration");
       }
@@ -120,7 +123,7 @@ const useUser = () => {
       if (user) {
         storeUser(user);
         setSignupInfo({ status: Status.SUCCESS });
-        router.push(path.DEPOSIT);
+        router.replace(path.DEPOSIT);
       } else {
         throw new Error("Error while verifying passkey authentication");
       }
@@ -133,8 +136,35 @@ const useUser = () => {
   async function handleLogout() {
     await AsyncStorage.removeItem(USER.storageKey);
     storeUser(initUser);
-    router.push(path.HOME);
+    router.replace(path.REGISTER);
   }
+
+  const safeAA = useCallback(async (passkey: PasskeyArgType) => {
+    return Safe4337Pack.init({
+      provider: rpcUrls[mainnet.id],
+      signer: passkey,
+      bundlerUrl: USER.pimlicoUrl,
+      paymasterOptions: {
+        isSponsored: true,
+        paymasterUrl: USER.pimlicoUrl
+      },
+      options: {
+        owners: [],
+        threshold: 1
+      }
+    })
+  }, [])
+
+  const userOpReceipt = useCallback(async (safe4337Pack: Safe4337Pack, userOperationHash: string) => {
+    let userOperationReceipt = null
+    while (!userOperationReceipt) {
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      userOperationReceipt = await safe4337Pack.getUserOperationReceipt(
+        userOperationHash
+      )
+    }
+    return userOperationReceipt
+  }, [])
 
   useEffect(() => {
     loadUser();
@@ -148,6 +178,8 @@ const useUser = () => {
     loginStatus,
     handleLogin,
     handleLogout,
+    safeAA,
+    userOpReceipt
   };
 };
 

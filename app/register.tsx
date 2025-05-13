@@ -9,7 +9,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol'
 import useUser from '@/hooks/useUser'
 import { Status } from '@/lib/types'
 
-export default function Home() {
+export default function Register() {
   const [username, setUsername] = useState('')
   const { signupInfo, handleSignup, loginStatus, handleLogin } = useUser()
 
