@@ -144,10 +144,10 @@ const useUser = () => {
       provider: rpcUrls[mainnet.id],
       signer: passkey,
       bundlerUrl: USER.pimlicoUrl,
-      paymasterOptions: {
-        isSponsored: true,
-        paymasterUrl: USER.pimlicoUrl
-      },
+      // paymasterOptions: {
+      //   isSponsored: true,
+      //   paymasterUrl: USER.pimlicoUrl
+      // },
       options: {
         owners: [],
         threshold: 1

@@ -26,6 +26,14 @@ const TokenSelector = ({ tokens, setSelectedToken, setOpen }: TokenSelectorProps
 
   return (
     <View className="flex flex-col gap-2.5">
+      {!tokensWithBalance.length &&
+        Array.from({ length: tokens.length }).map((_, index) => (
+          <Skeleton
+            key={index}
+            className="bg-primary/10 border-primary/0 rounded-2xl justify-between h-16 px-4"
+          />
+        ))
+      }
       {tokensWithBalance.map((token) => (
         <Button
           key={token.address}

@@ -2,7 +2,6 @@ import { Image } from 'expo-image'
 import { Link } from 'expo-router'
 import { useState } from 'react'
 import { TextInput, View } from 'react-native'
-import { Loader2 } from 'lucide-react-native'
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
@@ -57,13 +56,6 @@ export default function Register() {
                     'Create Account'
                 }
               </Text>
-              {signupInfo.status === Status.PENDING &&
-                <Loader2
-                  size={28}
-                  color="white"
-                  className="animate-spin"
-                />
-              }
             </Button>
           </View>
 
@@ -83,13 +75,6 @@ export default function Register() {
                   'Login'
               }
             </Text>
-            {loginStatus === Status.PENDING &&
-              <Loader2
-                size={28}
-                color="white"
-                className="animate-spin"
-              />
-            }
           </Button>
 
           <Text className='text-center text-sm text-muted-foreground max-w-64 mx-auto'>

@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { Fuel, Loader2 } from "lucide-react-native";
+import { Fuel } from "lucide-react-native";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { formatUnits, parseUnits } from "viem";
@@ -125,7 +125,6 @@ export default function Deposit() {
                 <Text className="text-lg font-semibold">
                   {getButtonText()}
                 </Text>
-                {isLoading && <Loader2 className="animate-spin" />}
               </Button>
             </CheckConnectionWrapper>
             <View className="flex-row items-center self-end gap-1">
