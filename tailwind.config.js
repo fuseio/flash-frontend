@@ -18,6 +18,9 @@ module.exports = {
       borderRadius: {
         'twice': '1.25rem',
       },
+      fontSize: {
+        '4.5xl': '2.5rem',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

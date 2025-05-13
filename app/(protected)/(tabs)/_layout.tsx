@@ -1,16 +1,16 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
+import { CreditCard, LayoutDashboard, Wallet } from 'lucide-react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "black",
+        tabBarActiveTintColor: "white",
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
@@ -19,7 +19,10 @@ export default function TabLayout() {
             // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
-          default: {},
+          default: {
+            backgroundColor: "#262626",
+            borderColor: "#686163",
+          },
         }),
       }}
       backBehavior="order"
@@ -29,7 +32,7 @@ export default function TabLayout() {
         options={{
           title: 'Deposit',
           headerShown: false,
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -37,14 +40,14 @@ export default function TabLayout() {
         options={{
           title: 'Dashboard',
           headerShown: false,
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <LayoutDashboard size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="card"
         options={{
           title: 'Card',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <CreditCard size={28} color={color} />,
         }}
       />
     </Tabs>

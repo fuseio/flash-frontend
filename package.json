@@ -14,10 +14,12 @@
     "@expo-google-fonts/mona-sans": "^0.3.0",
     "@expo/vector-icons": "^14.1.0",
     "@noble/hashes": "^1.8.0",
+    "@radix-ui/react-dialog": "^1.1.13",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/bottom-tabs": "^7.3.13",
     "@react-navigation/elements": "^2.4.2",
     "@react-navigation/native": "^7.1.9",
+    "@rn-primitives/dialog": "^1.1.0",
     "@rn-primitives/slot": "^1.1.0",
     "@rn-primitives/types": "^1.1.0",
     "@safe-global/relay-kit": "^4.0.2",
@@ -41,6 +43,7 @@
     "expo-symbols": "^0.4.4",
     "expo-system-ui": "~5.0.7",
     "expo-web-browser": "~14.1.6",
+    "lucide-react-native": "^0.510.0",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -51,6 +54,7 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
+    "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
     "tailwind-merge": "^3.3.0",
@@ -67,6 +71,11 @@
     "eslint": "^9.26.0",
     "eslint-config-expo": "~9.2.0",
     "typescript": "~5.8.3"
+  },
+  "overrides": {
+    "lucide-react-native": {
+      "react": "^19"
+    }
   },
   "private": true
 }

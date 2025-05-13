@@ -5,7 +5,6 @@ import { TextInput, View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
-import { IconSymbol } from '@/components/ui/IconSymbol'
 import useUser from '@/hooks/useUser'
 import { Status } from '@/lib/types'
 
@@ -57,13 +56,6 @@ export default function Register() {
                     'Create Account'
                 }
               </Text>
-              {signupInfo.status === Status.PENDING &&
-                <IconSymbol
-                  size={28}
-                  name="rays"
-                  color="white"
-                />
-              }
             </Button>
           </View>
 
@@ -83,13 +75,6 @@ export default function Register() {
                   'Login'
               }
             </Text>
-            {loginStatus === Status.PENDING &&
-              <IconSymbol
-                size={28}
-                name="rays"
-                color="white"
-              />
-            }
           </Button>
 
           <Text className='text-center text-sm text-muted-foreground max-w-64 mx-auto'>
