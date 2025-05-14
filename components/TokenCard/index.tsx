@@ -34,7 +34,7 @@ const TokenCard = ({ amount, onAmountChange, balance, price }: TokenCardProps) =
                 ${compactNumberFormat(Number(amount) * price)}
               </Text>
             ) : (
-              <Skeleton className="w-20 h-5 rounded-sm" />
+              <Skeleton className="w-20 h-5 rounded-md" />
             )}
           </View>
         </View>
@@ -45,7 +45,7 @@ const TokenCard = ({ amount, onAmountChange, balance, price }: TokenCardProps) =
             Balance {balance} USDC (≈ ${compactNumberFormat(Number(balance) * price)})
           </Text>
         ) : (
-          <Skeleton className="w-40 h-5 rounded-sm" />
+          <Skeleton className="w-40 h-5 rounded-md" />
         )}
       </View>
     </View>

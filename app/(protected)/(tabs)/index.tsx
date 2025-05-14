@@ -48,8 +48,8 @@ export default function Deposit() {
   };
 
   return (
-    <ScrollView className="bg-background text-foreground flex-1 px-4 py-8">
-      <View className="w-full max-w-2xl mx-auto gap-16">
+    <ScrollView className="bg-background text-foreground flex-1">
+      <View className="w-full max-w-2xl mx-auto gap-16 px-4 py-8 md:py-16">
         <View className="gap-4">
           <Text className="text-4.5xl font-semibold">
             Deposit to your saving account
