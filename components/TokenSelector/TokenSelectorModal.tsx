@@ -1,18 +1,19 @@
 import { Image } from "expo-image"
-import { useState } from "react"
 import { ChevronDown } from "lucide-react-native"
+import { useState } from "react"
 
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { Text } from "@/components/ui/text"
 import { TOKEN_IMAGES, TOKEN_MAP } from "@/constants/tokens"
-import TokenSelector from "."
 import { Token } from "@/lib/types"
+import TokenSelector from "."
 
 const TokenSelectorModal = () => {
   const [open, setOpen] = useState(false)
@@ -23,9 +24,9 @@ const TokenSelectorModal = () => {
       <DialogTrigger asChild>
         <Button className="text-primary-foreground h-12 gap-1 rounded-full">
           <Image source={TOKEN_IMAGES[selectedToken.imageId]} alt={selectedToken.symbol} className="w-8 h-8" />
-          <span className="text-lg font-bold">
+          <Text className="text-lg font-bold">
             {selectedToken.symbol}
-          </span>
+          </Text>
           <ChevronDown />
         </Button>
       </DialogTrigger>
