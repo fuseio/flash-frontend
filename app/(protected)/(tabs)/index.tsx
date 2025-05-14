@@ -74,7 +74,7 @@ export default function Deposit() {
                 </Text>
                 <View className="flex-row items-center gap-3">
                   <Image
-                    source={require("@/assets/images/usdc.svg")}
+                    source={require("@/assets/images/usdc.png")}
                     style={{ width: 34, height: 34 }}
                     contentFit="contain"
                   />

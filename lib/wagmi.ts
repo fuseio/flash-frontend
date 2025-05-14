@@ -40,7 +40,7 @@ export const evmNetworks = chains.map(chain => ({
   blockExplorerUrls: [chain.blockExplorers?.default?.apiUrl],
   chainId: chain.id,
   chainName: chain.name,
-  iconUrls: ['/fuse.svg'],
+  iconUrls: ['@/assets/images/fuse.png'],
   name: chain.name,
   nativeCurrency: {
     decimals: chain.nativeCurrency.decimals,

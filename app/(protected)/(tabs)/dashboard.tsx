@@ -56,8 +56,8 @@ export default function Dashboard() {
           <View className="web:md:col-span-3 web:md:row-span-3 justify-between gap-4 bg-card p-6 md:p-12 border-b border-border md:border-b-0 md:border-r">
             <Text className="text-3xl font-medium">USDC Savings</Text>
             <View className="flex-row items-center gap-4">
-              <Image source={require("@/assets/images/usdc.svg")} className="hidden md:block" style={{ width: 76, height: 76 }} />
-              <Image source={require("@/assets/images/usdc.svg")} className="block md:hidden" style={{ width: 36, height: 36 }} />
+              <Image source={require("@/assets/images/usdc.png")} className="hidden md:block" style={{ width: 76, height: 76 }} />
+              <Image source={require("@/assets/images/usdc.png")} className="block md:hidden" style={{ width: 36, height: 36 }} />
               {(balance && totalAPY && lastTimestamp) ? (
                 <SavingCountUp
                   balance={Number(formatUnits(balance, 6))}
@@ -83,7 +83,7 @@ export default function Dashboard() {
               <Text className="text-2xl font-semibold">
                 {(totalAPY && balance) ? `+${(totalAPY * Number(formatUnits(balance, 6))).toFixed(2)}` : <Skeleton className="w-20 h-8 rounded-md" />}
               </Text>
-              <Image source={require("@/assets/images/usdc.svg")} style={{ width: 16, height: 16 }} />
+              <Image source={require("@/assets/images/usdc.png")} style={{ width: 16, height: 16 }} />
             </View>
           </View>
 
@@ -97,7 +97,7 @@ export default function Dashboard() {
                   {formatUnits(balance ?? BigInt(0), 6)}
                 </Text>
               )}
-              <Image source={require("@/assets/images/usdc.svg")} style={{ width: 16, height: 16 }} />
+              <Image source={require("@/assets/images/usdc.png")} style={{ width: 16, height: 16 }} />
             </View>
           </View>
         </View>

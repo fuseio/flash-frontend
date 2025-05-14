@@ -45,8 +45,8 @@ export const TOKEN_MAP: TokenMap = {
 }
 
 export const TOKEN_IMAGES: Record<string, ImageSourcePropType> = {
-  usdc: require("@/assets/images/usdc.svg"),
-  weth: require("@/assets/images/eth.svg"),
-  usdt: require("@/assets/images/usdt.svg"),
-  usds: require("@/assets/images/usds.svg"),
+  usdc: require("@/assets/images/usdc.png"),
+  weth: require("@/assets/images/eth.png"),
+  usdt: require("@/assets/images/usdt.png"),
+  usds: require("@/assets/images/usds.png"),
 }

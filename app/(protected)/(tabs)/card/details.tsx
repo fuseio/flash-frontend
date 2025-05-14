@@ -36,7 +36,7 @@ export default function CardDetails() {
 
       <View className="items-center mb-8">
         <Image
-          source={require("@/assets/images/card.svg")}
+          source={require("@/assets/images/card.png")}
           alt="Flash Card"
           style={{ width: '100%', height: '80%' }}
           contentFit="contain"

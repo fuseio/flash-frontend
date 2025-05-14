@@ -21,13 +21,13 @@ export default function Register() {
       <View className="flex-1 justify-center items-center gap-20 w-full max-w-lg mx-auto">
         <View className="flex-row items-center gap-5">
           <Image
-            source={require("@/assets/images/flash-logo.svg")}
+            source={require("@/assets/images/flash-logo.png")}
             alt="Flash logo"
             style={{ width: 73, height: 73 }}
             contentFit="contain"
           />
           <Image
-            source={require("@/assets/images/flash.svg")}
+            source={require("@/assets/images/flash.png")}
             alt="Flash"
             style={{ width: 153, height: 78 }}
             contentFit="contain"
