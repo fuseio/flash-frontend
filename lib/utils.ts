@@ -1,8 +1,9 @@
+import { Platform } from 'react-native';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Address } from "viem"
+import { Address } from "viem";
 
-import { refreshToken } from "./api"
+import { refreshToken } from "./api";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -56,4 +57,9 @@ export function bufferToBase64URLString(buffer: ArrayBuffer): string {
   const base64String = btoa(str);
 
   return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+export function isDesktop() {
+  if (Platform.OS !== 'web') return false;
+  return window.innerWidth >= 768;
 }

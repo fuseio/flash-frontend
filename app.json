@@ -16,7 +16,7 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "associatedDomains": [
-        "webcredentials:flash.com"
+        "webcredentials:flash.fuse.io"
       ]
     },
     "android": {
@@ -71,6 +71,12 @@
       "eas": {
         "projectId": "a788e592-4267-44da-8afc-a667075c20d4"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a788e592-4267-44da-8afc-a667075c20d4"
     }
   }
 }
