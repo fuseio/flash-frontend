@@ -30,7 +30,10 @@ const useUser = () => {
     status: Status;
     message?: string;
   }>({ status: Status.IDLE, message: "" });
-  const [loginStatus, setLoginStatus] = useState<Status>(Status.IDLE);
+  const [loginInfo, setLoginInfo] = useState<{
+    status: Status;
+    message?: string;
+  }>({ status: Status.IDLE, message: "" });
   const [userStatus, setUserStatus] = useState<Status>(Status.IDLE);
   const [user, setUser] = useState<User>();
   const router = useRouter();
@@ -111,7 +114,7 @@ const useUser = () => {
 
   async function handleLogin() {
     try {
-      setLoginStatus(Status.PENDING);
+      setLoginInfo({ status: Status.PENDING });
       const optionsJSON = await generateAuthenticationOptions();
       const authenticatorReponse = await passkeys.get(optionsJSON);
       if (!authenticatorReponse) {
@@ -127,9 +130,9 @@ const useUser = () => {
       } else {
         throw new Error("Error while verifying passkey authentication");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setLoginStatus(Status.ERROR);
+      setLoginInfo({ status: Status.ERROR });
     }
   }
 
@@ -175,7 +178,7 @@ const useUser = () => {
     handleSignup,
     user,
     userStatus,
-    loginStatus,
+    loginInfo,
     handleLogin,
     handleLogout,
     safeAA,

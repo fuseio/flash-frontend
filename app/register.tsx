@@ -10,7 +10,7 @@ import { Status } from '@/lib/types'
 
 export default function Register() {
   const [username, setUsername] = useState('')
-  const { signupInfo, handleSignup, loginStatus, handleLogin } = useUser()
+  const { signupInfo, handleSignup, loginInfo, handleLogin } = useUser()
 
   const handleSignupForm = () => {
     handleSignup(username)
@@ -63,14 +63,14 @@ export default function Register() {
 
           <Button
             onPress={handleLogin}
-            disabled={loginStatus === Status.PENDING}
+            disabled={loginInfo.status === Status.PENDING}
             variant="outline"
             className="rounded-twice h-14"
           >
             <Text className="text-lg font-semibold">
-              {loginStatus === Status.ERROR ?
-                'Error logging in' :
-                loginStatus === Status.PENDING ?
+              {loginInfo.status === Status.ERROR ?
+                loginInfo.message || 'Error logging in' :
+                loginInfo.status === Status.PENDING ?
                   'Logging in' :
                   'Login'
               }
