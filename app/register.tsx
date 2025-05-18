@@ -2,6 +2,7 @@ import { Image } from 'expo-image'
 import { Link } from 'expo-router'
 import { useState } from 'react'
 import { TextInput, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
@@ -17,7 +18,7 @@ export default function Register() {
   }
 
   return (
-    <View className="bg-background text-foreground flex-1 justify-between p-4">
+    <SafeAreaView className="bg-background text-foreground flex-1 justify-between p-4">
       <View className="flex-1 justify-center items-center gap-20 w-full max-w-lg mx-auto">
         <View className="flex-row items-center gap-5">
           <Image
@@ -41,7 +42,7 @@ export default function Register() {
               value={username}
               onChangeText={setUsername}
               placeholder='Choose a username'
-              className="h-14 px-6 rounded-twice border border-border text-lg font-semibold placeholder:text-muted-foreground"
+              className="h-14 px-6 rounded-twice border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground"
             />
             <Button
               onPress={handleSignupForm}
@@ -88,6 +89,6 @@ export default function Register() {
         Your Flash Account is secured with a passkey - a safer replacement for passwords.{' '}
         <Link href="/" className='hover:underline'>Learn more</Link>
       </Text>
-    </View>
+    </SafeAreaView>
   )
 }
