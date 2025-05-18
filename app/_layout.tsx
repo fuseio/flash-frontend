@@ -1,10 +1,11 @@
 import '@/global.css';
 
-import React from 'react';
+import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
+import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WagmiProvider } from 'wagmi';
-import { PortalHost } from '@rn-primitives/portal';
 
 import { config } from '@/lib/wagmi';
 
@@ -17,7 +18,7 @@ export default function RootLayout() {
   const queryClient = new QueryClient();
 
   return (
-    <>
+    <SafeAreaProvider>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
           <Stack>
@@ -39,6 +40,6 @@ export default function RootLayout() {
         </QueryClientProvider>
       </WagmiProvider>
       <PortalHost />
-    </>
+    </SafeAreaProvider>
   );
 }
