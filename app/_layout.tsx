@@ -1,6 +1,6 @@
 import '@/global.css';
 
-import { PortalHost } from '@rn-primitives/portal';
+// import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import React from 'react';
@@ -39,7 +39,7 @@ export default function RootLayout() {
           </Stack>
         </QueryClientProvider>
       </WagmiProvider>
-      <PortalHost />
+      {/* <PortalHost /> */}
     </SafeAreaProvider>
   );
 }

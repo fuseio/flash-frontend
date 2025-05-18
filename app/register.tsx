@@ -1,21 +1,138 @@
 import { Image } from 'expo-image'
 import { Link } from 'expo-router'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
 import useUser from '@/hooks/useUser'
+import { pimlicoBaseSepoliaUrl, pimlicoClient } from '@/lib/account'
+import { getNonce } from '@/lib/NonceManager'
 import { Status } from '@/lib/types'
+import {
+  getWebAuthnValidator,
+  MOCK_ATTESTER_ADDRESS,
+  RHINESTONE_ATTESTER_ADDRESS
+} from "@rhinestone/module-sdk"
+import { PublicKey } from "ox"
+import { createSmartAccountClient, SmartAccountClient } from "permissionless"
+import {
+  toSafeSmartAccount,
+  ToSafeSmartAccountReturnType
+} from "permissionless/accounts"
+import { erc7579Actions, Erc7579Actions } from "permissionless/actions/erc7579"
+import { Chain, createPublicClient, http, Transport } from "viem"
+import {
+  createWebAuthnCredential,
+  entryPoint07Address,
+  P256Credential
+} from "viem/account-abstraction"
+import { toAccount } from 'viem/accounts'
+import { mainnet } from 'viem/chains'
+
+const appId = "solid";
 
 export default function Register() {
+  const [smartAccountClient, setSmartAccountClient] = useState<
+    SmartAccountClient<Transport, Chain, ToSafeSmartAccountReturnType<"0.7">> &
+      Erc7579Actions<ToSafeSmartAccountReturnType<"0.7">>
+  >();
+  const [credential, setCredential] = useState<P256Credential>(() =>
+    JSON.parse(localStorage.getItem("credential") || "null"),
+  );
   const [username, setUsername] = useState('')
   const { signupInfo, handleSignup, loginInfo, handleLogin } = useUser()
 
-  const handleSignupForm = () => {
-    handleSignup(username)
-  }
+  const createSafe = useCallback(async (_credential: P256Credential) => {
+    const publicClient = createPublicClient({
+      chain: mainnet,
+      transport: http(),
+    });
+
+    const { x, y, prefix } = PublicKey.from(_credential.publicKey);
+    const webauthnValidator = getWebAuthnValidator({
+      pubKey: { x, y, prefix },
+      authenticatorId: _credential.id,
+    });
+
+    const deadOwner = toAccount({
+      address: "0x000000000000000000000000000000000000dead",
+      async signMessage() {
+        return "0x";
+      },
+      async signTransaction() {
+        return "0x";
+      },
+      async signTypedData() {
+        return "0x";
+      },
+    });
+
+    const safeAccount = await toSafeSmartAccount({
+      saltNonce: getNonce({
+        appId,
+      }),
+      client: publicClient,
+      owners: [deadOwner],
+      version: "1.4.1",
+      entryPoint: {
+        address: entryPoint07Address,
+        version: "0.7",
+      },
+      safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
+      erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
+      attesters: [
+        RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
+        MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
+      ],
+      attestersThreshold: 1,
+      validators: [
+        {
+          address: webauthnValidator.address,
+          context: webauthnValidator.initData,
+        },
+      ],
+    });
+    const _smartAccountClient = createSmartAccountClient({
+      account: safeAccount,
+      paymaster: pimlicoClient,
+      chain: mainnet,
+      userOperation: {
+        estimateFeesPerGas: async () =>
+          (await pimlicoClient.getUserOperationGasPrice()).fast,
+      },
+      bundlerTransport: http(pimlicoBaseSepoliaUrl),
+    }).extend(erc7579Actions());
+
+    setSmartAccountClient(_smartAccountClient as any);  
+    // @ts-ignore
+    setCount(await getCount({ publicClient, account: safeAccount.address }));
+  }, []);
+
+  const handleCreateCredential = useCallback(async () => {
+    let _credential;
+    if (credential) {
+      _credential = credential;
+    } else {
+      _credential = await createWebAuthnCredential({
+        name: username,
+      });
+    }
+    setCredential(_credential);
+    localStorage.setItem(
+      "credential",
+      JSON.stringify({
+        id: _credential.id,
+        publicKey: _credential.publicKey,
+      }),
+    );
+    await createSafe(_credential);
+  }, [createSafe, credential, username]);
+
+  // const handleSignupForm = () => {
+  //   handleSignup(username)
+  // }
 
   return (
     <SafeAreaView className="bg-background text-foreground flex-1 justify-between p-4">
@@ -45,7 +162,7 @@ export default function Register() {
               className="h-14 px-6 rounded-twice border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground"
             />
             <Button
-              onPress={handleSignupForm}
+              onPress={handleCreateCredential}
               disabled={signupInfo.status === Status.PENDING || !username}
               className="rounded-twice h-14"
             >
