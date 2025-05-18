@@ -11,7 +11,7 @@
     "owner": "fuseio",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.flash.ios",
+      "bundleIdentifier": "cash.rocksolid.ios",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
