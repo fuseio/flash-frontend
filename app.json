@@ -16,7 +16,8 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "associatedDomains": [
-        "webcredentials:flash.fuse.io"
+        "webcredentials:rocksolid.cash",
+        "applinks:rocksolid.cash"
       ]
     },
     "android": {
@@ -25,7 +26,21 @@
         "backgroundColor": "#262626"
       },
       "edgeToEdgeEnabled": true,
-      "package": "cash.rocksolid.android"
+      "package": "cash.rocksolid.android",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "rocksolid.cash",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
