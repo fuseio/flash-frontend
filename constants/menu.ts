@@ -13,4 +13,8 @@ export const menuItems = [
     label: "Card",
     href: path.CARD,
   },
+  {
+    label: "Earn",
+    href: path.EARN,
+  },
 ]

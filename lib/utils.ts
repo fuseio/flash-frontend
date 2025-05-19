@@ -20,6 +20,12 @@ export function compactNumberFormat(number: number) {
   }).format(number)
 }
 
+export function formatNumber(number: number) {
+  return new Intl.NumberFormat('en-us', {
+    maximumFractionDigits: 2,
+  }).format(number)
+}
+
 export function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text)
 }

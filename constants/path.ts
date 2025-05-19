@@ -5,6 +5,7 @@ type Path = {
   DASHBOARD: Href;
   DEPOSIT: Href;
   CARD: Href;
+  EARN: Href;
 }
 
 export const path: Path = {
@@ -12,4 +13,5 @@ export const path: Path = {
   DASHBOARD: "/dashboard",
   DEPOSIT: "/",
   CARD: "/card",
+  EARN: "/earn",
 }

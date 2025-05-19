@@ -7,8 +7,8 @@ import { useReadContract } from "wagmi";
 
 import SavingCountUp from "@/components/SavingCountUp";
 import { buttonVariants } from "@/components/ui/button";
-import { Text } from "@/components/ui/text";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
 import { useLatestTokenTransfer, useTotalAPY } from "@/hooks/useAnalytics";
 import useUser from "@/hooks/useUser";
@@ -45,14 +45,14 @@ export default function Dashboard() {
             </Text>
           </View>
           <View className="flex-row items-center gap-5 h-20">
-            <Link href={path.DEPOSIT} className={buttonVariants({ className: "flex-col items-center gap-3 w-28 h-full rounded-twice" })}>
+            <Link href={path.DEPOSIT} className={buttonVariants({ className: "flex-col items-center gap-3 w-28 h-full rounded-xl md:rounded-twice" })}>
               <Deposit className="size-6" />
               <Text className="text-primary-foreground font-semibold">Deposit</Text>
             </Link>
           </View>
         </View>
 
-        <View className="web:md:grid web:md:grid-cols-4 w-full max-w-7xl mx-auto border border-border rounded-twice overflow-hidden">
+        <View className="web:md:grid web:md:grid-cols-4 w-full max-w-7xl mx-auto border border-border rounded-xl md:rounded-twice overflow-hidden">
           <View className="web:md:col-span-3 web:md:row-span-3 justify-between gap-4 bg-card p-6 md:p-12 border-b border-border md:border-b-0 md:border-r">
             <Text className="text-3xl font-medium">USDC Savings</Text>
             <View className="flex-row items-center gap-4">
@@ -72,7 +72,7 @@ export default function Dashboard() {
 
           <View className="gap-2.5 bg-card p-6 border-b border-border">
             <Text className="text-lg text-primary/50 font-medium">APY</Text>
-            <Text className="text-2xl font-semibold">
+            <Text className="text-2xl text-brand font-semibold">
               {totalAPY ? `${totalAPY.toFixed(2)}%` : <Skeleton className="w-20 h-8 rounded-md" />}
             </Text>
           </View>

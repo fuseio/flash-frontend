@@ -136,6 +136,21 @@ const useUser = () => {
     }
   }
 
+  async function handleDummyLogin() {
+    await storeUser({
+      username: "dummy",
+      safeAddress: "0x0000000000000000000000000000000000000000",
+      passkey: {
+        rawId: "dummy",
+        coordinates: {
+          x: "dummy",
+          y: "dummy",
+        },
+      },
+    });
+    router.replace(path.DEPOSIT);
+  }
+
   async function handleLogout() {
     await AsyncStorage.removeItem(USER.storageKey);
     storeUser(initUser);
@@ -180,6 +195,7 @@ const useUser = () => {
     userStatus,
     loginInfo,
     handleLogin,
+    handleDummyLogin,
     handleLogout,
     safeAA,
     userOpReceipt

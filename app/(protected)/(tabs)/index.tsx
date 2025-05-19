@@ -113,6 +113,7 @@ export default function Deposit() {
           <View className="gap-2">
             <CheckConnectionWrapper props={{ size: "xl" }}>
               <Button
+                variant="brand"
                 className="rounded-2xl h-12"
                 onPress={handleClick}
                 disabled={
