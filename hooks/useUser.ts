@@ -1,19 +1,30 @@
-import { useRouter } from "expo-router"
-import { useCallback, useEffect, useState } from "react"
-import { Safe4337Pack } from '@safe-global/relay-kit'
-import { mainnet } from "viem/chains"
-import { Address } from "viem";
-import * as passkeys from "react-native-passkeys"
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Safe4337Pack } from '@safe-global/relay-kit';
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import * as passkeys from "react-native-passkeys";
+import { Address } from "viem";
+import { mainnet } from "viem/chains";
 
-import { USER } from "@/lib/config"
-import { PasskeyArgType, Status, User } from "@/lib/types"
-import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils"
-import { path } from "@/constants/path"
-import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api"
+import { path } from "@/constants/path";
+import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api";
+import { USER } from "@/lib/config";
+import { PasskeyArgType, Status, User } from "@/lib/types";
+import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils";
 import { rpcUrls } from "@/lib/wagmi";
 
-const initUser = {
+interface UserState {
+  user: User | undefined;
+  status: Status;
+  error?: string;
+}
+
+interface AuthState {
+  status: Status;
+  message?: string;
+}
+
+const initUser: User = {
   username: "",
   safeAddress: "" as Address,
   passkey: {
@@ -26,66 +37,84 @@ const initUser = {
 };
 
 const useUser = () => {
-  const [signupInfo, setSignupInfo] = useState<{
-    status: Status;
-    message?: string;
-  }>({ status: Status.IDLE, message: "" });
-  const [loginInfo, setLoginInfo] = useState<{
-    status: Status;
-    message?: string;
-  }>({ status: Status.IDLE, message: "" });
-  const [userStatus, setUserStatus] = useState<Status>(Status.IDLE);
-  const [user, setUser] = useState<User>();
+  const [userState, setUserState] = useState<UserState>({ user: undefined, status: Status.IDLE });
+  const [signupInfo, setSignupInfo] = useState<AuthState>({ status: Status.IDLE });
+  const [loginInfo, setLoginInfo] = useState<AuthState>({ status: Status.IDLE });
   const router = useRouter();
 
-  async function storeUser(user: { [K in keyof User]?: User[K] }) {
-    let newUser = null;
-    setUser((prevUser) => {
-      newUser = {
-        ...prevUser,
-        ...user,
-      } as User;
-      return newUser;
-    });
-    await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUser));
-  }
+  const storeUser = useCallback(async (user: Partial<User>) => {
+    try {
+      const newUser = { ...userState.user, ...user } as User;
+      setUserState(prev => ({ ...prev, user: newUser }));
+      await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUser));
+    } catch (error) {
+      console.error('Error storing user:', error);
+      setUserState(prev => ({ ...prev, status: Status.ERROR, error: 'Failed to store user data' }));
+    }
+  }, [userState.user]);
 
   const loadUser = useCallback(async () => {
     try {
-      setUserStatus(Status.PENDING);
+      setUserState(prev => ({ ...prev, status: Status.PENDING }));
       const user = await AsyncStorage.getItem(USER.storageKey);
+
       if (!user) {
         throw new Error("User not found");
       }
 
       const parsedUser = JSON.parse(user);
-      setUser(parsedUser);
-      setUserStatus(Status.SUCCESS);
-
+      setUserState({ user: parsedUser, status: Status.SUCCESS });
       return parsedUser;
     } catch (error) {
-      console.log(error);
-      setUserStatus(Status.ERROR);
+      console.error('Error loading user:', error);
+      setUserState(prev => ({ ...prev, status: Status.ERROR, error: 'Failed to load user data' }));
     }
   }, []);
 
-  async function handleSignup(username: string) {
+  const handleLogin = useCallback(async () => {
+    try {
+      setLoginInfo({ status: Status.PENDING });
+      const optionsJSON = await generateAuthenticationOptions();
+      const authenticatorResponse = await passkeys.get(optionsJSON);
+
+      if (!authenticatorResponse) {
+        throw new Error("Error while creating passkey authentication");
+      }
+
+      const user = await verifyAuthentication(authenticatorResponse);
+
+      if (user) {
+        await storeUser(user);
+        setLoginInfo({ status: Status.SUCCESS });
+        router.replace(path.DEPOSIT);
+      } else {
+        throw new Error("Error while verifying passkey authentication");
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoginInfo({ status: Status.ERROR, message: 'Authentication failed' });
+    }
+  }, [router, storeUser]);
+
+  const handleSignup = useCallback(async (username: string) => {
     try {
       setSignupInfo({ status: Status.PENDING });
 
       const optionsJSON = await generateRegistrationOptions(username);
-      const authenticatorReponse = await passkeys.create(optionsJSON)
-      if (!authenticatorReponse) {
+      const authenticatorResponse = await passkeys.create(optionsJSON);
+      console.log("authenticatorResponse", JSON.stringify(authenticatorResponse, null, 2));
+
+      if (!authenticatorResponse) {
         throw new Error("Error while creating passkey registration");
       }
 
-      const publicKey = bufferToBase64URLString(authenticatorReponse.response.getPublicKey())
+      const publicKey = bufferToBase64URLString(authenticatorResponse.response.getPublicKey());
 
       const user = await withRefreshToken(
         verifyRegistration({
-          ...authenticatorReponse,
+          ...authenticatorResponse,
           response: {
-            ...authenticatorReponse.response,
+            ...authenticatorResponse.response,
             publicKey,
           },
         }),
@@ -93,70 +122,42 @@ const useUser = () => {
       );
 
       if (user) {
-        storeUser(user);
+        await storeUser(user);
         setSignupInfo({ status: Status.SUCCESS });
         router.replace(path.DEPOSIT);
       } else {
         throw new Error("Error while verifying passkey registration");
       }
     } catch (error: any) {
-      if (error?.status === 409) {
-        setSignupInfo({
-          status: Status.ERROR,
-          message: "Username already exists",
-        });
-      } else {
-        setSignupInfo({ status: Status.ERROR });
-      }
-      console.error(error);
+      setSignupInfo({
+        status: Status.ERROR,
+        message: error?.status === 409 ? "Username already exists" : "Registration failed",
+      });
+      console.error('Signup error:', error);
     }
-  }
+  }, [router, storeUser, handleLogin]);
 
-  async function handleLogin() {
+  const handleLogout = useCallback(async () => {
     try {
-      setLoginInfo({ status: Status.PENDING });
-      const optionsJSON = await generateAuthenticationOptions();
-      const authenticatorReponse = await passkeys.get(optionsJSON);
-      if (!authenticatorReponse) {
-        throw new Error("Error while creating passkey authentication");
-      }
-
-      const user = await verifyAuthentication(authenticatorReponse);
-
-      if (user) {
-        storeUser(user);
-        setSignupInfo({ status: Status.SUCCESS });
-        router.replace(path.DEPOSIT);
-      } else {
-        throw new Error("Error while verifying passkey authentication");
-      }
-    } catch (error: any) {
-      console.error(error);
-      setLoginInfo({ status: Status.ERROR });
+      await AsyncStorage.removeItem(USER.storageKey);
+      setUserState({ user: initUser, status: Status.IDLE });
+      router.replace(path.REGISTER);
+    } catch (error) {
+      console.error('Logout error:', error);
     }
-  }
-
-  async function handleLogout() {
-    await AsyncStorage.removeItem(USER.storageKey);
-    storeUser(initUser);
-    router.replace(path.REGISTER);
-  }
+  }, [router]);
 
   const safeAA = useCallback(async (passkey: PasskeyArgType) => {
     return Safe4337Pack.init({
       provider: rpcUrls[mainnet.id],
       signer: passkey,
       bundlerUrl: USER.pimlicoUrl,
-      // paymasterOptions: {
-      //   isSponsored: true,
-      //   paymasterUrl: USER.pimlicoUrl
-      // },
       options: {
         owners: [],
         threshold: 1
       }
-    })
-  }, [])
+    });
+  }, []);
 
   const userOpReceipt = useCallback(async (safe4337Pack: Safe4337Pack, userOperationHash: string) => {
     let userOperationReceipt = null
@@ -171,19 +172,31 @@ const useUser = () => {
 
   useEffect(() => {
     loadUser();
-  }, []);
+  }, [loadUser]);
 
-  return {
+  const memoizedState = useMemo(() => ({
     signupInfo,
     handleSignup,
-    user,
-    userStatus,
+    user: userState.user,
+    userStatus: userState.status,
     loginInfo,
     handleLogin,
     handleLogout,
     safeAA,
     userOpReceipt
-  };
+  }), [
+    signupInfo,
+    handleSignup,
+    userState.user,
+    userState.status,
+    loginInfo,
+    handleLogin,
+    handleLogout,
+    safeAA,
+    userOpReceipt
+  ]);
+
+  return memoizedState;
 };
 
 export default useUser;

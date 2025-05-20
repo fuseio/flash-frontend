@@ -7,36 +7,44 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
 import useUser from '@/hooks/useUser'
-import { pimlicoBaseSepoliaUrl, pimlicoClient } from '@/lib/account'
+import { bundlerUrl, pimlicoClient } from '@/lib/account'
 import { getNonce } from '@/lib/NonceManager'
 import { Status } from '@/lib/types'
+import { publicClient } from '@/lib/wagmi'
 import {
+  encodeValidatorNonce,
+  getAccount,
   getWebAuthnValidator,
-  MOCK_ATTESTER_ADDRESS,
-  RHINESTONE_ATTESTER_ADDRESS
+  getWebauthnValidatorMockSignature,
+  getWebauthnValidatorSignature,
+  RHINESTONE_ATTESTER_ADDRESS,
+  WEBAUTHN_VALIDATOR_ADDRESS
 } from "@rhinestone/module-sdk"
 import { PublicKey } from "ox"
-import { createSmartAccountClient, SmartAccountClient } from "permissionless"
+import { sign } from "ox/WebAuthnP256"
+import { createSmartAccountClient, getRequiredPrefund, SmartAccountClient } from "permissionless"
 import {
   toSafeSmartAccount,
   ToSafeSmartAccountReturnType
 } from "permissionless/accounts"
+import { getAccountNonce } from "permissionless/actions"
 import { erc7579Actions, Erc7579Actions } from "permissionless/actions/erc7579"
-import { Chain, createPublicClient, http, Transport } from "viem"
+import { Chain, formatEther, http, Transport } from "viem"
 import {
   createWebAuthnCredential,
   entryPoint07Address,
+  getUserOperationHash,
   P256Credential
 } from "viem/account-abstraction"
 import { toAccount } from 'viem/accounts'
-import { mainnet } from 'viem/chains'
+import { fuse } from 'viem/chains'
 
 const appId = "solid";
 
 export default function Register() {
   const [smartAccountClient, setSmartAccountClient] = useState<
     SmartAccountClient<Transport, Chain, ToSafeSmartAccountReturnType<"0.7">> &
-      Erc7579Actions<ToSafeSmartAccountReturnType<"0.7">>
+    Erc7579Actions<ToSafeSmartAccountReturnType<"0.7">>
   >();
   const [credential, setCredential] = useState<P256Credential>(() =>
     JSON.parse(localStorage.getItem("credential") || "null"),
@@ -44,12 +52,103 @@ export default function Register() {
   const [username, setUsername] = useState('')
   const { signupInfo, handleSignup, loginInfo, handleLogin } = useUser()
 
-  const createSafe = useCallback(async (_credential: P256Credential) => {
-    const publicClient = createPublicClient({
-      chain: mainnet,
-      transport: http(),
+  const handleSendUserOp = useCallback(async () => {
+    if (!smartAccountClient) {
+      console.error("No smart account client");
+      return;
+    } else if (!credential) {
+      console.error("No credential");
+      return;
+    }
+
+    // const publicClient = createPublicClient({
+    //   chain: baseSepolia,
+    //   transport: http(),
+    // });
+
+    // setUserOpLoading(true);
+
+    const nonce = await getAccountNonce(publicClient(fuse.id), {
+      address: smartAccountClient.account.address,
+      entryPointAddress: entryPoint07Address,
+      key: encodeValidatorNonce({
+        account: getAccount({
+          address: smartAccountClient.account.address,
+          type: "safe",
+        }),
+        validator: WEBAUTHN_VALIDATOR_ADDRESS,
+      }),
     });
 
+    const userOperation = await smartAccountClient.prepareUserOperation({
+      account: smartAccountClient.account,
+      calls: [{
+        to: "0x7Ceabc27B1dc6A065fAD85A86AFBaF97F7692088",
+        value: BigInt('1000000000000000000'),
+        data: "0x",
+      }],
+      nonce,
+      signature: getWebauthnValidatorMockSignature(),
+    });
+
+    const requiredPrefund = getRequiredPrefund({
+      userOperation,
+      entryPointVersion: "0.7",
+    })
+
+    const senderBalance = await publicClient(fuse.id).getBalance({
+      address: userOperation.sender
+    })
+    // Convert to human readable format
+    const senderBalanceHuman = formatEther(senderBalance);
+    const requiredPrefundHuman = formatEther(requiredPrefund);
+    console.log("senderBalance", senderBalanceHuman);
+    console.log("requiredPrefund", requiredPrefundHuman);
+
+    if (senderBalance < requiredPrefund) {
+      throw new Error(`Sender address does not have enough native tokens`)
+    }
+
+    const userOpHashToSign = getUserOperationHash({
+      chainId: fuse.id,
+      entryPointAddress: entryPoint07Address,
+      entryPointVersion: "0.7",
+      userOperation,
+    });
+
+    const { metadata: webauthn, signature } = await sign({
+      credentialId: credential.id,
+      challenge: userOpHashToSign,
+    });
+
+    const encodedSignature = getWebauthnValidatorSignature({
+      webauthn,
+      signature,
+      usePrecompiled: false,
+    });
+
+    userOperation.signature = encodedSignature;
+
+    const userOpHash =
+      await smartAccountClient.sendUserOperation(userOperation);
+
+    const receipt = await smartAccountClient.waitForUserOperationReceipt({
+      hash: userOpHash,
+    });
+    console.log("UserOp receipt: ", receipt);
+
+    // setCount(
+    //   await getCount({
+    //     // @ts-ignore
+    //     publicClient,
+    //     account: smartAccountClient.account.address,
+    //   }),
+    // );
+    // setUserOpLoading(false);
+  }, [credential, smartAccountClient]);
+
+
+  const createSafe = useCallback(async (_credential: P256Credential) => {
     const { x, y, prefix } = PublicKey.from(_credential.publicKey);
     const webauthnValidator = getWebAuthnValidator({
       pubKey: { x, y, prefix },
@@ -73,7 +172,7 @@ export default function Register() {
       saltNonce: getNonce({
         appId,
       }),
-      client: publicClient,
+      client: publicClient(fuse.id),
       owners: [deadOwner],
       version: "1.4.1",
       entryPoint: {
@@ -84,7 +183,6 @@ export default function Register() {
       erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
       attesters: [
         RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
-        MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
       ],
       attestersThreshold: 1,
       validators: [
@@ -96,18 +194,18 @@ export default function Register() {
     });
     const _smartAccountClient = createSmartAccountClient({
       account: safeAccount,
-      paymaster: pimlicoClient,
-      chain: mainnet,
+      // paymaster: paymasterClient,
+      chain: fuse,
       userOperation: {
         estimateFeesPerGas: async () =>
           (await pimlicoClient.getUserOperationGasPrice()).fast,
       },
-      bundlerTransport: http(pimlicoBaseSepoliaUrl),
+      bundlerTransport: http(bundlerUrl),
     }).extend(erc7579Actions());
 
-    setSmartAccountClient(_smartAccountClient as any);  
-    // @ts-ignore
-    setCount(await getCount({ publicClient, account: safeAccount.address }));
+    setSmartAccountClient(_smartAccountClient as any);
+    console.log("safeAccount", _smartAccountClient.account.address);
+    // setCount(await getCount({ publicClient, account: safeAccount.address }));
   }, []);
 
   const handleCreateCredential = useCallback(async () => {
@@ -119,6 +217,7 @@ export default function Register() {
         name: username,
       });
     }
+    console.log("credential", JSON.stringify(_credential, null, 2));
     setCredential(_credential);
     localStorage.setItem(
       "credential",
@@ -128,11 +227,12 @@ export default function Register() {
       }),
     );
     await createSafe(_credential);
+    // Send a test user operation
   }, [createSafe, credential, username]);
 
-  // const handleSignupForm = () => {
-  //   handleSignup(username)
-  // }
+  const handleSignupForm = () => {
+    handleSignup(username)
+  }
 
   return (
     <SafeAreaView className="bg-background text-foreground flex-1 justify-between p-4">
@@ -162,7 +262,8 @@ export default function Register() {
               className="h-14 px-6 rounded-twice border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground"
             />
             <Button
-              onPress={handleCreateCredential}
+              // onPress={handleCreateCredential}
+              onPress={handleSignupForm}
               disabled={signupInfo.status === Status.PENDING || !username}
               className="rounded-twice h-14"
             >
@@ -193,6 +294,14 @@ export default function Register() {
                   'Login'
               }
             </Text>
+          </Button>
+          <Button
+            onPress={handleSendUserOp}
+            disabled={!smartAccountClient}
+            variant="outline"
+            className="rounded-twice h-14"
+          >
+            Send User Op
           </Button>
 
           <Text className='text-center text-sm text-muted-foreground max-w-64 mx-auto'>
