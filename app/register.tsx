@@ -19,7 +19,7 @@ export default function Register() {
 
   return (
     <SafeAreaView className="bg-background text-foreground flex-1">
-      <View className='flex-1 justify-between p-4'>
+      <View className='flex-1 justify-between px-4 py-8'>
         <View className="flex-1 justify-center items-center gap-20 w-full max-w-lg mx-auto">
           <View className="flex-row items-center gap-5">
             <Image

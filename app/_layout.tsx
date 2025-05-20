@@ -3,6 +3,7 @@ import '@/global.css';
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
+import Head from 'expo-router/head';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WagmiProvider } from 'wagmi';
@@ -21,6 +22,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
+          <Head>
+            <title>Solid</title>
+          </Head>
           <Stack>
             <Stack.Screen
               name="(protected)"

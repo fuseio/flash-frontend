@@ -5,7 +5,7 @@ import CopyToClipboard from "@/components/CopyToClipboard"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 import useUser from "@/hooks/useUser"
-import { eclipseAddress } from "@/lib/utils"
+import { eclipseAddress, eclipseUsername } from "@/lib/utils"
 
 const AccountCenter = () => {
   const { user } = useUser()
@@ -31,10 +31,10 @@ const AccountCenterTrigger = (props: any) => {
     triggerButton = (
       <Button
         size="sm"
-        className="w-full rounded-full"
+        className="w-full rounded-full justify-around"
         {...props}
       >
-        <Text className="font-semibold">{eclipseAddress(user.safeAddress, 4)}</Text>
+        <Text className="font-semibold">{eclipseUsername(user.username)}</Text>
         <ChevronDown />
       </Button>
     )

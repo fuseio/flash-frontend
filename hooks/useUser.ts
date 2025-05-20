@@ -95,7 +95,7 @@ const useUser = () => {
       if (user) {
         storeUser(user);
         setSignupInfo({ status: Status.SUCCESS });
-        router.replace(path.DEPOSIT);
+        router.replace(path.HOME);
       } else {
         throw new Error("Error while verifying passkey registration");
       }
@@ -126,7 +126,7 @@ const useUser = () => {
       if (user) {
         storeUser(user);
         setSignupInfo({ status: Status.SUCCESS });
-        router.replace(path.DEPOSIT);
+        router.replace(path.HOME);
       } else {
         throw new Error("Error while verifying passkey authentication");
       }
@@ -148,7 +148,7 @@ const useUser = () => {
         },
       },
     });
-    router.replace(path.DEPOSIT);
+    router.replace(path.HOME);
   }
 
   async function handleLogout() {

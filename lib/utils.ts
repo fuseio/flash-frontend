@@ -13,6 +13,10 @@ export function eclipseAddress(address: Address, start = 6, end = 4) {
   return address.slice(0, start) + "..." + address.slice(-end)
 }
 
+export function eclipseUsername(username: string, start = 10) {
+  return username.slice(0, start) + (username.length > start ? "..." : "")
+}
+
 export function compactNumberFormat(number: number) {
   return new Intl.NumberFormat('en-us', {
     notation: 'compact',

@@ -29,8 +29,8 @@ export default function Dashboard() {
       enabled: !!user?.safeAddress,
     },
   })
-  const { data: totalAPY } = useTotalAPY()
-  const { data: lastTimestamp } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
+  const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
+  const { data: lastTimestamp, isLoading: isLastTimestampLoading } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
 
   return (
     <ScrollView className="bg-background text-foreground flex-1">
@@ -56,16 +56,16 @@ export default function Dashboard() {
           <View className="web:md:col-span-3 web:md:row-span-3 justify-between gap-4 bg-card p-6 md:p-12 border-b border-border md:border-b-0 md:border-r">
             <Text className="text-3xl font-medium">USDC Savings</Text>
             <View className="flex-row items-center gap-4">
-              <Image source={require("@/assets/images/usdc.png")} className="hidden md:block" style={{ width: 76, height: 76 }} />
+              <Image source={require("@/assets/images/usdc-4x.png")} className="hidden md:block" style={{ width: 76, height: 76 }} />
               <Image source={require("@/assets/images/usdc.png")} className="block md:hidden" style={{ width: 36, height: 36 }} />
-              {(balance && totalAPY && lastTimestamp) ? (
-                <SavingCountUp
-                  balance={Number(formatUnits(balance, 6))}
-                  apy={totalAPY}
-                  lastTimestamp={lastTimestamp / 1000}
-                />
-              ) : (
+              {(isBalanceLoading || isTotalAPYLoading || isLastTimestampLoading) ? (
                 <Skeleton className="w-48 h-10 md:w-96 md:h-24 rounded-md" />
+              ) : (
+                <SavingCountUp
+                  balance={Number(formatUnits(balance ?? BigInt(0), 6))}
+                  apy={totalAPY ?? 0}
+                  lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
+                />
               )}
             </View>
           </View>
@@ -73,7 +73,12 @@ export default function Dashboard() {
           <View className="gap-2.5 bg-card p-6 border-b border-border">
             <Text className="text-lg text-primary/50 font-medium">APY</Text>
             <Text className="text-2xl text-brand font-semibold">
-              {totalAPY ? `${totalAPY.toFixed(2)}%` : <Skeleton className="w-20 h-8 rounded-md" />}
+              {isTotalAPYLoading ?
+                <Skeleton className="w-20 h-8 rounded-md" /> :
+                totalAPY ?
+                  `${totalAPY.toFixed(2)}%` :
+                  "0%"
+              }
             </Text>
           </View>
 
@@ -81,7 +86,12 @@ export default function Dashboard() {
             <Text className="text-lg text-primary/50 font-medium">1-year Projection</Text>
             <View className="flex-row items-center gap-1">
               <Text className="text-2xl font-semibold">
-                {(totalAPY && balance) ? `+${(totalAPY * Number(formatUnits(balance, 6))).toFixed(2)}` : <Skeleton className="w-20 h-8 rounded-md" />}
+                {(isTotalAPYLoading || isBalanceLoading) ?
+                  <Skeleton className="w-20 h-8 rounded-md" /> :
+                  (totalAPY && balance) ?
+                    `+${(totalAPY * Number(formatUnits(balance, 6))).toFixed(2)}` :
+                    "0"
+                }
               </Text>
               <Image source={require("@/assets/images/usdc.png")} style={{ width: 16, height: 16 }} />
             </View>

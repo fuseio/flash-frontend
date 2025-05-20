@@ -35,9 +35,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Deposit',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
+            href: null,
           }}
         />
         <Tabs.Screen
@@ -46,6 +44,14 @@ export default function TabLayout() {
             title: 'Dashboard',
             headerShown: false,
             tabBarIcon: ({ color }) => <LayoutDashboard size={28} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="deposit"
+          options={{
+            title: 'Deposit',
+            headerShown: false,
+            tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
           }}
         />
         <Tabs.Screen

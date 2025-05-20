@@ -53,14 +53,8 @@ const TokenSelector = ({ tokens, setSelectedToken, setOpen }: TokenSelectorProps
             <Text>Coming soon</Text>
           ) : (
             <View className="flex-col items-end gap-0.5">
-              {token.balanceUSD ?
-                <Text className="text-lg font-bold">${token.balanceUSD < 0.001 ? "<0.001" : token.balanceUSD.toFixed(3)}</Text> :
-                <Skeleton className="w-16 h-5" />
-              }
-              {token.balance ?
-                <Text className="text-sm opacity-40">{token.balance < 0.001 ? "<0.001" : token.balance.toFixed(3)}</Text> :
-                <Skeleton className="w-16 h-3.5" />
-              }
+              <Text className="text-lg font-bold">${!token.balanceUSD ? "0" : token.balanceUSD < 0.001 ? "<0.001" : token.balanceUSD.toFixed(3)}</Text>
+              <Text className="text-sm opacity-40">{!token.balance ? "0" : token.balance < 0.001 ? "<0.001" : token.balance.toFixed(3)}</Text>
             </View>
           )}
         </Button>

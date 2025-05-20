@@ -6,7 +6,7 @@ import { readContractQueryOptions } from "wagmi/query";
 
 import ERC20_ABI from "@/lib/abis/ERC20";
 import { fetchTokenPriceUsd } from "@/lib/api";
-import { Token, TokenWithBalance } from "@/lib/types";
+import { Status, Token, TokenWithBalance } from "@/lib/types";
 import { config } from "@/lib/wagmi";
 
 type TokenSelectorProps = {
@@ -32,37 +32,56 @@ export const useTokenSelector = ({
 }: TokenSelectorProps) => {
   const queryClient = useQueryClient()
   const [tokensWithBalance, setTokensWithBalance] = useState<TokenWithBalance[]>([]);
+  const [tokenStatus, setTokenStatus] = useState<Status>(Status.IDLE);
+  const [totalBalance, setTotalBalance] = useState<number>(0);
 
   useEffect(() => {
     const fetchTokens = async () => {
-      if (!safeAddress) return;
+      try {
+        if (!safeAddress) return;
 
-      const tokensWithBalance = await Promise.all(tokens.map(async (token) => {
-        const balance = await queryClient.fetchQuery(
-          readContractQueryOptions(config, {
-            abi: ERC20_ABI,
-            address: token.address,
-            functionName: "balanceOf",
-            args: [safeAddress],
-            chainId: mainnet.id,
-          })
-        );
+        setTokenStatus(Status.PENDING);
 
-        const price = await queryClient.fetchQuery(
-          tokenPriceUsdQueryOptions(token.coingeckoId)
-        );
+        const tokensWithBalance = await Promise.all(tokens.map(async (token) => {
+          if (token.isComingSoon) {
+            return {
+              ...token,
+              balance: 0,
+              balanceUSD: 0,
+            };
+          }
 
-        return {
-          ...token,
-          balance: balance ? Number(formatUnits(balance, token.decimals)) : 0,
-          balanceUSD:
-            balance && price
-              ? Number(formatUnits(balance, token.decimals)) * price
-              : 0,
-        };
-      }));
+          const balance = await queryClient.fetchQuery(
+            readContractQueryOptions(config, {
+              abi: ERC20_ABI,
+              address: token.address,
+              functionName: "balanceOf",
+              args: [safeAddress],
+              chainId: mainnet.id,
+            })
+          );
 
-      setTokensWithBalance(tokensWithBalance);
+          const price = await queryClient.fetchQuery(
+            tokenPriceUsdQueryOptions(token.coingeckoId)
+          );
+
+          const formattedBalance = balance ? Number(formatUnits(balance, token.decimals)) : 0;
+          const balanceUSD = price ? formattedBalance * price : 0;
+
+          return {
+            ...token,
+            balance: formattedBalance,
+            balanceUSD
+          };
+        }));
+
+        setTokensWithBalance(tokensWithBalance);
+        setTotalBalance(tokensWithBalance.reduce((acc, token) => acc + token.balance, 0));
+        setTokenStatus(Status.SUCCESS);
+      } catch (error) {
+        console.error(error);
+        setTokenStatus(Status.ERROR);
+      }
     };
 
     fetchTokens();
@@ -70,5 +89,7 @@ export const useTokenSelector = ({
 
   return {
     tokensWithBalance,
+    tokenStatus,
+    totalBalance,
   };
 };
