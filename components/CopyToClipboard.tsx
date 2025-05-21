@@ -4,7 +4,7 @@ import { Check, Copy } from "lucide-react-native"
 
 import { Button } from "@/components/ui/button"
 
-const CopyToClipboard = ({ text }: { text: string }) => {
+const CopyToClipboard = ({ text, className }: { text: string, className?: string }) => {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -21,7 +21,7 @@ const CopyToClipboard = ({ text }: { text: string }) => {
   }, [copied])
 
   return (
-    <Button variant="ghost" size="icon" onPress={handleCopy}>
+    <Button variant="ghost" size="icon" onPress={handleCopy} className={className}>
       {copied ? <Check size={16} /> : <Copy size={16} />}
     </Button>
   )

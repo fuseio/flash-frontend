@@ -14,6 +14,11 @@ type TokenSelectorProps = {
   safeAddress?: Address;
 };
 
+type Balance = {
+  withTokens: TokenWithBalance[];
+  total: number;
+}
+
 export const tokenPriceUsdQueryOptions = (tokenId: string) => {
   return {
     queryKey: ["tokenPriceUsd", tokenId],
@@ -24,6 +29,51 @@ export const tokenPriceUsdQueryOptions = (tokenId: string) => {
 
 export const useTokenPriceUsd = (tokenId: string) => {
   return useQuery(tokenPriceUsdQueryOptions(tokenId));
+};
+
+export const fetchBalance = async (
+  tokens: Token[],
+  safeAddress: Address,
+  queryClient: any
+): Promise<Balance> => {
+  if (!safeAddress) return { withTokens: [], total: 0 };
+
+  const withTokens = await Promise.all(tokens.map(async (token) => {
+    if (token.isComingSoon) {
+      return {
+        ...token,
+        balance: 0,
+        balanceUSD: 0,
+      };
+    }
+
+    const balance = await queryClient.fetchQuery(
+      readContractQueryOptions(config, {
+        abi: ERC20_ABI,
+        address: token.address,
+        functionName: "balanceOf",
+        args: [safeAddress],
+        chainId: mainnet.id,
+      })
+    );
+
+    const price = await queryClient.fetchQuery(
+      tokenPriceUsdQueryOptions(token.coingeckoId)
+    );
+
+    const formattedBalance = balance ? Number(formatUnits(balance, token.decimals)) : 0;
+    const balanceUSD = price ? formattedBalance * price : 0;
+
+    return {
+      ...token,
+      balance: formattedBalance,
+      balanceUSD
+    };
+  }));
+
+  const total = withTokens.reduce((acc, token) => acc + token.balanceUSD, 0);
+
+  return { withTokens, total };
 };
 
 export const useTokenSelector = ({
@@ -41,42 +91,10 @@ export const useTokenSelector = ({
         if (!safeAddress) return;
 
         setTokenStatus(Status.PENDING);
+        const balance = await fetchBalance(tokens, safeAddress, queryClient);
 
-        const tokensWithBalance = await Promise.all(tokens.map(async (token) => {
-          if (token.isComingSoon) {
-            return {
-              ...token,
-              balance: 0,
-              balanceUSD: 0,
-            };
-          }
-
-          const balance = await queryClient.fetchQuery(
-            readContractQueryOptions(config, {
-              abi: ERC20_ABI,
-              address: token.address,
-              functionName: "balanceOf",
-              args: [safeAddress],
-              chainId: mainnet.id,
-            })
-          );
-
-          const price = await queryClient.fetchQuery(
-            tokenPriceUsdQueryOptions(token.coingeckoId)
-          );
-
-          const formattedBalance = balance ? Number(formatUnits(balance, token.decimals)) : 0;
-          const balanceUSD = price ? formattedBalance * price : 0;
-
-          return {
-            ...token,
-            balance: formattedBalance,
-            balanceUSD
-          };
-        }));
-
-        setTokensWithBalance(tokensWithBalance);
-        setTotalBalance(tokensWithBalance.reduce((acc, token) => acc + token.balance, 0));
+        setTokensWithBalance(balance.withTokens);
+        setTotalBalance(balance.total);
         setTokenStatus(Status.SUCCESS);
       } catch (error) {
         console.error(error);

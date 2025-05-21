@@ -40,6 +40,13 @@ export default function RootLayout() {
                 animation: "none",
               }}
             />
+            <Stack.Screen
+              name="welcome"
+              options={{
+                headerShown: false,
+                animation: "none",
+              }}
+            />
           </Stack>
         </QueryClientProvider>
       </WagmiProvider>

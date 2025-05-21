@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { CreditCard, LayoutDashboard, Leaf, Wallet } from 'lucide-react-native';
+import { CreditCard, House, LayoutDashboard, Leaf, Wallet } from 'lucide-react-native';
 import React from 'react';
 import { Platform } from 'react-native';
 
@@ -7,8 +7,12 @@ import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { isDesktop } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
+import { path } from '@/constants/path';
+import useNav from '@/hooks/useNav';
 
 export default function TabLayout() {
+  const { isDashboard } = useNav();
+
   return (
     <>
       <Navbar />
@@ -35,7 +39,10 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            href: null,
+            title: 'Home',
+            headerShown: false,
+            tabBarIcon: ({ color }) => <House size={28} color={color} />,
+            href: isDashboard ? null : path.HOME,
           }}
         />
         <Tabs.Screen
@@ -44,6 +51,7 @@ export default function TabLayout() {
             title: 'Dashboard',
             headerShown: false,
             tabBarIcon: ({ color }) => <LayoutDashboard size={28} color={color} />,
+            href: isDashboard ? path.DASHBOARD : null,
           }}
         />
         <Tabs.Screen
@@ -59,6 +67,7 @@ export default function TabLayout() {
           options={{
             title: 'Card',
             tabBarIcon: ({ color }) => <CreditCard size={28} color={color} />,
+            href: Platform.OS === 'web' ? null : path.CARD,
           }}
         />
         <Tabs.Screen
@@ -66,6 +75,7 @@ export default function TabLayout() {
           options={{
             title: 'Earn',
             tabBarIcon: ({ color }) => <Leaf size={28} color={color} />,
+            href: Platform.OS === 'web' ? null : path.EARN,
           }}
         />
       </Tabs>

@@ -4,11 +4,12 @@ import { useEffect } from "react";
 import { path } from "@/constants/path";
 import { Status } from "@/lib/types";
 import useUser from "@/hooks/useUser";
+import Loading from "@/components/Loading";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function ProtectedLayout() {
-  const { userStatus } = useUser();
+  const { user, userStatus } = useUser();
   const isReady = userStatus === Status.SUCCESS || userStatus === Status.ERROR;
 
   useEffect(() => {
@@ -18,11 +19,15 @@ export default function ProtectedLayout() {
   }, [isReady]);
 
   if (!isReady) {
-    return null;
+    return <Loading />;
   }
 
   if (userStatus === Status.ERROR) {
     return <Redirect href={path.REGISTER} />;
+  }
+
+  if (userStatus === Status.SUCCESS && !user) {
+    return <Redirect href={path.WELCOME} />;
   }
 
   return (

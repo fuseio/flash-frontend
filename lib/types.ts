@@ -23,6 +23,7 @@ export type PasskeyArgType = {
 export interface User {
   username: string
   safeAddress: Address
+  selected: boolean
   passkey: {
     rawId: string
     coordinates: PasskeyCoordinates

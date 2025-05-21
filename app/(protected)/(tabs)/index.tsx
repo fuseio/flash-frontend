@@ -11,14 +11,18 @@ import { useTokenSelector } from "@/hooks/useToken";
 import { TOKEN_MAP } from "@/constants/tokens";
 import useUser from "@/hooks/useUser";
 import { Status } from "@/lib/types";
+import { useTotalAPY } from "@/hooks/useAnalytics";
+import { Skeleton } from "@/components/ui/skeleton";
+import Loading from "@/components/Loading";
 
 export default function Home() {
   const { user } = useUser();
   const { tokenStatus, totalBalance } = useTokenSelector({ tokens: TOKEN_MAP[mainnet.id], safeAddress: user?.safeAddress })
+  const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
   const isLoading = tokenStatus === Status.IDLE || tokenStatus === Status.PENDING;
 
   if (isLoading) {
-    return <View className="bg-background flex-1" />;
+    return <Loading />;
   }
 
   if (totalBalance) {
@@ -46,8 +50,13 @@ export default function Home() {
         </View>
 
         <View className="bg-brand border border-border rounded-xl md:rounded-twice p-6 md:p-10 gap-24">
-          <Text className="text-4.5xl text-brand-foreground font-semibold max-w-md">
-            Deposit your stablecoins and earn <Text className="text-4.5xl text-brand-foreground font-bold underline">4.5%</Text> per year
+          <Text className="text-4.5xl text-brand-foreground font-semibold max-w-lg">
+            Deposit your stablecoins and earn {isTotalAPYLoading ?
+              <Skeleton className="w-24 h-10" /> :
+              <Text className="text-4.5xl text-brand-foreground font-bold underline">
+                {totalAPY?.toFixed(2)}%
+              </Text>
+            } per year
           </Text>
           <View className="flex-col md:flex-row justify-between md:items-center gap-4">
             <View className="gap-4">

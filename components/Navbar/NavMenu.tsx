@@ -6,16 +6,16 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { Text } from "@/components/ui/text"
-import { menuItems } from "@/constants/menu"
+import useNav from "@/hooks/useNav";
 
 export function NavMenu() {
   const pathname = usePathname()
   const [value, setValue] = useState<string>();
   const navigation = useNavigation();
   const router = useRouter();
+  const { menuItems } = useNav();
 
   function closeAll() {
     setValue('');
@@ -36,7 +36,6 @@ export function NavMenu() {
           <NavigationMenuItem key={item.label} value={item.label}>
             <NavigationMenuLink
               onPress={() => router.push(item.href)}
-              className={navigationMenuTriggerStyle()}
               active={pathname === item.href}
             >
               <Text>{item.label}</Text>

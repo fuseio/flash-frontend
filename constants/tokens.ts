@@ -13,33 +13,6 @@ export const TOKEN_MAP: TokenMap = {
       decimals: 6,
       imageId: "usdc",
       coingeckoId: "usd-coin",
-    },
-    {
-      name: "WETH",
-      address: ADDRESSES.ethereum.weth,
-      symbol: "WETH",
-      decimals: 18,
-      coingeckoId: "weth",
-      imageId: "weth",
-      isComingSoon: true,
-    },
-    {
-      name: "USDT",
-      address: ADDRESSES.ethereum.usdt,
-      symbol: "USDT",
-      decimals: 6,
-      coingeckoId: "tether",
-      imageId: "usdt",
-      isComingSoon: true,
-    },
-    {
-      name: "USDS",
-      address: ADDRESSES.ethereum.usds,
-      symbol: "USDS",
-      decimals: 18,
-      coingeckoId: "usds",
-      imageId: "usds",
-      isComingSoon: true,
     }
   ],
 }

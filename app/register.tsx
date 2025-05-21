@@ -94,14 +94,14 @@ export default function Register() {
             )}
 
             <Text className='text-center text-sm text-muted-foreground max-w-64 mx-auto'>
-              By continuing, you agree with Flash{' '}
+              By continuing, you agree with Solid{' '}
               <Link href="/" className='hover:underline'>Terms of Use</Link> and{' '}
               <Link href="/" className='hover:underline'>Privacy Policy</Link>.
             </Text>
           </View>
         </View>
         <Text className="text-center text-sm text-muted-foreground max-w-[19rem] mx-auto">
-          Your Flash Account is secured with a passkey - a safer replacement for passwords.{' '}
+          Your Solid Account is secured with a passkey - a safer replacement for passwords.{' '}
           <Link href="/" className='hover:underline'>Learn more</Link>
         </Text>
       </View>

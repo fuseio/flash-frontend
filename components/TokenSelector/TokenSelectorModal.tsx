@@ -1,12 +1,12 @@
 import { Image } from "expo-image"
 import { ChevronDown } from "lucide-react-native"
 import { useState } from "react"
+import { View } from "react-native"
 
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
@@ -14,6 +14,8 @@ import { Text } from "@/components/ui/text"
 import { TOKEN_IMAGES, TOKEN_MAP } from "@/constants/tokens"
 import { Token } from "@/lib/types"
 import TokenSelector from "."
+import TokenSelectorDeposit from "./TokenSelectorDeposit"
+import TokenSelectorFooter from "./TokenSelectorFooter"
 
 const TokenSelectorModal = () => {
   const [open, setOpen] = useState(false)
@@ -31,10 +33,15 @@ const TokenSelectorModal = () => {
         </Button>
       </DialogTrigger>
       <DialogContent className="md:gap-8 md:max-w-sm">
-        <DialogHeader>
+        <View className="gap-2 md:gap-4">
           <DialogTitle>Select token</DialogTitle>
-        </DialogHeader>
-        <TokenSelector tokens={TOKEN_MAP[1]} setSelectedToken={setSelectedToken} setOpen={setOpen} />
+          <TokenSelector tokens={TOKEN_MAP[1]} setSelectedToken={setSelectedToken} setOpen={setOpen} />
+        </View>
+        <View className="gap-2 md:gap-4">
+          <DialogTitle>Deposit {selectedToken.symbol} on Polygon</DialogTitle>
+          <TokenSelectorDeposit />
+        </View>
+        <TokenSelectorFooter selectedToken={selectedToken} />
       </DialogContent>
     </Dialog>
   )

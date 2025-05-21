@@ -1,29 +1,19 @@
-import { useRouter } from "expo-router"
-import { useCallback, useEffect, useState } from "react"
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Safe4337Pack } from '@safe-global/relay-kit'
-import { mainnet } from "viem/chains"
-import { Address } from "viem";
+import { useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "expo-router"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import * as passkeys from "react-native-passkeys"
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { mainnet } from "viem/chains"
 
+import { path } from "@/constants/path"
+import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api"
 import { USER } from "@/lib/config"
 import { PasskeyArgType, Status, User } from "@/lib/types"
 import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils"
-import { path } from "@/constants/path"
-import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api"
-import { rpcUrls } from "@/lib/wagmi";
-
-const initUser = {
-  username: "",
-  safeAddress: "" as Address,
-  passkey: {
-    rawId: "",
-    coordinates: {
-      x: "",
-      y: "",
-    },
-  },
-};
+import { rpcUrls } from "@/lib/wagmi"
+import { fetchBalance } from "./useToken"
+import { TOKEN_MAP } from '@/constants/tokens'
 
 const useUser = () => {
   const [signupInfo, setSignupInfo] = useState<{
@@ -35,39 +25,99 @@ const useUser = () => {
     message?: string;
   }>({ status: Status.IDLE, message: "" });
   const [userStatus, setUserStatus] = useState<Status>(Status.IDLE);
-  const [user, setUser] = useState<User>();
+  const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  async function storeUser(user: { [K in keyof User]?: User[K] }) {
-    let newUser = null;
-    setUser((prevUser) => {
-      newUser = {
-        ...prevUser,
-        ...user,
-      } as User;
-      return newUser;
+  async function storeUser(user: User) {
+    let newUsers;
+    setUsers((prevUsers) => {
+      let isUserExists = false;
+      prevUsers.forEach((prevUser) => {
+        if (prevUser.username === user.username) {
+          isUserExists = true;
+          prevUser.selected = true;
+        } else {
+          prevUser.selected = false;
+        }
+      });
+
+      if (isUserExists) {
+        newUsers = prevUsers
+      } else {
+        newUsers = [...prevUsers, user];
+      }
+
+      return newUsers;
     });
-    await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUser));
+
+    if (newUsers) {
+      await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
+    }
   }
 
-  const loadUser = useCallback(async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setUserStatus(Status.PENDING);
-      const user = await AsyncStorage.getItem(USER.storageKey);
-      if (!user) {
+      const users = await AsyncStorage.getItem(USER.storageKey);
+      if (!users) {
         throw new Error("User not found");
       }
 
-      const parsedUser = JSON.parse(user);
-      setUser(parsedUser);
+      const parsedUsers = JSON.parse(users);
+      setUsers(parsedUsers);
       setUserStatus(Status.SUCCESS);
 
-      return parsedUser;
+      return parsedUsers;
     } catch (error) {
       console.log(error);
       setUserStatus(Status.ERROR);
     }
   }, []);
+
+  const selectUser = async (username: string) => {
+    let newUsers;
+    setUsers((prevUsers) => {
+      newUsers = prevUsers.map((user) => ({ ...user, selected: user.username === username }));
+      return newUsers;
+    });
+    await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
+    router.replace(path.HOME);
+  }
+
+  const unselectUser = async () => {
+    let newUsers;
+    setUsers((prevUsers) => {
+      newUsers = prevUsers.map((user) => ({ ...user, selected: false }));
+      return newUsers;
+    });
+    await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
+  }
+
+  const user = useMemo(() => {
+    if (!users.length) return;
+
+    return users.find((user) => user.selected);
+  }, [users]);
+
+  const removeUsers = async () => {
+    setUsers([]);
+    await AsyncStorage.removeItem(USER.storageKey);
+    router.replace(path.REGISTER);
+  }
+
+  async function checkBalance(user: User) {
+    try {
+      const balance = await fetchBalance(TOKEN_MAP[mainnet.id], user.safeAddress, queryClient);
+      if (balance?.total) {
+        router.replace(path.DASHBOARD);
+        return;
+      }
+    } catch (error) {
+      console.error('Error fetching tokens:', error);
+    }
+    router.replace(path.HOME);
+  }
 
   async function handleSignup(username: string) {
     try {
@@ -93,9 +143,9 @@ const useUser = () => {
       );
 
       if (user) {
-        storeUser(user);
+        storeUser({ ...user, selected: true });
         setSignupInfo({ status: Status.SUCCESS });
-        router.replace(path.HOME);
+        await checkBalance(user);
       } else {
         throw new Error("Error while verifying passkey registration");
       }
@@ -124,9 +174,9 @@ const useUser = () => {
       const user = await verifyAuthentication(authenticatorReponse);
 
       if (user) {
-        storeUser(user);
+        storeUser({ ...user, selected: true });
         setSignupInfo({ status: Status.SUCCESS });
-        router.replace(path.HOME);
+        await checkBalance(user);
       } else {
         throw new Error("Error while verifying passkey authentication");
       }
@@ -140,6 +190,7 @@ const useUser = () => {
     await storeUser({
       username: "dummy",
       safeAddress: "0x0000000000000000000000000000000000000000",
+      selected: true,
       passkey: {
         rawId: "dummy",
         coordinates: {
@@ -153,8 +204,8 @@ const useUser = () => {
 
   async function handleLogout() {
     await AsyncStorage.removeItem(USER.storageKey);
-    storeUser(initUser);
-    router.replace(path.REGISTER);
+    unselectUser();
+    router.replace(path.WELCOME);
   }
 
   const safeAA = useCallback(async (passkey: PasskeyArgType) => {
@@ -185,18 +236,21 @@ const useUser = () => {
   }, [])
 
   useEffect(() => {
-    loadUser();
+    loadUsers();
   }, []);
 
   return {
     signupInfo,
     handleSignup,
+    users,
     user,
     userStatus,
     loginInfo,
     handleLogin,
     handleDummyLogin,
+    selectUser,
     handleLogout,
+    removeUsers,
     safeAA,
     userOpReceipt
   };
