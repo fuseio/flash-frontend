@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "cash.rocksolid.android",
+      "sha256_cert_fingerprints": [
+        "38:30:D6:36:74:47:5E:9E:CA:FA:25:E3:87:F9:3D:DE:34:FA:D9:6D:8A:20:9A:A1:51:BF:30:D3:B6:3B:1D:C2"
+      ]
+    }
+  }
+]
