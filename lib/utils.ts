@@ -1,9 +1,10 @@
-import { Platform } from 'react-native';
 import { clsx, type ClassValue } from 'clsx';
+import { Platform } from 'react-native';
 import { twMerge } from 'tailwind-merge';
-import { Address } from "viem";
+import { Address, keccak256, toHex } from "viem";
 
 import { refreshToken } from "./api";
+import { PasskeyCoordinates } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -73,3 +74,63 @@ export function isDesktop() {
   if (Platform.OS !== 'web') return false;
   return window.innerWidth >= 768;
 }
+
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  // Convert URL-safe base64 to standard base64 and add padding if needed
+  const standardBase64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+  const paddedBase64 = standardBase64 + '='.repeat((4 - standardBase64.length % 4) % 4);
+
+  const binaryString = atob(paddedBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+function base64ToHex(base64: string): string {
+  // Convert URL-safe base64 to standard base64 and add padding if needed
+  const standardBase64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+  const paddedBase64 = standardBase64 + '='.repeat((4 - standardBase64.length % 4) % 4);
+
+  const binaryString = atob(paddedBase64);
+  let hex = '';
+  for (let i = 0; i < binaryString.length; i++) {
+    const byte = binaryString.charCodeAt(i);
+    hex += byte.toString(16).padStart(2, '0');
+  }
+  return hex;
+}
+
+export async function decodePublicKeyForWeb(publicKey: string | ArrayBuffer): Promise<PasskeyCoordinates> {
+  const algorithm = {
+    name: 'ECDSA',
+    namedCurve: 'P-256',
+    hash: { name: 'SHA-256' }
+  }
+
+  const keyBuffer = typeof publicKey === 'string'
+    ? base64ToArrayBuffer(publicKey)
+    : publicKey
+
+  const key = await crypto.subtle.importKey('spki', keyBuffer, algorithm, true, ['verify'])
+
+  const { x, y } = await crypto.subtle.exportKey('jwk', key)
+
+  const isValidCoordinates = !!x && !!y
+
+  if (!isValidCoordinates) {
+    throw new Error('Failed to generate passkey Coordinates. crypto.subtle.exportKey() failed')
+  }
+
+  return {
+    x: '0x' + base64ToHex(x),
+    y: '0x' + base64ToHex(y)
+  }
+}
+
+export const getNonce = ({ appId }: { appId: string }): bigint => {
+  const nonce = parseInt(localStorage.getItem("accountNonce") || "0");
+  const encodedNonce = keccak256(toHex(appId + nonce.toString()));
+  return BigInt(encodedNonce);
+};
