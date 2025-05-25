@@ -2,7 +2,7 @@ import axios from "axios";
 import { AuthenticationResponseJSON, RegistrationResponseJSON } from "react-native-passkeys/src/ReactNativePasskeys.types";
 
 import { EXPO_PUBLIC_COIN_GECKO_API_KEY, EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL, EXPO_PUBLIC_FLASH_API_BASE_URL } from "./config";
-import { TokenPriceUsd, TokenTransfer, User } from "./types";
+import { BridgeCustomerResponse, KycLink, TokenPriceUsd, TokenTransfer, User } from "./types";
 
 export const refreshToken = () => {
   return fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/refresh-token`, {
@@ -77,4 +77,45 @@ export const fetchTokenPriceUsd = async (token: string) => {
     }
   })
   return response.data[token].usd;
+}
+
+export const createKycLink = async (fullName: string, email: string, redirectUri: string): Promise<KycLink> => {
+  const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards/kyc/link`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      fullName,
+      email,
+      redirectUri
+    }),
+  });
+
+  if (!response.ok) throw response;
+
+  return response.json();
+}
+
+export const getKycLink = async (kycLinkId: string): Promise<KycLink> => {
+  const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards/kyc/link/${kycLinkId}`, {
+    credentials: 'include'
+  });
+
+  if (!response.ok) throw response;
+
+  return response.json();
+}
+
+export const getCustomer = async (): Promise<BridgeCustomerResponse | null> => {
+  const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/bridge-customer`, {
+    credentials: 'include'
+  });
+
+  if (response.status === 404) return null;
+
+  if (!response.ok) throw response;
+
+  return response.json();
 }
