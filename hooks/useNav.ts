@@ -27,6 +27,10 @@ const defaultMenuItems: MenuItem[] = [
   {
     label: "Deposit",
     href: path.DEPOSIT,
+  },
+  {
+    label: "Card",
+    href: path.CARD,
   }
 ]
 
