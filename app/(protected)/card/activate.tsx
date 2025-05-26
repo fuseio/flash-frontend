@@ -47,12 +47,12 @@ export default function ActivateCard() {
     {
       title: "Terms of Service",
       description: "Agree to Flash Card terms",
-      completed: tosStatus === TermsOfServiceStatus.APPROVED,
+      completed: tosStatus === TermsOfServiceStatus.APPROVED || kycStatus === KycStatus.APPROVED || cardActivated,
     },
     {
       title: "Know Your Customer",
       description: "Complete identity verification",
-      completed: kycStatus === KycStatus.APPROVED,
+      completed: kycStatus === KycStatus.APPROVED || cardActivated,
     },
     {
       title: "Activate Card",
