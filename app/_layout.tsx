@@ -1,7 +1,7 @@
 import '@/global.css';
 
 // TODO: Fix this issue with permissionless & 0x
-// import { PortalHost } from '@rn-primitives/portal';
+import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import Head from 'expo-router/head';
@@ -51,7 +51,7 @@ export default function RootLayout() {
           </Stack>
         </QueryClientProvider>
       </WagmiProvider>
-      {/* <PortalHost /> */}
+      <PortalHost />
     </SafeAreaProvider>
   );
 }
