@@ -22,7 +22,7 @@ import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthe
 import { USER } from "@/lib/config"
 import { pimlicoClient } from '@/lib/pimlico'
 import { PasskeyArgType, Status, User } from "@/lib/types"
-import { bufferToBase64URLString, decodePublicKeyForWeb, getNonce, withRefreshToken } from "@/lib/utils"
+import { bufferToBase64URLString, decodePublicKey, getNonce, withRefreshToken } from "@/lib/utils"
 import { publicClient } from "@/lib/wagmi"
 import { http } from 'viem'
 import {
@@ -145,7 +145,7 @@ const useUser = () => {
       }
 
       const publicKey = bufferToBase64URLString(authenticatorReponse.response.getPublicKey())
-      const coordinates = await decodePublicKeyForWeb(publicKey)
+      const coordinates = await decodePublicKey(authenticatorReponse.response)
       const smartAccountClient = await safeAA({
         rawId: authenticatorReponse.rawId,
         credentialId: authenticatorReponse.id,
