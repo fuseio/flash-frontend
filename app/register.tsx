@@ -23,13 +23,13 @@ export default function Register() {
         <View className="flex-1 justify-center items-center gap-20 w-full max-w-lg mx-auto">
           <View className="flex-row items-center gap-5">
             <Image
-              source={require("@/assets/images/solid-logo.png")}
+              source={require("@/assets/images/solid-logo-4x.png")}
               alt="Solid logo"
               style={{ width: 73, height: 73 }}
               contentFit="contain"
             />
             <Image
-              source={require("@/assets/images/solid.png")}
+              source={require("@/assets/images/solid-4x.png")}
               alt="Solid"
               style={{ width: 153, height: 78 }}
               contentFit="contain"
