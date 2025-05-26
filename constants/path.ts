@@ -1,4 +1,4 @@
-import { Href } from "expo-router";
+import { Href, Route } from "expo-router";
 
 type Path = {
   REGISTER: Href;
@@ -7,9 +7,9 @@ type Path = {
   DASHBOARD: Href;
   DEPOSIT: Href;
   CARD: Href;
-  CARD_ACTIVATE: Href;
-  CARD_KYC: Href;
-  CARD_TERMS_OF_SERVICE: Href;
+  CARD_ACTIVATE: Route;
+  CARD_KYC: Route;
+  CARD_TERMS_OF_SERVICE: Route;
   EARN: Href;
 }
 
