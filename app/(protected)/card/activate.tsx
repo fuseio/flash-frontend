@@ -171,8 +171,8 @@ export default function ActivateCard() {
   };
 
   const getRedirectUrl = () => {
-    const baseUrl = "https://rocksolid.cash";
-    return `${baseUrl}/card/activate?tosStatus=approved&kycStatus=approved`;
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+    return `${baseUrl}/card/activate?kycStatus=approved`;
   };
 
   const handleActivateCard = async () => {
