@@ -4,18 +4,19 @@ import { View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { path } from "@/constants/path";
 
 export default function Card() {
   const router = useRouter();
 
   const activateCard = async () => {
-    router.push("/card/activate");
+    router.push(path.CARD_ACTIVATE);
   };
 
   return (
     <View className="flex-1 justify-between items-center p-6 bg-background">
       <View className="mt-4">
-        <Text className="text-[36px] font-bold text-center">
+        <Text className="text-4xl font-bold text-center">
           Introducing the Flash card
         </Text>
         <Text className="text-lg mt-2 font-medium text-center text-white/70 leading-[20px]">

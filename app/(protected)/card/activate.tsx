@@ -4,9 +4,10 @@ import { TextInput, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { path } from "@/constants/path";
 import { createKycLink, getCustomer, getKycLink } from "@/lib/api";
 import { KycLink, KycStatus, TermsOfServiceStatus } from "@/lib/types";
-import { withRefreshToken } from "@/lib/utils";
+import { cn, withRefreshToken } from "@/lib/utils";
 
 type Step = {
   title: string;
@@ -47,7 +48,10 @@ export default function ActivateCard() {
     {
       title: "Terms of Service",
       description: "Agree to Flash Card terms",
-      completed: tosStatus === TermsOfServiceStatus.APPROVED || kycStatus === KycStatus.APPROVED || cardActivated,
+      completed:
+        tosStatus === TermsOfServiceStatus.APPROVED ||
+        kycStatus === KycStatus.APPROVED ||
+        cardActivated,
     },
     {
       title: "Know Your Customer",
@@ -122,7 +126,7 @@ export default function ActivateCard() {
       setIsLoading(true);
 
       router.push({
-        pathname: "/card/bridge_terms_of_service",
+        pathname: path.CARD_TERMS_OF_SERVICE,
         params: {
           url: kycLinkData.tosLink,
         },
@@ -158,7 +162,7 @@ export default function ActivateCard() {
       setIsLoading(true);
 
       router.push({
-        pathname: "/card/kyc",
+        pathname: path.CARD_KYC,
         params: {
           url: kycLinkData.link,
         },
@@ -172,7 +176,7 @@ export default function ActivateCard() {
 
   const getRedirectUrl = () => {
     const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
-    return `${baseUrl}/card/activate?kycStatus=approved`;
+    return `${baseUrl}${path.CARD_ACTIVATE}?kycStatus=approved`;
   };
 
   const handleActivateCard = async () => {
@@ -273,13 +277,14 @@ export default function ActivateCard() {
             return (
               <View
                 key={index}
-                className={`flex-row items-center justify-between p-4 border rounded-xl ${
+                className={cn(
+                  "flex-row items-center justify-between p-4 border rounded-xl",
                   step.completed
                     ? "border-primary bg-primary/10"
                     : isAvailable
                     ? "border-border"
                     : "border-border/30 bg-gray-800/30"
-                }`}
+                )}
               >
                 <View className="flex-1">
                   <Text

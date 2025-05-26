@@ -1,7 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { path } from "@/constants/path";
 import { TermsOfServiceStatus } from "@/lib/types";
+import { Text } from "@/components/ui/text";
 
 export default function BridgeTermsOfServiceIframe() {
   const { url } = useLocalSearchParams<{ url: string }>();
@@ -35,7 +37,7 @@ export default function BridgeTermsOfServiceIframe() {
           event.data.signedAgreementId.length > 0
         ) {
           router.replace({
-            pathname: "/card/activate",
+            pathname: path.CARD_ACTIVATE,
             params: {
               tosStatus: TermsOfServiceStatus.APPROVED,
             },
