@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { createKycLink, getCustomer, getKycLink } from "@/lib/api";
 import { KycLink, KycStatus, TermsOfServiceStatus } from "@/lib/types";
+import { withRefreshToken } from "@/lib/utils";
 
 type Step = {
   title: string;
@@ -15,10 +16,14 @@ type Step = {
 
 export default function ActivateCard() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ tosStatus?: string; kycStatus?: string }>();
+  const params = useLocalSearchParams<{
+    tosStatus?: string;
+    kycStatus?: string;
+  }>();
 
   // Store whether tosStatus came from URL params
   const isTosStatusFromParams = !!params.tosStatus;
+
   // Store whether kycStatus came from URL params
   const isKycStatusFromParams = !!params.kycStatus;
 
@@ -60,7 +65,7 @@ export default function ActivateCard() {
     // Check customer status when component mounts
     const checkCustomerStatus = async () => {
       try {
-        const customer = await getCustomer();
+        const customer = await withRefreshToken(getCustomer());
 
         if (customer) {
           // Only update tosStatus if it wasn't provided in URL params
@@ -79,7 +84,12 @@ export default function ActivateCard() {
             console.log("Keeping kycStatus from URL params:", kycStatus);
           }
 
-          const kycLinkData = await getKycLink(customer.kycLinkId);
+          const kycLinkData = await withRefreshToken(
+            getKycLink(customer.kycLinkId)
+          );
+
+          if (!kycLinkData) throw new Error("Error getting kyc link");
+
           setKycLink(kycLinkData);
         }
       } catch (error) {
@@ -94,12 +104,18 @@ export default function ActivateCard() {
     try {
       let kycLinkData: KycLink;
 
-      // Apply the base url logic everywhere.
-
       if (kycLink) {
         kycLinkData = kycLink;
       } else {
-        kycLinkData = await createKycLink(fullName, email, getRedirectUrl());
+        const kycLinkOrUndefined = await withRefreshToken(
+          createKycLink(fullName, email, getRedirectUrl())
+        );
+
+        if (!kycLinkOrUndefined) {
+          throw new Error("Error creating kyc link");
+        }
+
+        kycLinkData = kycLinkOrUndefined;
         setKycLink(kycLinkData);
       }
 
@@ -126,7 +142,16 @@ export default function ActivateCard() {
         kycLinkData = kycLink;
       } else {
         const redirectUrl = getRedirectUrl();
-        kycLinkData = await createKycLink(fullName, email, redirectUrl);
+
+        const kycLinkOrUndefined = await withRefreshToken(
+          createKycLink(fullName, email, redirectUrl)
+        );
+
+        if (!kycLinkOrUndefined) {
+          throw new Error("Error creating kyc link");
+        }
+
+        kycLinkData = kycLinkOrUndefined;
         setKycLink(kycLinkData);
       }
 
@@ -146,9 +171,9 @@ export default function ActivateCard() {
   };
 
   const getRedirectUrl = () => {
-    const baseUrl = "https://fuseio-flash-frontend.expo.app"
+    const baseUrl = "https://rocksolid.cash";
     return `${baseUrl}/card/activate?tosStatus=approved&kycStatus=approved`;
-  }
+  };
 
   const handleActivateCard = async () => {
     try {
@@ -177,7 +202,7 @@ export default function ActivateCard() {
         </View>
       );
     }
-    
+
     // If TOS not complete, we don't need to show anything here
     // since inputs are already shown above the steps
     if (!steps[0].completed) {
@@ -194,7 +219,7 @@ export default function ActivateCard() {
         </View>
       );
     }
-    
+
     // If both TOS and KYC are complete but card not activated
     if (steps[0].completed && steps[1].completed && !steps[2].completed) {
       return (
@@ -205,7 +230,7 @@ export default function ActivateCard() {
         </View>
       );
     }
-    
+
     return null;
   };
 
@@ -240,47 +265,52 @@ export default function ActivateCard() {
         <View className="w-full space-y-4">
           {steps.map((step, index) => {
             // Determine if step is available (previous steps completed)
-            const isAvailable = index === 0 || 
-              (index === 1 && steps[0].completed) || 
+            const isAvailable =
+              index === 0 ||
+              (index === 1 && steps[0].completed) ||
               (index === 2 && steps[0].completed && steps[1].completed);
-            
+
             return (
               <View
                 key={index}
                 className={`flex-row items-center justify-between p-4 border rounded-xl ${
-                  step.completed 
-                    ? "border-primary bg-primary/10" 
-                    : isAvailable 
-                      ? "border-border" 
-                      : "border-border/30 bg-gray-800/30"
+                  step.completed
+                    ? "border-primary bg-primary/10"
+                    : isAvailable
+                    ? "border-border"
+                    : "border-border/30 bg-gray-800/30"
                 }`}
               >
                 <View className="flex-1">
-                  <Text 
+                  <Text
                     className={`text-lg font-semibold ${
                       !isAvailable && !step.completed ? "text-white/40" : ""
                     }`}
                   >
                     {step.title}
                   </Text>
-                  <Text 
+                  <Text
                     className={`text-sm ${
-                      !isAvailable && !step.completed ? "text-white/30" : "text-white/70"
+                      !isAvailable && !step.completed
+                        ? "text-white/30"
+                        : "text-white/70"
                     }`}
                   >
                     {step.description}
                   </Text>
                 </View>
-                
+
                 {step.completed ? (
-                  <Text className="text-sm font-medium text-primary">Completed</Text>
+                  <Text className="text-sm font-medium text-primary">
+                    Completed
+                  </Text>
                 ) : (
                   (() => {
                     // Show action button only for steps where previous steps are completed
                     if (index === 0 && !step.completed) {
                       return (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="h-8 px-3"
                           onPress={handleProceedToTos}
                           disabled={isLoading || !fullName || !email}
@@ -288,10 +318,14 @@ export default function ActivateCard() {
                           <Text className="text-xs font-medium">Start</Text>
                         </Button>
                       );
-                    } else if (index === 1 && !step.completed && steps[0].completed) {
+                    } else if (
+                      index === 1 &&
+                      !step.completed &&
+                      steps[0].completed
+                    ) {
                       return (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="h-8 px-3"
                           onPress={handleProceedToKyc}
                           disabled={isLoading}
@@ -299,10 +333,15 @@ export default function ActivateCard() {
                           <Text className="text-xs font-medium">Start</Text>
                         </Button>
                       );
-                    } else if (index === 2 && !step.completed && steps[0].completed && steps[1].completed) {
+                    } else if (
+                      index === 2 &&
+                      !step.completed &&
+                      steps[0].completed &&
+                      steps[1].completed
+                    ) {
                       return (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="h-8 px-3"
                           onPress={handleActivateCard}
                           disabled={isLoading}
@@ -324,9 +363,7 @@ export default function ActivateCard() {
         </View>
 
         {/* Dynamic content based on steps - now that we moved inputs above, we can simplify this */}
-        <View className="mt-6">
-          {renderStepContent()}
-        </View>
+        <View className="mt-6">{renderStepContent()}</View>
       </View>
     </View>
   );
