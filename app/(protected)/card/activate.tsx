@@ -35,13 +35,14 @@ export default function ActivateCard() {
   console.log("Initial tosStatus from params:", tosStatus);
 
   const [kycStatus, setKycStatus] = useState<KycStatus>(
-    (params.kycStatus as KycStatus) || KycStatus.INCOMPLETE
+    (params.kycStatus as KycStatus) || KycStatus.NOT_STARTED
   );
 
   const [cardActivated, setCardActivated] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [kycLink, setKycLink] = useState<KycLink | null>(null);
 
   const steps: Step[] = [
@@ -50,6 +51,7 @@ export default function ActivateCard() {
       description: "Agree to Flash Card terms",
       completed:
         tosStatus === TermsOfServiceStatus.APPROVED ||
+        kycStatus === KycStatus.UNDER_REVIEW ||
         kycStatus === KycStatus.APPROVED ||
         cardActivated,
     },
@@ -176,7 +178,7 @@ export default function ActivateCard() {
 
   const getRedirectUrl = () => {
     const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
-    return `${baseUrl}${path.CARD_ACTIVATE}?kycStatus=approved`;
+    return `${baseUrl}${path.CARD_ACTIVATE}?kycStatus=${KycStatus.UNDER_REVIEW}`;
   };
 
   const handleActivateCard = async () => {
@@ -193,6 +195,18 @@ export default function ActivateCard() {
     } catch (error) {
       console.error("Error activating card:", error);
       setIsLoading(false);
+    }
+  };
+
+  const handleRefreshKyc = async () => {
+    try {
+      setIsRefreshing(true);
+      const customer = await withRefreshToken(getCustomer());
+      if (customer) setKycStatus(customer.kycStatus);
+    } catch (error) {
+      console.error("Error refreshing customer data:", error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -219,6 +233,17 @@ export default function ActivateCard() {
         <View className="w-full space-y-4">
           <Text className="text-lg text-center mb-2 font-medium text-white/70">
             You need to complete the KYC verification process
+          </Text>
+        </View>
+      );
+    }
+
+    // If KYC is under review
+    if (steps[0].completed && kycStatus === KycStatus.UNDER_REVIEW) {
+      return (
+        <View className="w-full space-y-4">
+          <Text className="text-lg text-center mb-2 font-medium text-white/70">
+            Your KYC verification is under review.
           </Text>
         </View>
       );
@@ -309,6 +334,21 @@ export default function ActivateCard() {
                   <Text className="text-sm font-medium text-primary">
                     Completed
                   </Text>
+                ) : index === 1 && kycStatus === KycStatus.UNDER_REVIEW ? (
+                  <View className="flex-row items-center space-x-2">
+                    <Text className="text-sm font-medium text-yellow-500">
+                      Under Review
+                    </Text>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 w-8 p-0"
+                      onPress={handleRefreshKyc}
+                      disabled={isRefreshing}
+                    >
+                      <Text className="text-xs">↻</Text>
+                    </Button>
+                  </View>
                 ) : (
                   (() => {
                     // Show action button only for steps where previous steps are completed
