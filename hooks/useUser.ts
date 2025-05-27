@@ -17,7 +17,6 @@ import { toAccount } from "viem/accounts"
 import { mainnet } from "viem/chains"
 
 import { path } from "@/constants/path"
-import { TOKEN_MAP } from '@/constants/tokens'
 import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api"
 import { USER } from "@/lib/config"
 import { pimlicoClient } from '@/lib/pimlico'
@@ -28,7 +27,7 @@ import { http } from 'viem'
 import {
   entryPoint07Address
 } from "viem/account-abstraction"
-import { fetchBalance } from "./useToken"
+import { fetchVaultBalance } from "./useVault"
 
 const useUser = () => {
   const [signupInfo, setSignupInfo] = useState<{
@@ -123,8 +122,8 @@ const useUser = () => {
 
   async function checkBalance(user: User) {
     try {
-      const balance = await fetchBalance(TOKEN_MAP[mainnet.id], user.safeAddress, queryClient);
-      if (balance?.total) {
+      const balance = await fetchVaultBalance(queryClient, user.safeAddress);
+      if (balance) {
         router.replace(path.DASHBOARD);
         return;
       }
@@ -166,8 +165,8 @@ const useUser = () => {
 
       if (user) {
         storeUser({ ...user, selected: true });
-        setSignupInfo({ status: Status.SUCCESS });
         await checkBalance(user);
+        setSignupInfo({ status: Status.SUCCESS });
       } else {
         throw new Error("Error while verifying passkey registration");
       }
@@ -197,8 +196,8 @@ const useUser = () => {
 
       if (user) {
         storeUser({ ...user, selected: true });
-        setSignupInfo({ status: Status.SUCCESS });
         await checkBalance(user);
+        setLoginInfo({ status: Status.SUCCESS });
       } else {
         throw new Error("Error while verifying passkey authentication");
       }

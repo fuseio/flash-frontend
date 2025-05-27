@@ -1,9 +1,7 @@
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { ScrollView, View } from "react-native";
-import { Address, formatUnits } from "viem";
-import { fuse } from "viem/chains";
-import { useReadContract } from "wagmi";
+import { Address } from "viem";
 
 import SavingCountUp from "@/components/SavingCountUp";
 import { buttonVariants } from "@/components/ui/button";
@@ -12,24 +10,14 @@ import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
 import { useLatestTokenTransfer, useTotalAPY } from "@/hooks/useAnalytics";
 import useUser from "@/hooks/useUser";
-import FuseVault from "@/lib/abis/FuseVault";
 import { ADDRESSES } from "@/lib/config";
+import { useVaultBalance } from "@/hooks/useVault";
 
 import Deposit from "@/assets/images/deposit";
 
 export default function Dashboard() {
   const { user } = useUser();
-  const { data: balance, isLoading: isBalanceLoading } = useReadContract({
-    abi: FuseVault,
-    address: ADDRESSES.fuse.vault,
-    functionName: 'balanceOf',
-    args: [user?.safeAddress as Address],
-    chainId: fuse.id,
-    query: {
-      enabled: !!user?.safeAddress,
-      refetchOnWindowFocus: false
-    },
-  })
+  const { data: balance, isLoading: isBalanceLoading } = useVaultBalance(user?.safeAddress as Address)
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
   const { data: lastTimestamp } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
 
@@ -60,7 +48,7 @@ export default function Dashboard() {
               <Image source={require("@/assets/images/usdc-4x.png")} className="hidden md:block" style={{ width: 76, height: 76 }} />
               <Image source={require("@/assets/images/usdc.png")} className="block md:hidden" style={{ width: 36, height: 36 }} />
               <SavingCountUp
-                balance={Number(formatUnits(balance ?? BigInt(0), 6))}
+                balance={balance ?? 0}
                 apy={totalAPY ?? 0}
                 lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
               />
@@ -86,7 +74,7 @@ export default function Dashboard() {
                 {(isTotalAPYLoading || isBalanceLoading) ?
                   <Skeleton className="w-20 h-8 rounded-md" /> :
                   (totalAPY && balance) ?
-                    `+${(totalAPY * Number(formatUnits(balance, 6))).toFixed(2)}` :
+                    `+${(totalAPY * balance).toFixed(2)}` :
                     "0"
                 }
               </Text>
@@ -101,7 +89,7 @@ export default function Dashboard() {
                 <Skeleton className="w-24 h-8 rounded-md" />
               ) : (
                 <Text className="text-2xl font-semibold">
-                  {formatUnits(balance ?? BigInt(0), 6)}
+                  {balance ?? 0}
                 </Text>
               )}
               <Image source={require("@/assets/images/usdc.png")} style={{ width: 16, height: 16 }} />
