@@ -48,7 +48,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "headOrigin": "https://rocksolid.cash"
+        }
+      ],
       [
         "expo-splash-screen",
         {

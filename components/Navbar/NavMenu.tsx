@@ -1,13 +1,13 @@
-import { useNavigation, usePathname, useRouter } from "expo-router"
-import { useEffect, useState } from "react"
+import { useNavigation, usePathname, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
-import { Text } from "@/components/ui/text"
+} from "@/components/ui/navigation-menu";
+import { Text } from "@/components/ui/text";
 import useNav from "@/hooks/useNav";
 
 export function NavMenu() {
@@ -27,7 +27,7 @@ export function NavMenu() {
     });
 
     return sub;
-  }, []);
+  }, [navigation]);
 
   return (
     <NavigationMenu value={value} onValueChange={setValue} className="hidden md:block">

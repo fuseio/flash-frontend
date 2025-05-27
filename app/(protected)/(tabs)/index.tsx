@@ -4,16 +4,16 @@ import { Plus } from "lucide-react-native";
 import { ScrollView, View } from "react-native";
 import { mainnet } from "viem/chains";
 
+import Loading from "@/components/Loading";
 import { buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
-import { useTokenSelector } from "@/hooks/useToken";
 import { TOKEN_MAP } from "@/constants/tokens";
+import { useTotalAPY } from "@/hooks/useAnalytics";
+import { useTokenSelector } from "@/hooks/useToken";
 import useUser from "@/hooks/useUser";
 import { Status } from "@/lib/types";
-import { useTotalAPY } from "@/hooks/useAnalytics";
-import { Skeleton } from "@/components/ui/skeleton";
-import Loading from "@/components/Loading";
 
 export default function Home() {
   const { user } = useUser();
