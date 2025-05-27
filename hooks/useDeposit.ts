@@ -220,7 +220,7 @@ const useDeposit = (): DepositResult => {
 
       // Add deposit transaction
       transactions.push({
-        to: ADDRESSES.ethereum.vault,
+        to: ADDRESSES.ethereum.teller,
         data: encodeFunctionData({
           abi: ETHEREUM_TELLER_ABI,
           functionName: "depositAndBridge",
