@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { Platform } from "react-native";
 import { twMerge } from "tailwind-merge";
 import { Address, keccak256, toHex } from "viem";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { refreshToken } from "./api";
 import { PasskeyCoordinates } from "./types";
@@ -246,8 +247,9 @@ export async function decodePublicKeyForWeb(
   };
 }
 
-export const getNonce = ({ appId }: { appId: string }): bigint => {
-  const nonce = parseInt(localStorage.getItem("accountNonce") || "0");
+export const getNonce = async ({ appId }: { appId: string }): Promise<bigint> => {
+  const accountNonce = await AsyncStorage.getItem("accountNonce");
+  const nonce = parseInt(accountNonce || "0");
   const encodedNonce = keccak256(toHex(appId + nonce.toString()));
   return BigInt(encodedNonce);
 };

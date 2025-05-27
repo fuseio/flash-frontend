@@ -256,7 +256,7 @@ const useUser = () => {
     });
 
     const safeAccount = await toSafeSmartAccount({
-      saltNonce: getNonce({
+      saltNonce: await getNonce({
         appId: 'solid',
       }),
       client: publicClient(mainnet.id),

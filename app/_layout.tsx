@@ -1,5 +1,8 @@
 import '@/global.css';
 
+// see: https://solana.stackexchange.com/a/6244
+global.Buffer = require('buffer').Buffer;
+
 // TODO: Fix this issue with permissionless & 0x
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
