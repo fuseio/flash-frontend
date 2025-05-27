@@ -1,4 +1,4 @@
-import { Href } from "expo-router";
+import { Href, Route } from "expo-router";
 
 type Path = {
   REGISTER: Href;
@@ -7,6 +7,9 @@ type Path = {
   DASHBOARD: Href;
   DEPOSIT: Href;
   CARD: Href;
+  CARD_ACTIVATE: Route;
+  CARD_KYC: Route;
+  CARD_TERMS_OF_SERVICE: Route;
   EARN: Href;
 }
 
@@ -17,5 +20,8 @@ export const path: Path = {
   DASHBOARD: "/dashboard",
   DEPOSIT: "/deposit",
   CARD: "/card",
+  CARD_ACTIVATE: "/card/activate",
+  CARD_KYC: "/card/kyc",
+  CARD_TERMS_OF_SERVICE: "/card/bridge_terms_of_service",
   EARN: "/earn",
 }

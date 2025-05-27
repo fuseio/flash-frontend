@@ -20,7 +20,7 @@ export default function Welcome() {
       <View className='w-full max-w-md mx-auto flex-1 justify-center items-center gap-8 px-4 py-8'>
         <View className='items-center gap-4'>
           <Image
-            source={require("@/assets/images/solid-logo.png")}
+            source={require("@/assets/images/solid-logo-4x.png")}
             alt="Solid logo"
             style={{ width: 73, height: 73 }}
             contentFit="contain"

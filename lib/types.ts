@@ -61,3 +61,31 @@ export type TokenPriceUsd = {
     usd: number;
   };
 };
+
+export type KycLink = {
+  link: string;
+  tosLink: string;
+}
+
+export type BridgeCustomerResponse = {
+  bridgeCustomerId: string;
+  kycStatus: KycStatus;
+  tosStatus: TermsOfServiceStatus;
+  kycLinkId: string;
+}
+
+export enum KycStatus {
+  NOT_STARTED = 'not_started',
+  INCOMPLETE = 'incomplete',
+  AWAITING_UBO = 'awaiting_ubo',
+  UNDER_REVIEW = 'under_review',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  PAUSED = 'paused',
+  OFFBOARDED = 'offboarded',
+}
+
+export enum TermsOfServiceStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+}
