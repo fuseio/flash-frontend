@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const TokenSelectorFooter = ({ selectedToken }: { selectedToken: Token }) => {
   const instructions = [
     {
-      text: `Only deposit ${selectedToken.symbol} on Polygon. Deposits of other assets or from other networks could be lost.`
+      text: `Only deposit ${selectedToken.symbol} on Ethereum. Deposits of other assets or from other networks could be lost.`
     },
     {
       text: "Allow a few minutes for processing",

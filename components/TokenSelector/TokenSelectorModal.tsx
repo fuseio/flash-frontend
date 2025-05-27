@@ -38,7 +38,7 @@ const TokenSelectorModal = () => {
           <TokenSelector tokens={TOKEN_MAP[1]} setSelectedToken={setSelectedToken} setOpen={setOpen} />
         </View>
         <View className="gap-2 md:gap-4">
-          <DialogTitle>Deposit {selectedToken.symbol} on Polygon</DialogTitle>
+          <DialogTitle>Deposit {selectedToken.symbol} on Ethereum</DialogTitle>
           <TokenSelectorDeposit />
         </View>
         <TokenSelectorFooter selectedToken={selectedToken} />
