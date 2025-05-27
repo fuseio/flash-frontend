@@ -7,7 +7,8 @@ const ANALYTICS = "analytics"
 export const useTotalAPY = () => {
   return useQuery({
     queryKey: [ANALYTICS, "totalAPY"],
-    queryFn: fetchTotalAPY
+    queryFn: fetchTotalAPY,
+    refetchOnWindowFocus: false
   })
 }
 
@@ -22,6 +23,7 @@ export const useLatestTokenTransfer = (address: string, token: string) => {
       )
       return new Date(latest.timestamp).getTime()
     },
-    enabled: !!address
+    enabled: !!address,
+    refetchOnWindowFocus: false
   })
 }

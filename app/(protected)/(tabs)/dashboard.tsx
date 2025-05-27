@@ -27,10 +27,11 @@ export default function Dashboard() {
     chainId: fuse.id,
     query: {
       enabled: !!user?.safeAddress,
+      refetchOnWindowFocus: false
     },
   })
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
-  const { data: lastTimestamp, isLoading: isLastTimestampLoading } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
+  const { data: lastTimestamp } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
 
   return (
     <ScrollView className="bg-background text-foreground flex-1">
@@ -58,15 +59,11 @@ export default function Dashboard() {
             <View className="flex-row items-center gap-4">
               <Image source={require("@/assets/images/usdc-4x.png")} className="hidden md:block" style={{ width: 76, height: 76 }} />
               <Image source={require("@/assets/images/usdc.png")} className="block md:hidden" style={{ width: 36, height: 36 }} />
-              {(isBalanceLoading || isTotalAPYLoading || isLastTimestampLoading) ? (
-                <Skeleton className="w-48 h-10 md:w-96 md:h-24 rounded-md" />
-              ) : (
-                <SavingCountUp
-                  balance={Number(formatUnits(balance ?? BigInt(0), 6))}
-                  apy={totalAPY ?? 0}
-                  lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
-                />
-              )}
+              <SavingCountUp
+                balance={Number(formatUnits(balance ?? BigInt(0), 6))}
+                apy={totalAPY ?? 0}
+                lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
+              />
             </View>
           </View>
 
