@@ -1,13 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TextInput, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
-import { createKycLink, getCustomer, getKycLink } from "@/lib/api";
+import { useCreateKycLink, useCustomer, useKycLink } from "@/hooks/useCustomer";
 import { KycLink, KycStatus, TermsOfServiceStatus } from "@/lib/types";
-import { cn, withRefreshToken } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 type Step = {
   title: string;
@@ -28,22 +28,28 @@ export default function ActivateCard() {
   // Store whether kycStatus came from URL params
   const isKycStatusFromParams = !!params.kycStatus;
 
-  const [tosStatus, setTosStatus] = useState<TermsOfServiceStatus>(
-    (params.tosStatus as TermsOfServiceStatus) || TermsOfServiceStatus.PENDING
-  );
+  // Use TanStack Query for customer data
+  const { data: customer, refetch: refetchCustomer, isRefetching } = useCustomer();
 
-  console.log("Initial tosStatus from params:", tosStatus);
+  // Determine the actual status values to use
+  const tosStatus = isTosStatusFromParams 
+    ? (params.tosStatus as TermsOfServiceStatus) 
+    : (customer?.tosStatus || TermsOfServiceStatus.PENDING);
 
-  const [kycStatus, setKycStatus] = useState<KycStatus>(
-    (params.kycStatus as KycStatus) || KycStatus.NOT_STARTED
-  );
+  const kycStatus = isKycStatusFromParams 
+    ? (params.kycStatus as KycStatus) 
+    : (customer?.kycStatus || KycStatus.NOT_STARTED);
+
+  // Use TanStack Query for KYC link data
+  const { data: kycLink } = useKycLink(customer?.kycLinkId);
+
+  // Use mutation for creating KYC links
+  const createKycLinkMutation = useCreateKycLink();
 
   const [cardActivated, setCardActivated] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [kycLink, setKycLink] = useState<KycLink | null>(null);
 
   const steps: Step[] = [
     {
@@ -67,45 +73,6 @@ export default function ActivateCard() {
     },
   ];
 
-  useEffect(() => {
-    // Check customer status when component mounts
-    const checkCustomerStatus = async () => {
-      try {
-        const customer = await withRefreshToken(getCustomer());
-
-        if (customer) {
-          // Only update tosStatus if it wasn't provided in URL params
-          if (!isTosStatusFromParams) {
-            console.log("Setting tosStatus from API:", customer.tosStatus);
-            setTosStatus(customer.tosStatus);
-          } else {
-            console.log("Keeping tosStatus from URL params:", tosStatus);
-          }
-
-          // Only update KYC status if it wasn't provided in URL params
-          if (!isKycStatusFromParams) {
-            console.log("Setting kycStatus from API:", customer.kycStatus);
-            setKycStatus(customer.kycStatus);
-          } else {
-            console.log("Keeping kycStatus from URL params:", kycStatus);
-          }
-
-          const kycLinkData = await withRefreshToken(
-            getKycLink(customer.kycLinkId)
-          );
-
-          if (!kycLinkData) throw new Error("Error getting kyc link");
-
-          setKycLink(kycLinkData);
-        }
-      } catch (error) {
-        console.error("Error checking customer status:", error);
-      }
-    };
-
-    checkCustomerStatus();
-  }, []); // Keep it with no dependencies
-
   const handleProceedToTos = async () => {
     try {
       let kycLinkData: KycLink;
@@ -113,16 +80,11 @@ export default function ActivateCard() {
       if (kycLink) {
         kycLinkData = kycLink;
       } else {
-        const kycLinkOrUndefined = await withRefreshToken(
-          createKycLink(fullName, email, getRedirectUrl())
-        );
-
-        if (!kycLinkOrUndefined) {
-          throw new Error("Error creating kyc link");
-        }
-
-        kycLinkData = kycLinkOrUndefined;
-        setKycLink(kycLinkData);
+        kycLinkData = await createKycLinkMutation.mutateAsync({
+          fullName,
+          email,
+          redirectUri: getRedirectUrl(),
+        });
       }
 
       setIsLoading(true);
@@ -147,18 +109,11 @@ export default function ActivateCard() {
       if (kycLink) {
         kycLinkData = kycLink;
       } else {
-        const redirectUrl = getRedirectUrl();
-
-        const kycLinkOrUndefined = await withRefreshToken(
-          createKycLink(fullName, email, redirectUrl)
-        );
-
-        if (!kycLinkOrUndefined) {
-          throw new Error("Error creating kyc link");
-        }
-
-        kycLinkData = kycLinkOrUndefined;
-        setKycLink(kycLinkData);
+        kycLinkData = await createKycLinkMutation.mutateAsync({
+          fullName,
+          email,
+          redirectUri: getRedirectUrl(),
+        });
       }
 
       setIsLoading(true);
@@ -195,18 +150,6 @@ export default function ActivateCard() {
     } catch (error) {
       console.error("Error activating card:", error);
       setIsLoading(false);
-    }
-  };
-
-  const handleRefreshKyc = async () => {
-    try {
-      setIsRefreshing(true);
-      const customer = await withRefreshToken(getCustomer());
-      if (customer) setKycStatus(customer.kycStatus);
-    } catch (error) {
-      console.error("Error refreshing customer data:", error);
-    } finally {
-      setIsRefreshing(false);
     }
   };
 
@@ -343,8 +286,8 @@ export default function ActivateCard() {
                       size="sm"
                       variant="outline"
                       className="h-8 w-8 p-0"
-                      onPress={handleRefreshKyc}
-                      disabled={isRefreshing}
+                      onPress={() => refetchCustomer()}
+                      disabled={isRefetching}
                     >
                       <Text className="text-xs">↻</Text>
                     </Button>
@@ -358,7 +301,7 @@ export default function ActivateCard() {
                           size="sm"
                           className="h-8 px-3"
                           onPress={handleProceedToTos}
-                          disabled={isLoading || !fullName || !email}
+                          disabled={isLoading || createKycLinkMutation.isPending || !fullName || !email}
                         >
                           <Text className="text-xs font-medium">Start</Text>
                         </Button>
@@ -373,7 +316,7 @@ export default function ActivateCard() {
                           size="sm"
                           className="h-8 px-3"
                           onPress={handleProceedToKyc}
-                          disabled={isLoading}
+                          disabled={isLoading || createKycLinkMutation.isPending}
                         >
                           <Text className="text-xs font-medium">Start</Text>
                         </Button>
