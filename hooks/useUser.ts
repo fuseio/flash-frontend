@@ -281,6 +281,7 @@ const useUser = () => {
     const _smartAccountClient = createSmartAccountClient({
       account: safeAccount,
       chain: mainnet,
+      paymaster: pimlicoClient,
       userOperation: {
         estimateFeesPerGas: async () =>
           (await pimlicoClient.getUserOperationGasPrice()).fast,
