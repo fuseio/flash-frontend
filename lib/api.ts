@@ -1,7 +1,7 @@
 import axios from "axios";
 import {
-  AuthenticationResponseJSON,
-  RegistrationResponseJSON,
+	AuthenticationResponseJSON,
+	RegistrationResponseJSON,
 } from "react-native-passkeys/src/ReactNativePasskeys.types";
 
 import { EXPO_PUBLIC_COIN_GECKO_API_KEY, EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL, EXPO_PUBLIC_FLASH_API_BASE_URL } from "./config";
@@ -37,7 +37,6 @@ export const generateRegistrationOptions = async (username: string) => {
 
 export const verifyRegistration = async (
 	registrationResponse: RegistrationResponseJSON,
-	address: string,
 ): Promise<User> => {
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/passkeys/registration/verify`,
@@ -47,7 +46,7 @@ export const verifyRegistration = async (
 				"Content-Type": "application/json",
 			},
 			credentials: "include",
-			body: JSON.stringify({ ...registrationResponse, address }),
+			body: JSON.stringify(registrationResponse),
 		},
 	);
 	if (!response.ok) throw response;
