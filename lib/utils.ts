@@ -34,6 +34,12 @@ export function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
 }
 
+let globalLogoutHandler: (() => void) | null = null;
+
+export const setGlobalLogoutHandler = (handler: () => void) => {
+  globalLogoutHandler = handler;
+};
+
 export const withRefreshToken = async <T>(
   promise: Promise<T>,
   { onError }: { onError?: () => void } = {},
@@ -50,7 +56,11 @@ export const withRefreshToken = async <T>(
       return await promise;
     } catch (refreshTokenError) {
       console.error(refreshTokenError);
-      onError?.();
+      if (onError) {
+        onError();
+      } else {
+        globalLogoutHandler?.();
+      }
     }
   }
 };
