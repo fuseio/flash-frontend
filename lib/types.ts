@@ -17,7 +17,7 @@ export type PasskeyCoordinates = {
 export type PasskeyArgType = {
   rawId: string;
   coordinates: PasskeyCoordinates;
-  credentialId: string;
+  customVerifierAddress?: string;
 };
 
 export interface User {
@@ -26,8 +26,7 @@ export interface User {
   selected: boolean
   passkey: {
     rawId: string
-    coordinates: PasskeyCoordinates,
-    credentialId: string,
+    coordinates: PasskeyCoordinates
   }
 }
 
