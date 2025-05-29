@@ -7,7 +7,8 @@ import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
 import { useCreateKycLink, useCustomer, useKycLink } from "@/hooks/useCustomer";
 import { KycLink, KycStatus, TermsOfServiceStatus } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, withRefreshToken } from "@/lib/utils";
+import { createCard } from "@/lib/api";
 
 type Step = {
   title: string;
@@ -29,16 +30,20 @@ export default function ActivateCard() {
   const isKycStatusFromParams = !!params.kycStatus;
 
   // Use TanStack Query for customer data
-  const { data: customer, refetch: refetchCustomer, isRefetching } = useCustomer();
+  const {
+    data: customer,
+    refetch: refetchCustomer,
+    isRefetching,
+  } = useCustomer();
 
   // Determine the actual status values to use
-  const tosStatus = isTosStatusFromParams 
-    ? (params.tosStatus as TermsOfServiceStatus) 
-    : (customer?.tosStatus || TermsOfServiceStatus.PENDING);
+  const tosStatus = isTosStatusFromParams
+    ? (params.tosStatus as TermsOfServiceStatus)
+    : customer?.tosStatus || TermsOfServiceStatus.PENDING;
 
-  const kycStatus = isKycStatusFromParams 
-    ? (params.kycStatus as KycStatus) 
-    : (customer?.kycStatus || KycStatus.NOT_STARTED);
+  const kycStatus = isKycStatusFromParams
+    ? (params.kycStatus as KycStatus)
+    : customer?.kycStatus || KycStatus.NOT_STARTED;
 
   // Use TanStack Query for KYC link data
   const { data: kycLink } = useKycLink(customer?.kycLinkId);
@@ -139,13 +144,18 @@ export default function ActivateCard() {
   const handleActivateCard = async () => {
     try {
       setIsLoading(true);
-      // Add your card activation logic here
       console.log("Activating card...");
-      // For demo purposes - in real implementation this would be an API call
-      setTimeout(() => {
-        setCardActivated(true);
-        setIsLoading(false);
-      }, 1000);
+      const card = await withRefreshToken(createCard());
+
+      if (!card) {
+        throw new Error("Failed to create card");
+      }
+
+      console.log("Card created:", card);
+
+      setCardActivated(true);
+      setIsLoading(false);
+
       // Navigate to successful activation or card details screen
     } catch (error) {
       console.error("Error activating card:", error);
@@ -301,7 +311,12 @@ export default function ActivateCard() {
                           size="sm"
                           className="h-8 px-3"
                           onPress={handleProceedToTos}
-                          disabled={isLoading || createKycLinkMutation.isPending || !fullName || !email}
+                          disabled={
+                            isLoading ||
+                            createKycLinkMutation.isPending ||
+                            !fullName ||
+                            !email
+                          }
                         >
                           <Text className="text-xs font-medium">Start</Text>
                         </Button>
@@ -316,7 +331,9 @@ export default function ActivateCard() {
                           size="sm"
                           className="h-8 px-3"
                           onPress={handleProceedToKyc}
-                          disabled={isLoading || createKycLinkMutation.isPending}
+                          disabled={
+                            isLoading || createKycLinkMutation.isPending
+                          }
                         >
                           <Text className="text-xs font-medium">Start</Text>
                         </Button>

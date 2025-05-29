@@ -5,7 +5,7 @@ import {
 } from "react-native-passkeys/src/ReactNativePasskeys.types";
 
 import { EXPO_PUBLIC_COIN_GECKO_API_KEY, EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL, EXPO_PUBLIC_FLASH_API_BASE_URL } from "./config";
-import { BridgeCustomerResponse, KycLink, TokenPriceUsd, TokenTransfer, User } from "./types";
+import { BridgeCustomerResponse, CardResponse, KycLink, TokenPriceUsd, TokenTransfer, User } from "./types";
 
 export const refreshToken = () => {
 	return fetch(
@@ -146,6 +146,20 @@ export const getCustomer = async (): Promise<BridgeCustomerResponse | null> => {
   });
 
   if (response.status === 404) return null;
+
+  if (!response.ok) throw response;
+
+  return response.json();
+}
+
+export const createCard = async (): Promise<CardResponse> => {
+  const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
 
   if (!response.ok) throw response;
 

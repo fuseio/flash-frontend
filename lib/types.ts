@@ -89,3 +89,76 @@ export enum TermsOfServiceStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
 }
+
+enum CardStatus {
+  ACTIVE = 'active',
+  PENDING = 'pending',
+  INACTIVE = 'inactive',
+  FROZEN = 'frozen',
+}
+
+enum FreezeReason {
+  LOST_OR_STOLEN = 'lost_or_stolen',
+  SUSPICIOUS_ACTIVITY = 'suspicious_activity',
+  PLANNED_INACTIVITY = 'planned_inactivity',
+  SUSPECTED_FRAUD = 'suspected_fraud',
+  OTHER = 'other',
+}
+
+enum FreezeInitiator {
+  BRIDGE = 'bridge',
+  DEVELOPER = 'developer',
+  CUSTOMER = 'customer',
+}
+
+interface CardDetails {
+  last_4: string;
+  expiry: string;
+  bin: string;
+}
+
+interface Balance {
+  amount: string;
+  currency: string;
+}
+
+interface Balances {
+  available: Balance;
+  hold: Balance;
+}
+
+interface CryptoAccount {
+  type: string;
+  address: string;
+}
+
+interface FundingInstructions {
+  currency: string;
+  chain: string;
+  address: string;
+  memo: string;
+}
+
+interface Freeze {
+  initiator: FreezeInitiator;
+  card_account_id: string;
+  reason: FreezeReason;
+  reason_detail?: string;
+  starting_at?: string;
+  ending_at?: string;
+  created_at: string;
+}
+
+export interface CardResponse {
+  id: string;
+  client_reference_id: string;
+  customer_id: string;
+  card_image_url: string;
+  status: CardStatus;
+  status_reason: string;
+  card_details: CardDetails;
+  balances: Balances;
+  freezes: Freeze[];
+  crypto_account: CryptoAccount;
+  funding_instructions: FundingInstructions;
+}
