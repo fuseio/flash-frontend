@@ -4,7 +4,6 @@ export default function CardLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      
     </Stack>
   );
 } 
