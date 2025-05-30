@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
 import { useCreateKycLink, useCustomer, useKycLink } from "@/hooks/useCustomer";
+import { createCard } from "@/lib/api";
 import { KycLink, KycStatus, TermsOfServiceStatus } from "@/lib/types";
 import { cn, withRefreshToken } from "@/lib/utils";
-import { createCard } from "@/lib/api";
 
 type Step = {
   title: string;
@@ -41,9 +41,11 @@ export default function ActivateCard() {
     ? (params.tosStatus as TermsOfServiceStatus)
     : customer?.tosStatus || TermsOfServiceStatus.PENDING;
 
-  const kycStatus = isKycStatusFromParams
-    ? (params.kycStatus as KycStatus)
-    : customer?.kycStatus || KycStatus.NOT_STARTED;
+  const kycStatus = (customer?.kycStatus === KycStatus.APPROVED) 
+    ? customer.kycStatus 
+    : (isKycStatusFromParams 
+        ? (params.kycStatus as KycStatus) 
+        : customer?.kycStatus || KycStatus.NOT_STARTED);
 
   // Use TanStack Query for KYC link data
   const { data: kycLink } = useKycLink(customer?.kycLinkId);
