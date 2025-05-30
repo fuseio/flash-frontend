@@ -8,7 +8,7 @@ const CUSTOMER = "customer";
 export const useCustomer = () => {
   return useQuery({
     queryKey: [CUSTOMER],
-    queryFn: () => withRefreshToken(getCustomer()),
+    queryFn: () => withRefreshToken(() => getCustomer()),
     retry: false,
   });
 };
@@ -16,7 +16,7 @@ export const useCustomer = () => {
 export const useKycLink = (kycLinkId?: string) => {
   return useQuery({
     queryKey: [CUSTOMER, "kycLink", kycLinkId],
-    queryFn: () => withRefreshToken(getKycLink(kycLinkId!)),
+    queryFn: () => withRefreshToken(() => getKycLink(kycLinkId!)),
     enabled: !!kycLinkId,
     retry: false,
   });
@@ -36,7 +36,7 @@ export const useCreateKycLink = () => {
       redirectUri: string;
     }) => {
       const result = await withRefreshToken(
-        createKycLink(fullName, email, redirectUri)
+        () => createKycLink(fullName, email, redirectUri)
       );
       if (!result) {
         throw new Error("Failed to create KYC link");

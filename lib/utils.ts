@@ -41,11 +41,11 @@ export const setGlobalLogoutHandler = (handler: () => void) => {
 };
 
 export const withRefreshToken = async <T>(
-  promise: Promise<T>,
+  apiCall: () => Promise<T>,
   { onError }: { onError?: () => void } = {},
 ): Promise<T | undefined> => {
   try {
-    return await promise;
+    return await apiCall();
   } catch (error: any) {
     if (error?.status !== 401) {
       console.error(error);
@@ -53,7 +53,7 @@ export const withRefreshToken = async <T>(
     }
     try {
       await refreshToken();
-      return await promise;
+      return await apiCall();
     } catch (refreshTokenError) {
       console.error(refreshTokenError);
       if (onError) {

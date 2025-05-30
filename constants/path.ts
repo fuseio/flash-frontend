@@ -10,6 +10,7 @@ type Path = {
   CARD_ACTIVATE: Route;
   CARD_KYC: Route;
   CARD_TERMS_OF_SERVICE: Route;
+  CARD_DETAILS: Route;
   EARN: Href;
 }
 
@@ -23,5 +24,6 @@ export const path: Path = {
   CARD_ACTIVATE: "/card/activate",
   CARD_KYC: "/card/kyc",
   CARD_TERMS_OF_SERVICE: "/card/bridge_terms_of_service",
+  CARD_DETAILS: "/card/details",
   EARN: "/earn",
 }
