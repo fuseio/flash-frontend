@@ -147,7 +147,7 @@ export default function ActivateCard() {
     try {
       setIsLoading(true);
       console.log("Activating card...");
-      const card = await withRefreshToken(createCard());
+      const card = await withRefreshToken(() => createCard());
 
       if (!card) {
         throw new Error("Failed to create card");
