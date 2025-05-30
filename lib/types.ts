@@ -89,7 +89,7 @@ export enum TermsOfServiceStatus {
   APPROVED = 'approved',
 }
 
-enum CardStatus {
+export enum CardStatus {
   ACTIVE = 'active',
   PENDING = 'pending',
   INACTIVE = 'inactive',
@@ -160,4 +160,8 @@ export interface CardResponse {
   freezes: Freeze[];
   crypto_account: CryptoAccount;
   funding_instructions: FundingInstructions;
+}
+
+export interface CardStatusResponse {
+  status: CardStatus;
 }
