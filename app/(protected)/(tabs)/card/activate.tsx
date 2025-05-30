@@ -149,9 +149,7 @@ export default function ActivateCard() {
       console.log("Activating card...");
       const card = await withRefreshToken(() => createCard());
 
-      if (!card) {
-        throw new Error("Failed to create card");
-      }
+      if (!card) throw new Error("Failed to create card");
 
       console.log("Card created:", card);
 
@@ -159,6 +157,7 @@ export default function ActivateCard() {
       setIsLoading(false);
 
       // Navigate to successful activation or card details screen
+      router.replace(path.CARD_DETAILS);
     } catch (error) {
       console.error("Error activating card:", error);
       setIsLoading(false);
