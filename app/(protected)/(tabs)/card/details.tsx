@@ -5,29 +5,35 @@ import { View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { useCardDetails } from "@/hooks/useCardDetails";
 
 export default function CardDetails() {
-  // Mock card data - in a real app this would come from an API or secure storage
-  const cardData = {
-    balance: "$1,234.56",
-    spendableBalance: "$1,234.56",
-    status: "Active"
-  };
+  const { data: cardDetails, isLoading } = useCardDetails();
+
+  const availableBalance = cardDetails?.balances.available;
+  const currency = availableBalance?.currency || "?";
+  const availableAmount = availableBalance?.amount || "0";
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-background justify-center items-center">
+        <Text className="text-base opacity-70">Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-background p-6">
       {/* Balance Information */}
       <View className="items-center mt-10 mb-6">
         <View className="flex-row items-baseline">
-          <Text className="text-xl font-semibold">$</Text>
-          <Text className="text-[50px] font-semibold">{cardData.balance.substring(1)}</Text>
+          <Text className="text-xl font-semibold">{currency}</Text>
+          <Text className="text-[50px] font-semibold">{availableAmount}</Text>
         </View>
         <Text className="text-base opacity-70 mt-2">Spendable balance</Text>
       </View>
 
-      <Button
-        className="rounded-3xl h-10 w-auto self-center mb-6"
-      >
+      <Button className="rounded-3xl h-10 w-auto self-center mb-6">
         <View className="flex-row">
           <Plus color="black" />
           <Text className="font-bold text-base ml-2">Add funds</Text>
@@ -54,7 +60,7 @@ export default function CardDetails() {
           </Button>
           <Text className="text-xs mt-2 text-[#BFBFBF]">Settings</Text>
         </View>
-        
+
         <View className="items-center">
           <Button className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200">
             <Image
@@ -64,7 +70,7 @@ export default function CardDetails() {
           </Button>
           <Text className="text-xs mt-2 text-[#BFBFBF]">Limit</Text>
         </View>
-        
+
         <View className="items-center">
           <Button className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200">
             <Image

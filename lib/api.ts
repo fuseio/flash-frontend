@@ -174,3 +174,13 @@ export const getCardStatus = async (): Promise<CardStatusResponse> => {
 
   return response.json();
 }
+
+export const getCardDetails = async (): Promise<CardResponse> => {
+  const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards/details`, {
+    credentials: 'include'
+  });
+
+  if (!response.ok) throw response;
+
+  return response.json();
+}
