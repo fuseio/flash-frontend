@@ -41,11 +41,12 @@ export default function ActivateCard() {
     ? (params.tosStatus as TermsOfServiceStatus)
     : customer?.tosStatus || TermsOfServiceStatus.PENDING;
 
-  const kycStatus = (customer?.kycStatus === KycStatus.APPROVED) 
-    ? customer.kycStatus 
-    : (isKycStatusFromParams 
-        ? (params.kycStatus as KycStatus) 
-        : customer?.kycStatus || KycStatus.NOT_STARTED);
+  const kycStatus =
+    customer?.kycStatus === KycStatus.APPROVED
+      ? customer.kycStatus
+      : isKycStatusFromParams
+      ? (params.kycStatus as KycStatus)
+      : customer?.kycStatus || KycStatus.NOT_STARTED;
 
   // Use TanStack Query for KYC link data
   const { data: kycLink } = useKycLink(customer?.kycLinkId);
@@ -57,6 +58,12 @@ export default function ActivateCard() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Add email validation
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const steps: Step[] = [
     {
@@ -81,20 +88,36 @@ export default function ActivateCard() {
   ];
 
   const handleProceedToTos = async () => {
+    // Enforce email validation before proceeding
+    if (!fullName.trim()) {
+      alert("Please enter your full name");
+      return;
+    }
+
+    if (!email.trim()) {
+      alert("Please enter your email address");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
     try {
       let kycLinkData: KycLink;
 
       if (kycLink) {
         kycLinkData = kycLink;
       } else {
+        setIsLoading(true);
+
         kycLinkData = await createKycLinkMutation.mutateAsync({
-          fullName,
-          email,
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
           redirectUri: getRedirectUrl(),
         });
       }
-
-      setIsLoading(true);
 
       router.push({
         pathname: path.CARD_TERMS_OF_SERVICE,
@@ -316,10 +339,17 @@ export default function ActivateCard() {
                             isLoading ||
                             createKycLinkMutation.isPending ||
                             !fullName ||
-                            !email
+                            !email ||
+                            !isValidEmail(email)
                           }
                         >
-                          <Text className="text-xs font-medium">Start</Text>
+                          {isLoading ? (
+                            <Text className="text-xs font-medium">
+                              Loading...
+                            </Text>
+                          ) : (
+                            <Text className="text-xs font-medium">Start</Text>
+                          )}
                         </Button>
                       );
                     } else if (
