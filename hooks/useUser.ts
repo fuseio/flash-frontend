@@ -5,7 +5,6 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as passkeys from "react-native-passkeys";
 import { mainnet } from "viem/chains";
-
 import { path } from "@/constants/path";
 import {
   generateAuthenticationOptions,
@@ -18,6 +17,7 @@ import { PasskeyArgType, Status, User } from "@/lib/types";
 import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils";
 import { rpcUrls } from "@/lib/wagmi";
 import { fetchVaultBalance } from "./useVault";
+
 
 const useUser = () => {
   const [signupInfo, setSignupInfo] = useState<{
@@ -92,14 +92,14 @@ const useUser = () => {
     router.replace(path.HOME);
   };
 
-  const unselectUser = async () => {
+  const unselectUser = useCallback(async () => {
     let newUsers;
     setUsers((prevUsers) => {
       newUsers = prevUsers.map((user) => ({ ...user, selected: false }));
       return newUsers;
     });
     await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
-  };
+  }, [router]);
 
   const user = useMemo(() => {
     if (!users.length) return;
@@ -211,11 +211,11 @@ const useUser = () => {
     router.replace(path.HOME);
   }
 
-  async function handleLogout() {
+  const handleLogout = useCallback(async () => {
     await AsyncStorage.removeItem(USER.storageKey);
     unselectUser();
     router.replace(path.WELCOME);
-  }
+  }, [unselectUser, router]);
 
   const safeAA = useCallback(async (passkey: PasskeyArgType) => {
     return Safe4337Pack.init({
@@ -254,7 +254,8 @@ const useUser = () => {
 
   useEffect(() => {
     loadUsers();
-  }, [loadUsers]);
+    setGlobalLogoutHandler(handleLogout);
+  }, [loadUsers, handleLogout]);
 
   return {
     signupInfo,
