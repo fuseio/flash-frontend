@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { TextInput, View } from "react-native";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -59,10 +60,10 @@ export default function ActivateCard() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Add email validation
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const emailSchema = z.string().email();
+  
+  const validateEmail = (email: string) => {
+    return emailSchema.safeParse(email).success;
   };
 
   const steps: Step[] = [
@@ -99,7 +100,7 @@ export default function ActivateCard() {
       return;
     }
 
-    if (!isValidEmail(email)) {
+    if (!validateEmail(email)) {
       alert("Please enter a valid email address");
       return;
     }
@@ -340,7 +341,7 @@ export default function ActivateCard() {
                             createKycLinkMutation.isPending ||
                             !fullName ||
                             !email ||
-                            !isValidEmail(email)
+                            !validateEmail(email)
                           }
                         >
                           {isLoading ? (
