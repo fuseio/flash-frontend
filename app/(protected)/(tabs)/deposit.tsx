@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { Fuel } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { formatUnits, parseUnits } from "viem";
 
 import { CheckConnectionWrapper } from "@/components/CheckConnectionWrapper";
@@ -119,7 +119,12 @@ export default function Deposit() {
                   !amount || !balance || balance < amountWei || isLoading
                 }
               >
-                <Text className="text-lg font-semibold">{getButtonText()}</Text>
+                <Text className="text-lg font-semibold">
+                  {getButtonText()}
+                </Text>
+                {isLoading && (
+                  <ActivityIndicator color="gray" />
+                )}
               </Button>
             </CheckConnectionWrapper>
             <View className="flex-row items-center self-end gap-1">

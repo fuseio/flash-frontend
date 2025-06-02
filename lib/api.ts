@@ -5,7 +5,7 @@ import {
 } from "react-native-passkeys/src/ReactNativePasskeys.types";
 
 import { EXPO_PUBLIC_COIN_GECKO_API_KEY, EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL, EXPO_PUBLIC_FLASH_API_BASE_URL } from "./config";
-import { BridgeCustomerResponse, CardResponse, CardStatusResponse, KycLink, TokenPriceUsd, TokenTransfer, User } from "./types";
+import { BridgeCustomerResponse, CardResponse, CardStatusResponse, KycLink, LayerZeroTransaction, TokenPriceUsd, BlockscoutTransaction, User } from "./types";
 
 export const refreshToken = () => {
 	return fetch(
@@ -95,7 +95,7 @@ export const fetchTokenTransfer = async (
 	type = "ERC-20",
 	filter = "to",
 ) => {
-	const response = await axios.get<TokenTransfer>(
+	const response = await axios.get<BlockscoutTransaction>(
 		`https://explorer.fuse.io/api/v2/addresses/${address}/token-transfers?type=${type}&filter=${filter}&token=${token}`,
 	);
 	return response.data;
@@ -183,4 +183,19 @@ export const getCardDetails = async (): Promise<CardResponse> => {
   if (!response.ok) throw response;
 
   return response.json();
+}
+
+export const fetchInternalTransactions = async (address: string): Promise<BlockscoutTransaction> => {
+  const response = await axios.get(`https://eth.blockscout.com/api/v2/addresses/${address}/internal-transactions?filter=from`);
+  return response.data;
+}
+
+export const fetchTransactionTokenTransfers = async (transactionHash: string, type: string = "ERC-20"): Promise<BlockscoutTransaction> => {
+  const response = await axios.get(`https://eth.blockscout.com/api/v2/transactions/${transactionHash}/token-transfers?type=${type}`);
+  return response.data;
+}
+
+export const fetchLayerZeroBridgeTransactions = async (transactionHash: string): Promise<LayerZeroTransaction> => {
+  const response = await axios.get(`https://scan.layerzero-api.com/v1/messages/tx/${transactionHash}`);
+  return response.data;
 }

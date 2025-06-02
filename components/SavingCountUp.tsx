@@ -17,7 +17,8 @@ const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
   const calculateLiveYield = useCallback((currentTime: number) => {
     const deltaTime = currentTime - lastTimestamp;
     const yieldEarned = balance * (apy / SECONDS_PER_YEAR) * deltaTime;
-    return yieldEarned;
+    const totalBalance = balance + yieldEarned;
+    return totalBalance;
   }, [balance, apy, lastTimestamp]);
 
   useEffect(() => {

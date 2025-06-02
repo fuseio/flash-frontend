@@ -1,14 +1,7 @@
-import { useState } from "react";
-import {
-  encodeAbiParameters,
-  encodeFunctionData,
-  Hash,
-  parseAbiParameters,
-  parseUnits,
-  type Address
-} from "viem";
+import { useEffect, useState } from "react";
+import { encodeAbiParameters, encodeFunctionData, Hash, parseAbiParameters, parseUnits, type Address } from "viem";
 import { mainnet } from "viem/chains";
-import { useReadContract } from "wagmi";
+import { useBlockNumber, useReadContract } from "wagmi";
 
 import ERC20_ABI from "@/lib/abis/ERC20";
 import ETHEREUM_TELLER_ABI from "@/lib/abis/EthereumTeller";
@@ -32,8 +25,9 @@ const useDeposit = (): DepositResult => {
   const [approveStatus, setApproveStatus] = useState<Status>(Status.IDLE);
   const [depositStatus, setDepositStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string | null>(null);
+  const { data: blockNumber } = useBlockNumber({ watch: true })
 
-  const { data: balance } = useReadContract({
+  const { data: balance, refetch: refetchBalance } = useReadContract({
     abi: ERC20_ABI,
     address: ADDRESSES.ethereum.usdc,
     functionName: "balanceOf",
@@ -210,6 +204,10 @@ const useDeposit = (): DepositResult => {
       setError(error instanceof Error ? error.message : "Unknown error");
     }
   };
+
+  useEffect(() => {
+    refetchBalance()
+  }, [blockNumber])
 
   return {
     allowance,

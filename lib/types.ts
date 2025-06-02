@@ -30,8 +30,19 @@ export interface User {
   }
 }
 
-export interface TokenTransfer {
+export interface BlockscoutTransaction {
   items: {
+    to: {
+      hash: Address;
+    },
+    token: {
+      address: Address;
+    },
+    total: {
+      decimals: string;
+      value: string;
+    },
+    transaction_hash: string,
     timestamp: string
   }[]
 }
@@ -164,4 +175,32 @@ export interface CardResponse {
 
 export interface CardStatusResponse {
   status: CardStatus;
+}
+
+export enum LayerZeroTransactionStatus {
+  INFLIGHT = "INFLIGHT",
+  CONFIRMING = "CONFIRMING",
+  FAILED = "FAILED",
+  DELIVERED = "DELIVERED",
+  BLOCKED = "BLOCKED",
+  PAYLOAD_STORED = "PAYLOAD_STORED",
+  APPLICATION_BURNED = "APPLICATION_BURNED",
+  APPLICATION_SKIPPED = "APPLICATION_SKIPPED",
+  UNRESOLVABLE_COMMAND = "UNRESOLVABLE_COMMAND",
+  MALFORMED_COMMAND = "MALFORMED_COMMAND"
+}
+
+export type LayerZeroTransaction = {
+  data: {
+    status: {
+      name: LayerZeroTransactionStatus;
+    };
+  }[];
+}
+
+export type Transaction = {
+  title: string;
+  timestamp: string;
+  amount: number;
+  status: LayerZeroTransactionStatus;
 }

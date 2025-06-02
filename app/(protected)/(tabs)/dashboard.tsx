@@ -8,10 +8,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
-import { useLatestTokenTransfer, useTotalAPY } from "@/hooks/useAnalytics";
+import { useLatestTokenTransfer, useTotalAPY, useTransactions } from "@/hooks/useAnalytics";
 import useUser from "@/hooks/useUser";
 import { ADDRESSES } from "@/lib/config";
 import { useVaultBalance } from "@/hooks/useVault";
+import Transaction from "@/components/Transaction";
 
 import Deposit from "@/assets/images/deposit";
 
@@ -20,11 +21,12 @@ export default function Dashboard() {
   const { data: balance, isLoading: isBalanceLoading } = useVaultBalance(user?.safeAddress as Address)
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
   const { data: lastTimestamp } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
+  const { data: transactions, isLoading: isTransactionsLoading } = useTransactions(user?.safeAddress ?? "")
 
   return (
     <ScrollView className="bg-background text-foreground flex-1">
-      <View className="gap-16 px-4 py-8 md:py-16">
-        <View className="md:flex-row justify-between md:items-center gap-y-4 w-full max-w-7xl mx-auto">
+      <View className="gap-16 px-4 py-8 md:py-16 w-full max-w-7xl mx-auto">
+        <View className="md:flex-row justify-between md:items-center gap-y-4">
           <View className="gap-4">
             <Text className="text-4.5xl font-semibold">
               Your saving account
@@ -41,7 +43,7 @@ export default function Dashboard() {
           </View>
         </View>
 
-        <View className="web:md:grid web:md:grid-cols-4 w-full max-w-7xl mx-auto border border-border rounded-xl md:rounded-twice overflow-hidden">
+        <View className="web:md:grid web:md:grid-cols-4 border border-border rounded-xl md:rounded-twice overflow-hidden">
           <View className="web:md:col-span-3 web:md:row-span-3 justify-between gap-4 bg-card p-6 md:p-12 border-b border-border md:border-b-0 md:border-r">
             <Text className="text-3xl font-medium">USDC Savings</Text>
             <View className="flex-row items-center gap-4">
@@ -94,6 +96,25 @@ export default function Dashboard() {
               )}
               <Image source={require("@/assets/images/usdc.png")} style={{ width: 16, height: 16 }} />
             </View>
+          </View>
+        </View>
+
+        <View className="gap-4">
+          <Text className="text-2xl font-medium">
+            Recent transactions
+          </Text>
+          <View className="gap-2">
+            {isTransactionsLoading ? (
+              <Skeleton className="w-full h-16 bg-card rounded-xl md:rounded-twice" />
+            ) : transactions?.length ? (
+              transactions.map((transaction) => (
+                <Transaction key={transaction.timestamp} {...transaction} />
+              ))
+            ) : (
+              <Text className="text-muted-foreground">
+                No transactions found
+              </Text>
+            )}
           </View>
         </View>
       </View>

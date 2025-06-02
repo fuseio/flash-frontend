@@ -1,7 +1,7 @@
 import { Image } from 'expo-image'
 import { Link } from 'expo-router'
 import { useState } from 'react'
-import { Platform, TextInput, View } from 'react-native'
+import { ActivityIndicator, Platform, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Button } from '@/components/ui/button'
@@ -59,6 +59,9 @@ export default function Register() {
                       'Create Account'
                   }
                 </Text>
+                {signupInfo.status === Status.PENDING && (
+                  <ActivityIndicator color="gray" />
+                )}
               </Button>
             </View>
 
@@ -78,6 +81,9 @@ export default function Register() {
                     'Login'
                 }
               </Text>
+              {loginInfo.status === Status.PENDING && (
+                <ActivityIndicator color="gray" />
+              )}
             </Button>
 
             {/* TODO: Remove when passkey works */}
