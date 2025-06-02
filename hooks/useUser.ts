@@ -1,10 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Safe4337Pack } from "@safe-global/relay-kit";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import * as passkeys from "react-native-passkeys";
-import { mainnet } from "viem/chains";
 import { path } from "@/constants/path";
 import {
   generateAuthenticationOptions,
@@ -14,10 +7,20 @@ import {
 } from "@/lib/api";
 import { USER } from "@/lib/config";
 import { PasskeyArgType, Status, User } from "@/lib/types";
-import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils";
+import {
+  bufferToBase64URLString,
+  setGlobalLogoutHandler,
+  withRefreshToken,
+} from "@/lib/utils";
 import { rpcUrls } from "@/lib/wagmi";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Safe4337Pack } from "@safe-global/relay-kit";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import * as passkeys from "react-native-passkeys";
+import { mainnet } from "viem/chains";
 import { fetchVaultBalance } from "./useVault";
-
 
 const useUser = () => {
   const [signupInfo, setSignupInfo] = useState<{
