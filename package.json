@@ -47,6 +47,7 @@
     "expo-web-browser": "~14.1.6",
     "lucide-react-native": "^0.510.0",
     "nativewind": "^4.1.23",
+    "permissionless": "^0.2.47",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",

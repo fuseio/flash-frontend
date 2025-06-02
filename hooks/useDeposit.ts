@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { encodeAbiParameters, encodeFunctionData, Hash, parseAbiParameters, parseUnits, type Address } from "viem";
+import {
+  encodeAbiParameters,
+  encodeFunctionData,
+  Hash,
+  parseAbiParameters,
+  parseUnits,
+  type Address
+} from "viem";
 import { mainnet } from "viem/chains";
 import { useReadContract } from "wagmi";
 
@@ -48,7 +55,6 @@ const useDeposit = (): DepositResult => {
     },
   });
 
-
   const { data: fee } = useReadContract({
     abi: ETHEREUM_TELLER_ABI,
     address: ADDRESSES.ethereum.teller,
@@ -70,14 +76,21 @@ const useDeposit = (): DepositResult => {
   ) => {
     const safePack = await safeAA(passkey);
 
-    const safeOperation = await safePack.createTransaction({
-      transactions
+    // const maxCostInTokenRaw = await estimateGas();
+
+    const updatedSafeOperation = await safePack.createTransaction({
+      transactions: transactions,
+      // options:{
+      //   amountToApprove: maxCostInTokenRaw,
+      // }
     });
 
-    const signedSafeOperation = await safePack.signSafeOperation(safeOperation);
+    const signedSafeOperation = await safePack.signSafeOperation(
+      updatedSafeOperation
+    );
 
     const userOperationHash = await safePack.executeTransaction({
-      executable: signedSafeOperation
+      executable: signedSafeOperation,
     });
 
     const receipt = await userOpReceipt(safePack, userOperationHash);
@@ -88,11 +101,13 @@ const useDeposit = (): DepositResult => {
 
     const transactionHash = receipt.receipt.transactionHash as Hash;
 
-    const transaction = await publicClient(mainnet.id).waitForTransactionReceipt({
-      hash: transactionHash
+    const transaction = await publicClient(
+      mainnet.id
+    ).waitForTransactionReceipt({
+      hash: transactionHash,
     });
 
-    if (transaction.status !== 'success') {
+    if (transaction.status !== "success") {
       throw new Error(errorMessage);
     }
 
@@ -117,10 +132,10 @@ const useDeposit = (): DepositResult => {
         to: ADDRESSES.ethereum.usdc,
         data: encodeFunctionData({
           abi: ERC20_ABI,
-          functionName: 'approve',
+          functionName: "approve",
           args: [ADDRESSES.ethereum.vault, amountWei],
         }),
-        value: '0'
+        value: "0",
       };
 
       await executeTransactions(
@@ -160,10 +175,10 @@ const useDeposit = (): DepositResult => {
           to: ADDRESSES.ethereum.usdc,
           data: encodeFunctionData({
             abi: ERC20_ABI,
-            functionName: 'approve',
+            functionName: "approve",
             args: [ADDRESSES.ethereum.vault, amountWei],
           }),
-          value: '0'
+          value: "0",
         });
       }
 
@@ -186,11 +201,7 @@ const useDeposit = (): DepositResult => {
         value: fee?.toString() || "0",
       });
 
-      await executeTransactions(
-        user.passkey,
-        transactions,
-        "Deposit failed"
-      );
+      await executeTransactions(user.passkey, transactions, "Deposit failed");
 
       setDepositStatus(Status.SUCCESS);
     } catch (error) {

@@ -10,31 +10,30 @@ import TokenDetail from "@/components/TokenCard/TokenDetail";
 import TokenDetails from "@/components/TokenCard/TokenDetails";
 import TokenDivider from "@/components/TokenCard/TokenDivider";
 import { Button } from "@/components/ui/button";
-import { Text } from "@/components/ui/text";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 import { useTotalAPY } from "@/hooks/useAnalytics";
 import useDeposit from "@/hooks/useDeposit";
-import { useTokenPriceUsd } from "@/hooks/useToken";
 import { Status } from "@/lib/types";
 import { compactNumberFormat } from "@/lib/utils";
 
 export default function Deposit() {
   const [amount, setAmount] = useState<string>("");
-  const {
-    balance,
-    deposit,
-    depositStatus
-  } = useDeposit();
-  const { data: price } = useTokenPriceUsd("usd-coin");
+  const { balance, deposit, depositStatus } = useDeposit();
   const isLoading = depositStatus === Status.PENDING;
-  const { data: totalAPY } = useTotalAPY()
+  const { data: totalAPY } = useTotalAPY();
 
   const amountWei = parseUnits(amount, 6);
   const formattedBalance = balance ? formatUnits(balance, 6) : "0";
 
   const getButtonText = () => {
     if (!amount) return "Enter an amount";
-    if (!balance || balance < amountWei) return "Insufficient balance";
+    if (
+      !balance ||
+      balance < amountWei
+      // || balance < parseUnits(costInUsd.toFixed(3), 6)
+    )
+      return "Insufficient balance";
     if (depositStatus === Status.PENDING) return "Depositing";
     if (depositStatus === Status.ERROR) return "Error while depositing";
     if (depositStatus === Status.SUCCESS) return "Successfully deposited";
@@ -55,7 +54,8 @@ export default function Deposit() {
             Deposit to your saving account
           </Text>
           <Text className="text-xl opacity-50 max-w-md">
-            Earn yield on your Earn yield on your Earn yield on your Earn yield on your Earn yield on your
+            Earn yield on your Earn yield on your Earn yield on your Earn yield
+            on your Earn yield on your
           </Text>
         </View>
         <View className="gap-4">
@@ -81,30 +81,29 @@ export default function Deposit() {
                   <Text className="text-2xl font-semibold">
                     {compactNumberFormat(Number(amount))} fUSDC
                   </Text>
-                  <Text className="text-lg opacity-40">
-                    {price ?
-                      `$${compactNumberFormat(Number(amount) * price)}` :
-                      <Skeleton className="w-20 h-5" />
-                    }
-                  </Text>
+                  {/* <Text className="text-lg opacity-40 text-right">
+                    {`(${compactNumberFormat(costInUsd)} USDC in fee)`}
+                  </Text> */}
                 </View>
               </TokenDetail>
               <TokenDetail className="md:flex-row md:items-center gap-4 md:gap-10">
-                <Text className="text-lg opacity-40 md:w-40">
-                  APY
-                </Text>
+                <Text className="text-lg opacity-40 md:w-40">APY</Text>
                 <View className="flex-row items-baseline gap-2">
                   <Text className="text-2xl font-semibold">
-                    {totalAPY ?
-                      `${totalAPY.toFixed(2)}%` :
+                    {totalAPY ? (
+                      `${totalAPY.toFixed(2)}%`
+                    ) : (
                       <Skeleton className="w-20 h-8" />
-                    }
+                    )}
                   </Text>
                   <Text className="text-sm opacity-40">
-                    {totalAPY ?
-                      `Earn ~${compactNumberFormat(Number(amount) * (totalAPY / 100))} USDC/year` :
+                    {totalAPY ? (
+                      `Earn ~${compactNumberFormat(
+                        Number(amount) * (totalAPY / 100)
+                      )} USDC/year`
+                    ) : (
                       <Skeleton className="w-20 h-6" />
-                    }
+                    )}
                   </Text>
                 </View>
               </TokenDetail>
@@ -117,21 +116,19 @@ export default function Deposit() {
                 className="rounded-2xl h-12"
                 onPress={handleClick}
                 disabled={
-                  !amount ||
-                  !balance ||
-                  balance < amountWei ||
-                  isLoading
+                  !amount || !balance || balance < amountWei || isLoading
                 }
               >
-                <Text className="text-lg font-semibold">
-                  {getButtonText()}
-                </Text>
+                <Text className="text-lg font-semibold">{getButtonText()}</Text>
               </Button>
             </CheckConnectionWrapper>
             <View className="flex-row items-center self-end gap-1">
               <Fuel size={14} />
               <Text className="text-sm text-muted-foreground">
-                Gasless Transaction
+                Gaslesss
+                {/* {`~ $${
+                  loading ? "..." : costInUsd.toFixed(2)
+                } in gas payable in USDC`} */}
               </Text>
             </View>
           </View>

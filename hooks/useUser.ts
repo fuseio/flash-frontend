@@ -1,11 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Safe4337Pack } from "@safe-global/relay-kit";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import * as passkeys from "react-native-passkeys";
-import { mainnet } from "viem/chains";
-
 import { path } from "@/constants/path";
 import {
   generateAuthenticationOptions,
@@ -21,6 +13,13 @@ import {
   withRefreshToken,
 } from "@/lib/utils";
 import { rpcUrls } from "@/lib/wagmi";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Safe4337Pack } from "@safe-global/relay-kit";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import * as passkeys from "react-native-passkeys";
+import { mainnet } from "viem/chains";
 import { fetchVaultBalance } from "./useVault";
 
 const useUser = () => {
@@ -227,9 +226,14 @@ const useUser = () => {
       provider: rpcUrls[mainnet.id],
       signer: passkey,
       bundlerUrl: USER.pimlicoUrl,
+      paymasterOptions: {
+        isSponsored: true,
+        paymasterUrl: USER.pimlicoUrl,
+      },
       // paymasterOptions: {
-      //   isSponsored: true,
-      //   paymasterUrl: USER.pimlicoUrl
+      //   paymasterTokenAddress: ADDRESSES.ethereum.usdc,
+      //   paymasterAddress: ADDRESSES.ethereum.paymasterAddress,
+      //   paymasterUrl: USER.pimlicoUrl,
       // },
       options: {
         owners: [],
