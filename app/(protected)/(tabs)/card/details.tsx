@@ -3,6 +3,7 @@ import { Plus } from "lucide-react-native";
 import React from "react";
 import { View } from "react-native";
 
+import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useCardDetails } from "@/hooks/useCardDetails";
@@ -14,13 +15,7 @@ export default function CardDetails() {
   const currency = availableBalance?.currency || "?";
   const availableAmount = availableBalance?.amount || "0";
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-background justify-center items-center">
-        <Text className="text-base opacity-70">Loading...</Text>
-      </View>
-    );
-  }
+  if (isLoading) return <Loading />
 
   return (
     <View className="flex-1 bg-background p-6">
@@ -44,7 +39,7 @@ export default function CardDetails() {
         <Image
           source={require("@/assets/images/card.png")}
           alt="Flash Card"
-          style={{ width: 800, height: 600 }}
+          style={{ width: "30%", aspectRatio: 4/3 }}
           contentFit="contain"
         />
       </View>
