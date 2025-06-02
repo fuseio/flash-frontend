@@ -58,7 +58,7 @@ export default function CardDetails() {
               style={{ width: 34, height: 34 }}
             />
           </Button>
-          <Text className="text-xs mt-2 text-[#BFBFBF]">Settings</Text>
+          <Text className="text-xs mt-2 text-muted-foreground">Settings</Text>
         </View>
 
         <View className="items-center">
@@ -68,7 +68,7 @@ export default function CardDetails() {
               style={{ width: 34, height: 34 }}
             />
           </Button>
-          <Text className="text-xs mt-2 text-[#BFBFBF]">Limit</Text>
+          <Text className="text-xs mt-2 text-muted-foreground">Limit</Text>
         </View>
 
         <View className="items-center">
@@ -78,7 +78,7 @@ export default function CardDetails() {
               style={{ width: 28, height: 28 }}
             />
           </Button>
-          <Text className="text-xs mt-2 text-[#BFBFBF]">Freeze</Text>
+          <Text className="text-xs mt-2 text-muted-foreground">Freeze</Text>
         </View>
       </View>
     </View>
