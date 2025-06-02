@@ -144,13 +144,14 @@ const useUser = () => {
       );
 
       const user = await withRefreshToken(
-        verifyRegistration({
-          ...authenticatorReponse,
-          response: {
-            ...authenticatorReponse.response,
-            publicKey,
-          },
-        }),
+        () =>
+          verifyRegistration({
+            ...authenticatorReponse,
+            response: {
+              ...authenticatorReponse.response,
+              publicKey,
+            },
+          }),
         { onError: handleLogin }
       );
 
