@@ -1,18 +1,23 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Safe4337Pack } from '@safe-global/relay-kit'
-import { useQueryClient } from "@tanstack/react-query"
-import { useRouter } from "expo-router"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import * as passkeys from "react-native-passkeys"
-import { mainnet } from "viem/chains"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Safe4337Pack } from "@safe-global/relay-kit";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import * as passkeys from "react-native-passkeys";
+import { mainnet } from "viem/chains";
 
-import { path } from "@/constants/path"
-import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api"
-import { USER } from "@/lib/config"
-import { PasskeyArgType, Status, User } from "@/lib/types"
-import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils"
-import { rpcUrls } from "@/lib/wagmi"
-import { fetchVaultBalance } from "./useVault"
+import { path } from "@/constants/path";
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthentication,
+  verifyRegistration,
+} from "@/lib/api";
+import { USER } from "@/lib/config";
+import { PasskeyArgType, Status, User } from "@/lib/types";
+import { bufferToBase64URLString, withRefreshToken } from "@/lib/utils";
+import { rpcUrls } from "@/lib/wagmi";
+import { fetchVaultBalance } from "./useVault";
 
 const useUser = () => {
   const [signupInfo, setSignupInfo] = useState<{
@@ -42,7 +47,7 @@ const useUser = () => {
       });
 
       if (isUserExists) {
-        newUsers = prevUsers
+        newUsers = prevUsers;
       } else {
         newUsers = [...prevUsers, user];
       }
@@ -77,12 +82,15 @@ const useUser = () => {
   const selectUser = async (username: string) => {
     let newUsers;
     setUsers((prevUsers) => {
-      newUsers = prevUsers.map((user) => ({ ...user, selected: user.username === username }));
+      newUsers = prevUsers.map((user) => ({
+        ...user,
+        selected: user.username === username,
+      }));
       return newUsers;
     });
     await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
     router.replace(path.HOME);
-  }
+  };
 
   const unselectUser = async () => {
     let newUsers;
@@ -91,7 +99,7 @@ const useUser = () => {
       return newUsers;
     });
     await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
-  }
+  };
 
   const user = useMemo(() => {
     if (!users.length) return;
@@ -103,7 +111,7 @@ const useUser = () => {
     setUsers([]);
     await AsyncStorage.removeItem(USER.storageKey);
     router.replace(path.REGISTER);
-  }
+  };
 
   async function checkBalance(user: User) {
     try {
@@ -113,7 +121,7 @@ const useUser = () => {
         return;
       }
     } catch (error) {
-      console.error('Error fetching tokens:', error);
+      console.error("Error fetching tokens:", error);
     }
     router.replace(path.HOME);
   }
@@ -123,12 +131,14 @@ const useUser = () => {
       setSignupInfo({ status: Status.PENDING });
 
       const optionsJSON = await generateRegistrationOptions(username);
-      const authenticatorReponse = await passkeys.create(optionsJSON)
+      const authenticatorReponse = await passkeys.create(optionsJSON);
       if (!authenticatorReponse) {
         throw new Error("Error while creating passkey registration");
       }
 
-      const publicKey = bufferToBase64URLString(authenticatorReponse.response.getPublicKey())
+      const publicKey = bufferToBase64URLString(
+        authenticatorReponse.response.getPublicKey()
+      );
 
       const user = await withRefreshToken(
         verifyRegistration({
@@ -212,27 +222,35 @@ const useUser = () => {
       provider: rpcUrls[mainnet.id],
       signer: passkey,
       bundlerUrl: USER.pimlicoUrl,
+      paymasterOptions: {
+        isSponsored: true,
+        paymasterUrl: USER.pimlicoUrl,
+      },
       // paymasterOptions: {
-      //   isSponsored: true,
-      //   paymasterUrl: USER.pimlicoUrl
+      //   paymasterTokenAddress: ADDRESSES.ethereum.usdc,
+      //   paymasterAddress: ADDRESSES.ethereum.paymasterAddress,
+      //   paymasterUrl: USER.pimlicoUrl,
       // },
       options: {
         owners: [],
-        threshold: 1
-      }
-    })
-  }, [])
+        threshold: 1,
+      },
+    });
+  }, []);
 
-  const userOpReceipt = useCallback(async (safe4337Pack: Safe4337Pack, userOperationHash: string) => {
-    let userOperationReceipt = null
-    while (!userOperationReceipt) {
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      userOperationReceipt = await safe4337Pack.getUserOperationReceipt(
-        userOperationHash
-      )
-    }
-    return userOperationReceipt
-  }, [])
+  const userOpReceipt = useCallback(
+    async (safe4337Pack: Safe4337Pack, userOperationHash: string) => {
+      let userOperationReceipt = null;
+      while (!userOperationReceipt) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        userOperationReceipt = await safe4337Pack.getUserOperationReceipt(
+          userOperationHash
+        );
+      }
+      return userOperationReceipt;
+    },
+    []
+  );
 
   useEffect(() => {
     loadUsers();
@@ -251,7 +269,7 @@ const useUser = () => {
     handleLogout,
     removeUsers,
     safeAA,
-    userOpReceipt
+    userOpReceipt,
   };
 };
 
