@@ -1,26 +1,34 @@
-import { path } from "@/constants/path";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  generateAuthenticationOptions,
-  generateRegistrationOptions,
-  verifyAuthentication,
-  verifyRegistration,
-} from "@/lib/api";
-import { USER } from "@/lib/config";
-import { PasskeyArgType, Status, User } from "@/lib/types";
-import {
-  bufferToBase64URLString,
-  setGlobalLogoutHandler,
-  withRefreshToken,
-} from "@/lib/utils";
-import { rpcUrls } from "@/lib/wagmi";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Safe4337Pack } from "@safe-global/relay-kit";
+  getWebAuthnValidator,
+  RHINESTONE_ATTESTER_ADDRESS
+} from "@rhinestone/module-sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { PublicKey } from "ox";
+import { createSmartAccountClient } from "permissionless";
+import {
+  toSafeSmartAccount
+} from "permissionless/accounts";
+import { erc7579Actions } from "permissionless/actions/erc7579";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as passkeys from "react-native-passkeys";
+import { toAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
+
+import { path } from "@/constants/path";
+import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api";
+import { USER } from "@/lib/config";
+import { pimlicoClient } from '@/lib/pimlico';
+import { PasskeyArgType, Status, User } from "@/lib/types";
+import { bufferToBase64URLString, decodePublicKey, getNonce, setGlobalLogoutHandler, withRefreshToken } from "@/lib/utils";
+import { publicClient } from "@/lib/wagmi";
+import { http } from 'viem';
+import {
+  entryPoint07Address
+} from "viem/account-abstraction";
 import { fetchVaultBalance } from "./useVault";
+
 
 const useUser = () => {
   const [signupInfo, setSignupInfo] = useState<{
@@ -102,7 +110,7 @@ const useUser = () => {
       return newUsers;
     });
     await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
-  }, [router]);
+  }, []);
 
   const user = useMemo(() => {
     if (!users.length) return;
@@ -139,21 +147,25 @@ const useUser = () => {
         throw new Error("Error while creating passkey registration");
       }
 
-      const publicKey = bufferToBase64URLString(
-        authenticatorReponse.response.getPublicKey()
-      );
+      const publicKey = bufferToBase64URLString(authenticatorReponse.response.getPublicKey())
+      const coordinates = await decodePublicKey(authenticatorReponse.response)
+      const smartAccountClient = await safeAA({
+        rawId: authenticatorReponse.rawId,
+        credentialId: authenticatorReponse.id,
+        coordinates: coordinates,
+      })
 
       const user = await withRefreshToken(
-        () =>
-          verifyRegistration({
-            ...authenticatorReponse,
-            response: {
-              ...authenticatorReponse.response,
-              publicKey,
-            },
-          }),
+        () => verifyRegistration({
+          ...authenticatorReponse,
+          response: {
+            ...authenticatorReponse.response,
+            publicKey,
+          },
+        }, smartAccountClient.account.address),
         { onError: handleLogin }
       );
+
 
       if (user) {
         storeUser({ ...user, selected: true });
@@ -210,6 +222,7 @@ const useUser = () => {
           x: "dummy",
           y: "dummy",
         },
+        credentialId: "dummy",
       },
     });
     router.replace(path.HOME);
@@ -222,39 +235,66 @@ const useUser = () => {
   }, [unselectUser, router]);
 
   const safeAA = useCallback(async (passkey: PasskeyArgType) => {
-    return Safe4337Pack.init({
-      provider: rpcUrls[mainnet.id],
-      signer: passkey,
-      bundlerUrl: USER.pimlicoUrl,
-      paymasterOptions: {
-        isSponsored: true,
-        paymasterUrl: USER.pimlicoUrl,
+    const { x, y, prefix } = PublicKey.from({
+      prefix: 4,
+      x: BigInt(passkey.coordinates.x),
+      y: BigInt(passkey.coordinates.y),
+    });
+    const webauthnValidator = getWebAuthnValidator({
+      pubKey: { x, y, prefix },
+      authenticatorId: passkey.credentialId,
+    });
+
+    const deadOwner = toAccount({
+      address: "0x000000000000000000000000000000000000dead",
+      async signMessage() {
+        return "0x";
       },
-      // paymasterOptions: {
-      //   paymasterTokenAddress: ADDRESSES.ethereum.usdc,
-      //   paymasterAddress: ADDRESSES.ethereum.paymasterAddress,
-      //   paymasterUrl: USER.pimlicoUrl,
-      // },
-      options: {
-        owners: [],
-        threshold: 1,
+      async signTransaction() {
+        return "0x";
+      },
+      async signTypedData() {
+        return "0x";
       },
     });
-  }, []);
 
-  const userOpReceipt = useCallback(
-    async (safe4337Pack: Safe4337Pack, userOperationHash: string) => {
-      let userOperationReceipt = null;
-      while (!userOperationReceipt) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        userOperationReceipt = await safe4337Pack.getUserOperationReceipt(
-          userOperationHash
-        );
-      }
-      return userOperationReceipt;
-    },
-    []
-  );
+    const safeAccount = await toSafeSmartAccount({
+      saltNonce: await getNonce({
+        appId: 'solid',
+      }),
+      client: publicClient(mainnet.id),
+      owners: [deadOwner],
+      version: "1.4.1",
+      entryPoint: {
+        address: entryPoint07Address,
+        version: "0.7",
+      },
+      safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
+      erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
+      attesters: [
+        RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
+      ],
+      attestersThreshold: 1,
+      validators: [
+        {
+          address: webauthnValidator.address,
+          context: webauthnValidator.initData,
+        },
+      ],
+    });
+    const _smartAccountClient = createSmartAccountClient({
+      account: safeAccount,
+      chain: mainnet,
+      paymaster: pimlicoClient,
+      userOperation: {
+        estimateFeesPerGas: async () =>
+          (await pimlicoClient.getUserOperationGasPrice()).standard,
+      },
+      bundlerTransport: http(USER.pimlicoUrl),
+    }).extend(erc7579Actions());
+
+    return _smartAccountClient
+  }, [])
 
   useEffect(() => {
     loadUsers();
@@ -273,8 +313,7 @@ const useUser = () => {
     selectUser,
     handleLogout,
     removeUsers,
-    safeAA,
-    userOpReceipt,
+    safeAA
   };
 };
 

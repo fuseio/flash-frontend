@@ -1,4 +1,8 @@
 import '@/global.css';
+
+// see: https://solana.stackexchange.com/a/6244
+global.Buffer = require('buffer').Buffer;
+
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
