@@ -204,3 +204,8 @@ export type Transaction = {
   amount: number;
   status: LayerZeroTransactionStatus;
 }
+
+export type Faq = {
+  question: string;
+  answer: string;
+}
