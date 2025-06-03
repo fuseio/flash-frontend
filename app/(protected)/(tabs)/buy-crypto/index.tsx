@@ -58,9 +58,8 @@ export async function buildMercuryoWidgetUrl({
     url += `&address=${address}`;
     url += `&merchant_transaction_id=${merchantTransactionId}`;
     url += `&signature=${encodeURIComponent(signature)}`;
-    url += `&type=sell`;
+    url += `&type=buy`;
     url += `&fiat_currency=EUR`;
-    url += `&payment_method=spend_card`;
 
     return url;
   } catch (error) {
