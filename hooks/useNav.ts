@@ -31,6 +31,10 @@ const defaultMenuItems: MenuItem[] = [
   {
     label: "Card",
     href: path.CARD,
+  },
+  {
+    label: "Buy Crypto",
+    href: path.BUY_CRYPTO,
   }
 ]
 
