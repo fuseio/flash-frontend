@@ -1,5 +1,5 @@
-import { Pressable, View, type PressableProps } from 'react-native';
 import * as React from 'react';
+import { Pressable, View, type PressableProps } from 'react-native';
 
 import { TextClassContext } from '@/components/ui/text';
 import { cn } from '@/lib/utils';
@@ -61,7 +61,7 @@ const navigationMenuLinkClassNames = {
   text: "text-lg font-semibold text-foreground group-hover:text-primary-foreground group-focus:text-primary-foreground",
 }
 
-const NavigationMenuLink = React.forwardRef<React.ElementRef<typeof Pressable>, NavigationMenuLinkProps>(
+const NavigationMenuLink = React.forwardRef<React.ComponentRef<typeof Pressable>, NavigationMenuLinkProps>(
   ({ onPress, className, active, children }, ref) => {
     const pressableClass = cn(
       navigationMenuLinkClassNames.pressable,
