@@ -226,6 +226,7 @@ const useUser = () => {
       provider: rpcUrls[mainnet.id],
       signer: passkey,
       bundlerUrl: USER.pimlicoUrl,
+      safeModulesVersion: '0.3.0',
       paymasterOptions: {
         isSponsored: true,
         paymasterUrl: USER.pimlicoUrl,
