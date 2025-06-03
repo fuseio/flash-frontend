@@ -13,6 +13,7 @@ import useUser from "@/hooks/useUser";
 import { ADDRESSES } from "@/lib/config";
 import { useVaultBalance } from "@/hooks/useVault";
 import Transaction from "@/components/Transaction";
+import WithdrawModal from "@/components/Withdraw/WithdrawModal";
 
 import Deposit from "@/assets/images/deposit";
 
@@ -40,6 +41,7 @@ export default function Dashboard() {
               <Deposit className="size-6" />
               <Text className="text-primary-foreground font-semibold">Deposit</Text>
             </Link>
+            <WithdrawModal />
           </View>
         </View>
 

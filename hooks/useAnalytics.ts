@@ -50,7 +50,7 @@ export const useTransactions = (
           if (transactionTokenTransfer.token.address !== ADDRESSES.ethereum.usdc) return;
 
           transactions.push({
-            title: "Deposit",
+            title: "Deposit USDC",
             timestamp: internalTransaction.timestamp,
             amount: Number(formatUnits(BigInt(transactionTokenTransfer.total.value), Number(transactionTokenTransfer.total.decimals))),
             status: lzTransactions.data[0].status.name,
