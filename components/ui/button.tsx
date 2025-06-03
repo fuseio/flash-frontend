@@ -1,8 +1,9 @@
+import { TextClassContext } from '@/components/ui/text';
+import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 import { Pressable } from 'react-native';
-import { cn } from '@/lib/utils';
-import { TextClassContext } from '@/components/ui/text';
+import { Spinner } from './spinner';
 
 const buttonVariants = cva(
   'group flex flex-row items-center justify-center gap-2 rounded-md web:ring-offset-background web:transition-colors web:focus-visible:outline-none web:focus-visible:ring-2 web:focus-visible:ring-ring web:focus-visible:ring-offset-2',
@@ -62,7 +63,7 @@ const buttonTextVariants = cva(
 type ButtonProps = React.ComponentPropsWithoutRef<typeof Pressable> &
   VariantProps<typeof buttonVariants>;
 
-const Button = React.forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
+const Button = React.forwardRef<React.ComponentRef<typeof Pressable>, ButtonProps>(
   ({ className, variant, size, ...props }, ref) => {
     return (
       <TextClassContext.Provider
@@ -83,5 +84,30 @@ const Button = React.forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>
 );
 Button.displayName = 'Button';
 
-export { Button, buttonTextVariants, buttonVariants };
-export type { ButtonProps };
+type LoaderButtonProps = ButtonProps & {
+  loading?: boolean;
+  children: React.ReactNode;
+};
+
+const LoaderButton = React.forwardRef<
+  React.ComponentRef<typeof Button>,
+  LoaderButtonProps
+>(({ children, loading, className, ...props }, ref) => {
+  return (
+    <Button
+      ref={ref}
+      className={cn("relative", className)}
+      {...props}
+      disabled={props.disabled || loading}
+    >
+      {loading && <Spinner size={18} className="absolute left-14 mx-auto" />}
+      {children}
+    </Button>
+  );
+});
+
+LoaderButton.displayName = "LoaderButton";
+
+export { Button, buttonTextVariants, buttonVariants, LoaderButton };
+export type { ButtonProps, LoaderButtonProps };
+

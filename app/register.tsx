@@ -6,16 +6,24 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
+import { useAuthRelay } from '@/hooks/useAuthRelayer'
 import useUser from '@/hooks/useUser'
 import { Status } from '@/lib/types'
 
 export default function Register() {
+  const {
+    state,
+    // initOtpLogin,
+    signUpWithPasskey,
+    loginWithPasskey,
+    // loginWithOAuth,
+  } = useAuthRelay();
   const [username, setUsername] = useState('')
   const { signupInfo, handleSignup, loginInfo, handleLogin, handleDummyLogin } = useUser()
 
-  const handleSignupForm = () => {
-    handleSignup(username)
-  }
+  // const handleSignupForm = () => {
+  //   handleSignup(username)
+  // }
 
   return (
     <SafeAreaView className="bg-background text-foreground flex-1">
@@ -47,7 +55,7 @@ export default function Register() {
               />
               <Button
                 variant="brand"
-                onPress={handleSignupForm}
+                onPress={() => signUpWithPasskey(username)}
                 disabled={signupInfo.status === Status.PENDING || !username}
                 className="rounded-xl md:rounded-twice h-14"
               >
@@ -68,8 +76,11 @@ export default function Register() {
             <Text className="text-center">OR</Text>
 
             <Button
-              onPress={handleLogin}
-              disabled={loginInfo.status === Status.PENDING}
+              disabled={!!state.loading}
+              // loading={state.loading === LoginMethod.Passkey}
+              onPress={() => loginWithPasskey()}
+              // onPress={handleLogin}
+              // disabled={loginInfo.status === Status.PENDING}
               variant="outline"
               className="rounded-xl md:rounded-twice h-14"
             >
