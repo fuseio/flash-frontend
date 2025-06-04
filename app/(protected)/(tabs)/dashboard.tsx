@@ -14,6 +14,8 @@ import { ADDRESSES } from "@/lib/config";
 import { useVaultBalance } from "@/hooks/useVault";
 import Transaction from "@/components/Transaction";
 import WithdrawModal from "@/components/Withdraw/WithdrawModal";
+import FAQ from "@/components/FAQ";
+import faqs from "@/constants/faqs";
 
 import Deposit from "@/assets/images/deposit";
 
@@ -118,6 +120,11 @@ export default function Dashboard() {
               </Text>
             )}
           </View>
+        </View>
+
+        <View className="flex-col items-center gap-16 w-full max-w-screen-md mx-auto mt-20">
+          <Text className="text-4.5xl font-semibold max-w-80 text-center">Frequently asked questions</Text>
+          <FAQ faqs={faqs} />
         </View>
       </View>
     </ScrollView>

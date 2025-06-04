@@ -246,11 +246,16 @@ export const fetchTransactionTokenTransfers = async (
 	return response.data;
 };
 
-export const fetchLayerZeroBridgeTransactions = async (
-	transactionHash: string,
-): Promise<LayerZeroTransaction> => {
-	const response = await axios.get(
-		`https://scan.layerzero-api.com/v1/messages/tx/${transactionHash}`,
-	);
+export const fetchLayerZeroBridgeTransactions = async (transactionHash: string): Promise<LayerZeroTransaction> => {
+	const response = await axios.get(`https://scan.layerzero-api.com/v1/messages/tx/${transactionHash}`);
 	return response.data;
-};
+}
+
+export const getClientIp = async () => {
+	try {
+		const response = await axios.get("https://api.ipify.org?format=json")
+		return response.data.ip
+	} catch (error) {
+		console.error("Error fetching IP from ipify:", error);
+	}
+}
