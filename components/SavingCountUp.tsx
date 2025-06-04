@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { AnimatedRollingNumber } from "react-native-animated-rolling-numbers";
 
 import { Text } from "@/components/ui/text";
+import { isDesktop } from '@/lib/utils';
 
 interface SavingCountUpProps {
   balance: number;
@@ -10,6 +12,7 @@ interface SavingCountUpProps {
 }
 
 const SECONDS_PER_YEAR = 31_557_600;
+const DURATION = 1000;
 
 const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
   const [liveYield, setLiveYield] = useState<number>(0);
@@ -34,14 +37,31 @@ const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
   }, [balance, apy, lastTimestamp, calculateLiveYield]);
 
   const wholeNumber = Math.floor(liveYield);
-  const decimalPart = (liveYield - wholeNumber).toFixed(7).slice(1);
+  const decimalPart = Number((liveYield - wholeNumber).toFixed(7).slice(2));
 
   return (
-    <View className="flex-row items-baseline">
-      <Text className="text-4xl md:text-8xl font-medium">{wholeNumber}</Text>
-      <Text className="text-2xl md:text-4.5xl font-medium">{decimalPart}</Text>
+    <View className="flex-row items-baseline text-foreground">
+      <AnimatedRollingNumber
+        value={wholeNumber}
+        textStyle={{ fontSize: isDesktop() ? 96 : 36, ...styles.digit }}
+        spinningAnimationConfig={{ duration: DURATION }}
+      />
+      <Text className="text-2xl md:text-4.5xl font-medium">.</Text>
+      <AnimatedRollingNumber
+        value={decimalPart}
+        formattedText={decimalPart.toString().padStart(7, '0')}
+        textStyle={{ fontSize: isDesktop() ? 40 : 24, ...styles.digit }}
+        spinningAnimationConfig={{ duration: DURATION }}
+      />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  digit: {
+    fontWeight: "medium",
+    color: "#ffffff",
+  },
+});
 
 export default SavingCountUp;
