@@ -96,7 +96,6 @@ const useDeposit = (): DepositResult => {
         validator: WEBAUTHN_VALIDATOR_ADDRESS,
       }),
     });
-    console.log("nonce", nonce);
 
     const userOperation = await smartAccountClient.prepareUserOperation({
       account: smartAccountClient.account,
@@ -183,7 +182,7 @@ const useDeposit = (): DepositResult => {
           functionName: "approve",
           args: [ADDRESSES.ethereum.vault, amountWei],
         }),
-        value: "0",
+        value: 0n,
       };
 
       await executeTransactions(
@@ -226,7 +225,7 @@ const useDeposit = (): DepositResult => {
             functionName: "approve",
             args: [ADDRESSES.ethereum.vault, amountWei],
           }),
-          value: "0",
+          value: 0n,
         });
       }
 
@@ -246,7 +245,7 @@ const useDeposit = (): DepositResult => {
             fee ? (fee * BigInt(12)) / BigInt(10) : BigInt(0),
           ],
         }),
-        value: fee?.toString() || "0",
+        value: fee?.toString() || 0n,
       });
 
       await executeTransactions(

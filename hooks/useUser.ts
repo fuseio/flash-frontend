@@ -288,7 +288,7 @@ const useUser = () => {
       paymaster: pimlicoClient,
       userOperation: {
         estimateFeesPerGas: async () =>
-          (await pimlicoClient.getUserOperationGasPrice()).standard,
+          (await pimlicoClient.getUserOperationGasPrice()).fast,
       },
       bundlerTransport: http(USER.pimlicoUrl),
     }).extend(erc7579Actions());
