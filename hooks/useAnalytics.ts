@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { QueryClient, useQuery } from "@tanstack/react-query"
 import { formatUnits } from "viem"
 
 import { fetchInternalTransactions, fetchLayerZeroBridgeTransactions, fetchTokenTransfer, fetchTotalAPY, fetchTransactionTokenTransfers } from "@/lib/api"
@@ -63,4 +63,28 @@ export const useTransactions = (
     enabled: !!safeAddress,
     refetchOnWindowFocus: false
   })
+}
+
+export const isDepositedQueryOptions = (safeAddress: string) => {
+  return {
+    queryKey: [ANALYTICS, "isDeposited", safeAddress],
+    queryFn: async () => {
+      const internalTransactions = await fetchInternalTransactions(safeAddress)
+      let deposited = false
+
+      internalTransactions.items.forEach(async (internalTransaction) => {
+        if (internalTransaction.to.hash !== ADDRESSES.ethereum.teller) return;
+
+        deposited = true
+      })
+
+      return deposited
+    },
+    enabled: !!safeAddress,
+    refetchOnWindowFocus: false
+  }
+}
+
+export const fetchIsDeposited = (queryClient: QueryClient, safeAddress: string) => {
+  return queryClient.fetchQuery(isDepositedQueryOptions(safeAddress))
 }

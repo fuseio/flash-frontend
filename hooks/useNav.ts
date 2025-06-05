@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react"
-import { mainnet } from "viem/chains"
 import { Href } from "expo-router"
 
 import useUser from "@/hooks/useUser"
-import { useTokenSelector } from "@/hooks/useToken"
-import { TOKEN_MAP } from "@/constants/tokens"
-import { Status } from "@/lib/types"
 import { path } from "@/constants/path";
 
 type MenuItem = {
@@ -40,15 +36,11 @@ const defaultMenuItems: MenuItem[] = [
 
 const useNav = () => {
   const { user } = useUser();
-  const { tokenStatus, totalBalance } = useTokenSelector({ tokens: TOKEN_MAP[mainnet.id], safeAddress: user?.safeAddress })
-  const isTokenReady = tokenStatus === Status.SUCCESS || tokenStatus === Status.ERROR;
-  const isDashboard = isTokenReady && totalBalance;
+  const isDashboard = user?.isDeposited
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
 
   useEffect(() => {
-    if(!isTokenReady) return;
-
     let newMenuItems: MenuItem[] = []
 
     if (isDashboard) {
@@ -58,8 +50,7 @@ const useNav = () => {
     }
 
     setMenuItems([...newMenuItems, ...defaultMenuItems])
-  }, [isTokenReady, totalBalance])
-
+  }, [isDashboard])
 
   return {
     menuItems,

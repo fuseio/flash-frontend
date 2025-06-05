@@ -29,6 +29,7 @@ export interface User {
     coordinates: PasskeyCoordinates,
     credentialId: string,
   }
+  isDeposited?: boolean;
 }
 
 export interface BlockscoutTransaction {
@@ -209,4 +210,9 @@ export type Transaction = {
 export type Faq = {
   question: string;
   answer: string;
+}
+
+export type StatusInfo = {
+  status: Status;
+  message?: string;
 }

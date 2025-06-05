@@ -1,32 +1,18 @@
-import { Redirect, SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
+import { Redirect, Stack } from "expo-router";
 
 import { path } from "@/constants/path";
-import { Status } from "@/lib/types";
 import useUser from "@/hooks/useUser";
-import Loading from "@/components/Loading";
-
-SplashScreen.preventAutoHideAsync();
+import { useUserStore } from "@/store/useUserStore";
 
 export default function ProtectedLayout() {
-  const { user, userStatus } = useUser();
-  const isReady = userStatus === Status.SUCCESS || userStatus === Status.ERROR;
+  const { user } = useUser();
+  const { users } = useUserStore();
 
-  useEffect(() => {
-    if (isReady) {
-      SplashScreen.hideAsync();
-    }
-  }, [isReady]);
-
-  if (!isReady) {
-    return <Loading />;
-  }
-
-  if (userStatus === Status.ERROR) {
+  if (!users.length) {
     return <Redirect href={path.REGISTER} />;
   }
 
-  if (userStatus === Status.SUCCESS && !user) {
+  if (users.length && !user) {
     return <Redirect href={path.WELCOME} />;
   }
 

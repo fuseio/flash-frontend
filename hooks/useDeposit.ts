@@ -25,6 +25,7 @@ import {
 import { sign } from 'ox/WebAuthnP256';
 import { entryPoint07Address, getUserOperationHash } from 'viem/account-abstraction';
 import useUser from "./useUser";
+import { useUserStore } from '@/store/useUserStore';
 
 type DepositResult = {
   allowance: bigint | undefined;
@@ -38,6 +39,7 @@ type DepositResult = {
 
 const useDeposit = (): DepositResult => {
   const { user, safeAA } = useUser();
+  const { updateUser } = useUserStore();
   const [approveStatus, setApproveStatus] = useState<Status>(Status.IDLE);
   const [depositStatus, setDepositStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string | null>(null);
@@ -254,6 +256,10 @@ const useDeposit = (): DepositResult => {
         "Deposit failed"
       );
 
+      updateUser({
+        ...user,
+        isDeposited: true,
+      });
       setDepositStatus(Status.SUCCESS);
     } catch (error) {
       console.error(error);

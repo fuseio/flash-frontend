@@ -10,9 +10,11 @@ import useUser from '@/hooks/useUser'
 import { path } from '@/constants/path'
 import { eclipseUsername } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useUserStore } from '@/store/useUserStore'
 
 export default function Welcome() {
-  const { users, removeUsers, selectUser } = useUser()
+  const { handleRemoveUsers, handleSelectUser } = useUser()
+  const { users } = useUserStore()
   const router = useRouter()
 
   return (
@@ -36,7 +38,7 @@ export default function Welcome() {
             <Button
               key={user.username}
               className='justify-between bg-primary/10 rounded-xl h-16'
-              onPress={() => selectUser(user.username)}
+              onPress={() => handleSelectUser(user.username)}
             >
               <View className='flex-row items-center gap-2'>
                 <View className='bg-primary/15 rounded-md w-8 h-8 justify-center items-center'>
@@ -60,7 +62,7 @@ export default function Welcome() {
           <Button
             variant="ghost"
             className="rounded-xl h-12"
-            onPress={removeUsers}
+            onPress={handleRemoveUsers}
           >
             <Text className='text-lg font-semibold'>Forget all users</Text>
           </Button>

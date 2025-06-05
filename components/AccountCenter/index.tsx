@@ -14,7 +14,7 @@ const AccountCenter = () => {
     <View className="flex-col gap-2 md:min-h-64">
       <Text className="text-sm text-muted-foreground">Safe Address</Text>
       <View className="flex-row justify-between items-center px-4 py-2 bg-primary/10 rounded-2xl text-primary font-medium">
-        <Text>{eclipseAddress(user?.safeAddress || '')}</Text>
+        <Text>{user?.safeAddress ? eclipseAddress(user?.safeAddress) : ''}</Text>
         <CopyToClipboard text={user?.safeAddress || ''} />
       </View>
     </View>

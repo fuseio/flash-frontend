@@ -48,6 +48,7 @@
     "expo-system-ui": "~5.0.7",
     "expo-updates": "~0.28.13",
     "expo-web-browser": "~14.1.6",
+    "immer": "^10.1.1",
     "lucide-react-native": "^0.510.0",
     "nativewind": "^4.1.23",
     "ox": "0.6.7",
@@ -58,6 +59,7 @@
     "react-native-animated-rolling-numbers": "^2.0.0",
     "react-native-css-interop": "^0.1.18",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-mmkv": "^3.2.0",
     "react-native-passkeys": "^0.3.3",
     "react-native-qrcode-svg": "^6.3.15",
     "react-native-reanimated": "~3.17.4",
@@ -71,7 +73,8 @@
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.29.2",
     "wagmi": "^2.15.2",
-    "zod": "^3.25.48"
+    "zod": "^3.25.48",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.27.1",

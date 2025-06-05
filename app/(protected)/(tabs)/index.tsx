@@ -2,30 +2,19 @@ import { Image } from "expo-image";
 import { Link, Redirect } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { ScrollView, View } from "react-native";
-import { mainnet } from "viem/chains";
 
-import Loading from "@/components/Loading";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
-import { TOKEN_MAP } from "@/constants/tokens";
 import { useTotalAPY } from "@/hooks/useAnalytics";
-import { useTokenSelector } from "@/hooks/useToken";
 import useUser from "@/hooks/useUser";
-import { Status } from "@/lib/types";
 
 export default function Home() {
   const { user } = useUser();
-  const { tokenStatus, totalBalance } = useTokenSelector({ tokens: TOKEN_MAP[mainnet.id], safeAddress: user?.safeAddress })
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
-  const isLoading = tokenStatus === Status.IDLE || tokenStatus === Status.PENDING;
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
-  if (totalBalance) {
+  if (user?.isDeposited) {
     return <Redirect href={path.DASHBOARD} />;
   }
 

@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   getWebAuthnValidator,
   RHINESTONE_ATTESTER_ADDRESS
@@ -11,7 +10,7 @@ import {
   toSafeSmartAccount
 } from "permissionless/accounts";
 import { erc7579Actions } from "permissionless/actions/erc7579";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import * as passkeys from "react-native-passkeys";
 import { toAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
@@ -27,107 +26,35 @@ import { http } from 'viem';
 import {
   entryPoint07Address
 } from "viem/account-abstraction";
-import { fetchVaultBalance } from "./useVault";
-
+import { useUserStore } from "@/store/useUserStore";
+import { fetchIsDeposited } from "./useAnalytics";
 
 const useUser = () => {
-  const [signupInfo, setSignupInfo] = useState<{
-    status: Status;
-    message?: string;
-  }>({ status: Status.IDLE, message: "" });
-  const [loginInfo, setLoginInfo] = useState<{
-    status: Status;
-    message?: string;
-  }>({ status: Status.IDLE, message: "" });
-  const [userStatus, setUserStatus] = useState<Status>(Status.IDLE);
-  const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
   const queryClient = useQueryClient();
-
-  async function storeUser(user: User) {
-    let newUsers;
-    setUsers((prevUsers) => {
-      let isUserExists = false;
-      prevUsers.forEach((prevUser) => {
-        if (prevUser.username === user.username) {
-          isUserExists = true;
-          prevUser.selected = true;
-        } else {
-          prevUser.selected = false;
-        }
-      });
-
-      if (isUserExists) {
-        newUsers = prevUsers;
-      } else {
-        newUsers = [...prevUsers, user];
-      }
-
-      return newUsers;
-    });
-
-    if (newUsers) {
-      await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
-    }
-  }
-
-  const loadUsers = useCallback(async () => {
-    try {
-      setUserStatus(Status.PENDING);
-      const users = await AsyncStorage.getItem(USER.storageKey);
-      if (!users) {
-        throw new Error("User not found");
-      }
-
-      const parsedUsers = JSON.parse(users);
-      setUsers(parsedUsers);
-      setUserStatus(Status.SUCCESS);
-
-      return parsedUsers;
-    } catch (error) {
-      console.log(error);
-      setUserStatus(Status.ERROR);
-    }
-  }, []);
-
-  const selectUser = async (username: string) => {
-    let newUsers;
-    setUsers((prevUsers) => {
-      newUsers = prevUsers.map((user) => ({
-        ...user,
-        selected: user.username === username,
-      }));
-      return newUsers;
-    });
-    await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
-    router.replace(path.HOME);
-  };
-
-  const unselectUser = useCallback(async () => {
-    let newUsers;
-    setUsers((prevUsers) => {
-      newUsers = prevUsers.map((user) => ({ ...user, selected: false }));
-      return newUsers;
-    });
-    await AsyncStorage.setItem(USER.storageKey, JSON.stringify(newUsers));
-  }, []);
+  const {
+    users,
+    storeUser,
+    updateUser,
+    selectUser,
+    unselectUser,
+    removeUsers,
+    setSignupInfo,
+    setLoginInfo
+  } = useUserStore();
 
   const user = useMemo(() => {
-    if (!users.length) return;
-
-    return users.find((user) => user.selected);
+    return users.find((user: User) => user.selected)
   }, [users]);
-
-  const removeUsers = async () => {
-    setUsers([]);
-    await AsyncStorage.removeItem(USER.storageKey);
-    router.replace(path.REGISTER);
-  };
 
   async function checkBalance(user: User) {
     try {
-      const balance = await fetchVaultBalance(queryClient, user.safeAddress);
-      if (balance) {
+      const isDeposited = await fetchIsDeposited(queryClient, user.safeAddress);
+      if (isDeposited) {
+        updateUser({
+          ...user,
+          isDeposited: true,
+        });
         router.replace(path.DASHBOARD);
         return;
       }
@@ -166,10 +93,10 @@ const useUser = () => {
         { onError: handleLogin }
       );
 
-
       if (user) {
-        storeUser({ ...user, selected: true });
-        await checkBalance(user);
+        const selectedUser = { ...user, selected: true };
+        storeUser(selectedUser);
+        await checkBalance(selectedUser);
         setSignupInfo({ status: Status.SUCCESS });
       } else {
         throw new Error("Error while verifying passkey registration");
@@ -199,8 +126,9 @@ const useUser = () => {
       const user = await verifyAuthentication(authenticatorReponse);
 
       if (user) {
-        storeUser({ ...user, selected: true });
-        await checkBalance(user);
+        const selectedUser = { ...user, selected: true };
+        storeUser(selectedUser);
+        await checkBalance(selectedUser);
         setLoginInfo({ status: Status.SUCCESS });
       } else {
         throw new Error("Error while verifying passkey authentication");
@@ -228,11 +156,20 @@ const useUser = () => {
     router.replace(path.HOME);
   }
 
-  const handleLogout = useCallback(async () => {
-    await AsyncStorage.removeItem(USER.storageKey);
+  const handleLogout = useCallback(() => {
     unselectUser();
     router.replace(path.WELCOME);
   }, [unselectUser, router]);
+
+  const handleSelectUser = useCallback((username: string) => {
+    selectUser(username);
+    router.replace(path.HOME);
+  }, [selectUser, router]);
+
+  const handleRemoveUsers = useCallback(() => {
+    removeUsers();
+    router.replace(path.REGISTER);
+  }, [removeUsers, router]);
 
   const safeAA = useCallback(async (passkey: PasskeyArgType) => {
     const { x, y, prefix } = PublicKey.from({
@@ -297,22 +234,17 @@ const useUser = () => {
   }, [])
 
   useEffect(() => {
-    loadUsers();
     setGlobalLogoutHandler(handleLogout);
-  }, [loadUsers, handleLogout]);
+  }, [handleLogout]);
 
   return {
-    signupInfo,
-    handleSignup,
-    users,
     user,
-    userStatus,
-    loginInfo,
+    handleSignup,
     handleLogin,
     handleDummyLogin,
-    selectUser,
+    handleSelectUser,
     handleLogout,
-    removeUsers,
+    handleRemoveUsers,
     safeAA
   };
 };

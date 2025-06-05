@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
 import useUser from '@/hooks/useUser'
 import { Status } from '@/lib/types'
+import { useUserStore } from '@/store/useUserStore'
 
 export default function Register() {
   const [username, setUsername] = useState('')
-  const { signupInfo, handleSignup, loginInfo, handleLogin, handleDummyLogin } = useUser()
+  const { handleSignup, handleLogin, handleDummyLogin } = useUser()
+  const { signupInfo, loginInfo } = useUserStore()
 
   const handleSignupForm = () => {
     handleSignup(username)
