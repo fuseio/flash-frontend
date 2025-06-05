@@ -1,13 +1,14 @@
 import { getAccountNonce } from 'permissionless/actions';
 import { useEffect, useState } from "react";
 import {
+  Chain,
   encodeAbiParameters,
   encodeFunctionData,
   parseAbiParameters,
   parseUnits,
   type Address,
 } from "viem";
-import { mainnet } from "viem/chains";
+import { fuse, mainnet } from "viem/chains";
 import { useBlockNumber, useReadContract } from "wagmi";
 
 import ERC20_ABI from "@/lib/abis/ERC20";
@@ -84,10 +85,11 @@ const useDeposit = (): DepositResult => {
   const executeTransactions = async (
     passkey: PasskeyArgType,
     transactions: any[],
-    errorMessage: string
+    errorMessage: string,
+    chain: Chain
   ) => {
-    const smartAccountClient = await safeAA(passkey);
-    const nonce = await getAccountNonce(publicClient(mainnet.id), {
+    const smartAccountClient = await safeAA(passkey, chain);
+    const nonce = await getAccountNonce(publicClient(chain.id), {
       address: smartAccountClient.account.address,
       entryPointAddress: entryPoint07Address,
       key: encodeValidatorNonce({
@@ -120,7 +122,7 @@ const useDeposit = (): DepositResult => {
     // }
 
     const userOpHashToSign = getUserOperationHash({
-      chainId: mainnet.id,
+      chainId: chain.id,
       entryPointAddress: entryPoint07Address,
       entryPointVersion: "0.7",
       userOperation,
@@ -152,7 +154,7 @@ const useDeposit = (): DepositResult => {
 
     const transactionHash = receipt.receipt.transactionHash;
 
-    const transaction = await publicClient(mainnet.id).waitForTransactionReceipt({
+    const transaction = await publicClient(chain.id).waitForTransactionReceipt({
       hash: transactionHash
     });
 
@@ -190,7 +192,8 @@ const useDeposit = (): DepositResult => {
       await executeTransactions(
         user.passkey,
         [approveTransaction],
-        "Approval failed"
+        "Approval failed",
+        mainnet
       );
 
       await refetchAllowance();
@@ -253,7 +256,8 @@ const useDeposit = (): DepositResult => {
       await executeTransactions(
         user.passkey,
         transactions,
-        "Deposit failed"
+        "Deposit failed",
+        mainnet
       );
 
       updateUser({

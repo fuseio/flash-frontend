@@ -43,5 +43,5 @@ export const EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL = process.env.EXPO_PUBLIC_
 export const USER = {
   storageKey: 'flash_user',
   passkeyStorageKey: 'flash_passkey_list',
-  pimlicoUrl: `https://api.pimlico.io/v2/${mainnet.id}/rpc?apikey=${EXPO_PUBLIC_PIMLICO_API_KEY}`,
+  pimlicoUrl: (chainId: number = mainnet.id) => `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${EXPO_PUBLIC_PIMLICO_API_KEY}`,
 }

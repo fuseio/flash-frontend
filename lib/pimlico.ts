@@ -6,9 +6,9 @@ import { mainnet } from "viem/chains";
 import { http } from "wagmi";
 import { ADDRESSES, USER } from "./config";
 
-export const pimlicoClient = createPimlicoClient({
+export const pimlicoClient = (chainId: number) => createPimlicoClient({
   chain: mainnet,
-  transport: http(USER.pimlicoUrl),
+  transport: http(USER.pimlicoUrl(chainId)),
   entryPoint: {
     address: entryPoint06Address,
     version: "0.7",
@@ -39,7 +39,7 @@ export const addPaymasterTransaction = async (
 };
 
 export const getPaymasterQuote = async () => {
-  const quotes = await pimlicoClient.getTokenQuotes({
+  const quotes = await pimlicoClient(mainnet.id).getTokenQuotes({
     tokens: [getAddress(ADDRESSES.ethereum.usdc)],
   });
   //   pimlicoClient.getUserOperationGasPrice;
@@ -75,6 +75,6 @@ export const estimateGas = async () => {
 };
 
 export const getUserOperationGasPrice = async () => {
-  const gasPrice = await pimlicoClient.getUserOperationGasPrice();
+  const gasPrice = await pimlicoClient(mainnet.id).getUserOperationGasPrice();
   return gasPrice;
 };

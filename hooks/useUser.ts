@@ -22,7 +22,7 @@ import { pimlicoClient } from '@/lib/pimlico';
 import { PasskeyArgType, Status, User } from "@/lib/types";
 import { bufferToBase64URLString, decodePublicKey, getNonce, setGlobalLogoutHandler, withRefreshToken } from "@/lib/utils";
 import { publicClient } from "@/lib/wagmi";
-import { http } from 'viem';
+import { Chain, http } from 'viem';
 import {
   entryPoint07Address
 } from "viem/account-abstraction";
@@ -80,7 +80,7 @@ const useUser = () => {
         rawId: authenticatorReponse.rawId,
         credentialId: authenticatorReponse.id,
         coordinates: coordinates,
-      })
+      }, mainnet);
 
       const user = await withRefreshToken(
         () => verifyRegistration({
@@ -171,7 +171,7 @@ const useUser = () => {
     router.replace(path.REGISTER);
   }, [removeUsers, router]);
 
-  const safeAA = useCallback(async (passkey: PasskeyArgType) => {
+  const safeAA = useCallback(async (passkey: PasskeyArgType, chain: Chain) => {
     const { x, y, prefix } = PublicKey.from({
       prefix: 4,
       x: BigInt(passkey.coordinates.x),
@@ -199,7 +199,7 @@ const useUser = () => {
       saltNonce: await getNonce({
         appId: 'solid',
       }),
-      client: publicClient(mainnet.id),
+      client: publicClient(chain.id),
       owners: [deadOwner],
       version: "1.4.1",
       entryPoint: {
@@ -221,13 +221,13 @@ const useUser = () => {
     });
     const _smartAccountClient = createSmartAccountClient({
       account: safeAccount,
-      chain: mainnet,
-      paymaster: pimlicoClient,
+      chain: chain,
+      paymaster: pimlicoClient(chain.id),
       userOperation: {
         estimateFeesPerGas: async () =>
-          (await pimlicoClient.getUserOperationGasPrice()).fast,
+          (await pimlicoClient(chain.id).getUserOperationGasPrice()).fast,
       },
-      bundlerTransport: http(USER.pimlicoUrl),
+      bundlerTransport: http(USER.pimlicoUrl(chain.id)),
     }).extend(erc7579Actions());
 
     return _smartAccountClient
