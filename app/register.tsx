@@ -13,17 +13,11 @@ import { Status } from '@/lib/types'
 export default function Register() {
   const {
     state,
-    // initOtpLogin,
     signUpWithPasskey,
     loginWithPasskey,
-    // loginWithOAuth,
   } = useAuthRelay();
   const [username, setUsername] = useState('')
-  const { signupInfo, handleSignup, loginInfo, handleLogin, handleDummyLogin } = useUser()
-
-  // const handleSignupForm = () => {
-  //   handleSignup(username)
-  // }
+  const { signupInfo, loginInfo, handleDummyLogin } = useUser()
 
   return (
     <SafeAreaView className="bg-background text-foreground flex-1">
