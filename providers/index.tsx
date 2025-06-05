@@ -1,4 +1,4 @@
-import { TURNKEY_API_URL, TURNKEY_PARENT_ORG_ID } from "@/lib/constants";
+import { TURNKEY_API_URL, TURNKEY_PARENT_ORG_ID } from "@/lib/config";
 import { config } from "@/lib/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TurnkeyProvider } from "@turnkey/sdk-react-native";

@@ -47,3 +47,16 @@ export const USER = {
   passkeyStorageKey: 'flash_passkey_list',
   pimlicoUrl: (chainId: number = mainnet.id) => `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${EXPO_PUBLIC_PIMLICO_API_KEY}`,
 }
+
+
+
+export const TURNKEY_API_URL = process.env.EXPO_PUBLIC_TURNKEY_API_URL ?? "";
+export const TURNKEY_PARENT_ORG_ID =
+process.env.EXPO_PUBLIC_TURNKEY_ORGANIZATION_ID ?? "";
+
+export const RP_ID = process.env.EXPO_PUBLIC_RPID ?? "";
+export const PASSKEY_APP_NAME = process.env.EXPO_PUBLIC_PASSKEY_APP_NAME ?? "";
+
+// export const APP_SCHEME = process.env.EXPO_PUBLIC_APP_SCHEME ?? "";
+// export const OAUTH_TOKEN_EXPIRATION_SECONDS = "3600";
+// export const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ?? "";

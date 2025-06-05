@@ -14,10 +14,8 @@ import { useUserStore } from '@/store/useUserStore'
 export default function Register() {
   const {
     state,
-    // initOtpLogin,
     signUpWithPasskey,
     loginWithPasskey,
-    // loginWithOAuth,
   } = useAuthRelay();
   const [username, setUsername] = useState('')
   const { handleSignup, handleLogin, handleDummyLogin } = useUser()

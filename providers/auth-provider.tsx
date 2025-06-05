@@ -1,10 +1,10 @@
 import {
-  BACKEND_API_URL,
+  EXPO_PUBLIC_FLASH_API_BASE_URL,
   PASSKEY_APP_NAME,
   RP_ID,
   TURNKEY_API_URL,
-  TURNKEY_PARENT_ORG_ID,
-} from "@/lib/constants";
+  TURNKEY_PARENT_ORG_ID
+} from "@/lib/config";
 import { LoginMethod } from "@/lib/types";
 import {
   PasskeyStamper,
@@ -29,6 +29,7 @@ type AuthActionType =
   | { type: "LOADING"; payload: LoginMethod | null }
   | { type: "ERROR"; payload: string }
   | { type: "CLEAR_ERROR" };
+
 interface AuthState {
   loading: LoginMethod | null;
   error: string;
@@ -122,7 +123,7 @@ export const AuthRelayProvider: React.FC<AuthRelayProviderProps> = ({
   //       otpType === "OTP_TYPE_EMAIL" ? LoginMethod.Email : LoginMethod.Phone,
   //   });
   //   try {
-  //     const response = await fetch(`${BACKEND_API_URL}/auth/initOtpAuth`, {
+  //     const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/init-otp-auth`, {
   //       method: "POST",
   //       headers: { "Content-Type": "application/json" },
   //       body: JSON.stringify({ otpType, contact }),
@@ -157,7 +158,7 @@ export const AuthRelayProvider: React.FC<AuthRelayProviderProps> = ({
   //     try {
   //       const targetPublicKey = await createEmbeddedKey();
 
-  //       const response = await fetch(`${BACKEND_API_URL}/auth/otpAuth`, {
+  //       const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/otp-auth`, {
   //         method: "POST",
   //         headers: { "Content-Type": "application/json" },
   //         body: JSON.stringify({
@@ -206,7 +207,7 @@ export const AuthRelayProvider: React.FC<AuthRelayProviderProps> = ({
       });
 
       const publicKey = await createEmbeddedKey({ isCompressed: true });
-      const response = await fetch(`${BACKEND_API_URL}/auth/createSubOrg`, {
+      const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/create-sub-org`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -290,7 +291,7 @@ export const AuthRelayProvider: React.FC<AuthRelayProviderProps> = ({
   // }) => {
   //   dispatch({ type: "LOADING", payload: LoginMethod.OAuth });
   //   try {
-  //     const response = await fetch(`${BACKEND_API_URL}/auth/oAuthLogin`, {
+  //     const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/oauth-login`, {
   //       method: "POST",
   //       headers: { "Content-Type": "application/json" },
   //       body: JSON.stringify({
