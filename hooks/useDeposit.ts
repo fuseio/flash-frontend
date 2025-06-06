@@ -1,4 +1,4 @@
-import { getAccountNonce } from 'permissionless/actions';
+import { getAccountNonce } from "permissionless/actions";
 import { useEffect, useState } from "react";
 import {
   Chain,
@@ -8,25 +8,29 @@ import {
   parseUnits,
   type Address,
 } from "viem";
-import { fuse, mainnet } from "viem/chains";
+import { mainnet } from "viem/chains";
 import { useBlockNumber, useReadContract } from "wagmi";
 
+import BridgePayamster_ABI from "@/lib/abis/BridgePayamster";
 import ERC20_ABI from "@/lib/abis/ERC20";
 import ETHEREUM_TELLER_ABI from "@/lib/abis/EthereumTeller";
 import { ADDRESSES } from "@/lib/config";
 import { PasskeyArgType, Status } from "@/lib/types";
-import { publicClient } from '@/lib/wagmi';
+import { publicClient } from "@/lib/wagmi";
+import { useUserStore } from "@/store/useUserStore";
 import {
   encodeValidatorNonce,
   getAccount,
   getWebauthnValidatorMockSignature,
   getWebauthnValidatorSignature,
   WEBAUTHN_VALIDATOR_ADDRESS,
-} from '@rhinestone/module-sdk';
-import { sign } from 'ox/WebAuthnP256';
-import { entryPoint07Address, getUserOperationHash } from 'viem/account-abstraction';
+} from "@rhinestone/module-sdk";
+import { sign } from "ox/WebAuthnP256";
+import {
+  entryPoint07Address,
+  getUserOperationHash,
+} from "viem/account-abstraction";
 import useUser from "./useUser";
-import { useUserStore } from '@/store/useUserStore';
 
 type DepositResult = {
   allowance: bigint | undefined;
@@ -44,7 +48,7 @@ const useDeposit = (): DepositResult => {
   const [approveStatus, setApproveStatus] = useState<Status>(Status.IDLE);
   const [depositStatus, setDepositStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string | null>(null);
-  const { data: blockNumber } = useBlockNumber({ watch: true })
+  const { data: blockNumber } = useBlockNumber({ watch: true });
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
     abi: ERC20_ABI,
@@ -106,7 +110,7 @@ const useDeposit = (): DepositResult => {
       calls: transactions,
       nonce,
       signature: getWebauthnValidatorMockSignature(),
-    })
+    });
 
     // const requiredPrefund = getRequiredPrefund({
     //   userOperation,
@@ -141,8 +145,9 @@ const useDeposit = (): DepositResult => {
 
     userOperation.signature = encodedSignature;
 
-    const userOpHash =
-      await smartAccountClient.sendUserOperation(userOperation);
+    const userOpHash = await smartAccountClient.sendUserOperation(
+      userOperation
+    );
 
     const receipt = await smartAccountClient.waitForUserOperationReceipt({
       hash: userOpHash,
@@ -155,7 +160,7 @@ const useDeposit = (): DepositResult => {
     const transactionHash = receipt.receipt.transactionHash;
 
     const transaction = await publicClient(chain.id).waitForTransactionReceipt({
-      hash: transactionHash
+      hash: transactionHash,
     });
 
     if (transaction.status !== "success") {
@@ -221,36 +226,39 @@ const useDeposit = (): DepositResult => {
 
       let transactions = [];
 
-      // Add approve transaction if needed
-      if (!allowance || allowance < amountWei) {
-        transactions.push({
-          to: ADDRESSES.ethereum.usdc,
-          data: encodeFunctionData({
-            abi: ERC20_ABI,
-            functionName: "approve",
-            args: [ADDRESSES.ethereum.vault, amountWei],
-          }),
-          value: 0n,
-        });
-      }
+      transactions.push({
+        to: ADDRESSES.ethereum.usdc,
+        data: encodeFunctionData({
+          abi: ERC20_ABI,
+          functionName: "transfer",
+          args: [ADDRESSES.ethereum.bridgePaymasterAddress, amountWei],
+        }),
+        value: 0n,
+      });
+
+      const callData = encodeFunctionData({
+        abi: ETHEREUM_TELLER_ABI,
+        functionName: "depositAndBridge",
+        args: [
+          ADDRESSES.ethereum.usdc,
+          amountWei,
+          BigInt(0),
+          user.safeAddress,
+          encodeAbiParameters(parseAbiParameters("uint32"), [30138]),
+          ADDRESSES.ethereum.nativeFeeToken,
+          fee ? fee : 0n,
+        ],
+      });
 
       // Add deposit transaction
       transactions.push({
-        to: ADDRESSES.ethereum.teller,
+        to: ADDRESSES.ethereum.bridgePaymasterAddress,
         data: encodeFunctionData({
-          abi: ETHEREUM_TELLER_ABI,
-          functionName: "depositAndBridge",
-          args: [
-            ADDRESSES.ethereum.usdc,
-            amountWei,
-            BigInt(0),
-            user.safeAddress,
-            encodeAbiParameters(parseAbiParameters("uint32"), [30138]),
-            ADDRESSES.ethereum.nativeFeeToken,
-            fee ? (fee * BigInt(12)) / BigInt(10) : BigInt(0),
-          ],
+          abi: BridgePayamster_ABI,
+          functionName: "callWithValue",
+          args: [ADDRESSES.ethereum.teller, callData, fee ? fee : 0n],
         }),
-        value: fee?.toString() || 0n,
+        value: 0n,
       });
 
       await executeTransactions(
@@ -273,8 +281,8 @@ const useDeposit = (): DepositResult => {
   };
 
   useEffect(() => {
-    refetchBalance()
-  }, [blockNumber])
+    refetchBalance();
+  }, [blockNumber]);
 
   return {
     allowance,

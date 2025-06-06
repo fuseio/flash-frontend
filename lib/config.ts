@@ -11,6 +11,7 @@ type Addresses = {
     nativeFeeToken: Address;
     vault: Address;
     paymasterAddress: Address;
+    bridgePaymasterAddress: Address;
   }
   fuse: {
     vault: Address;
@@ -27,6 +28,7 @@ export const ADDRESSES: Addresses = {
     nativeFeeToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     vault: "0x3e2cD0AeF639CD72Aff864b85acD5c07E2c5e3FA",
     paymasterAddress: "0x6666666666667849c56f2850848ce1c4da65c68b",
+    bridgePaymasterAddress: "0x1C8d847799858a8f4CD3b5dF46D222ae04eC79b1",
   },
   fuse: {
     vault: "0x740636B7e6E6F6a4FD80A8781CfD3AA993821C1D"
