@@ -5,7 +5,9 @@ import {
   TURNKEY_API_URL,
   TURNKEY_PARENT_ORG_ID
 } from "@/lib/config";
+import { createWebPasskey, getTurnkey, loginWebPasskey } from "@/lib/turnkey-web";
 import { LoginMethod } from "@/lib/types";
+import { SessionType } from "@turnkey/sdk-browser";
 import {
   PasskeyStamper,
   TurnkeyClient,
@@ -15,6 +17,7 @@ import {
   useTurnkey,
 } from "@turnkey/sdk-react-native";
 import { ReactNode, createContext, useReducer } from "react";
+import { Platform } from "react-native";
 import { v4 as uuidv4 } from "uuid";
 
 type AuthActionType =
@@ -78,7 +81,7 @@ export interface AuthRelayProviderType {
   //   organizationId: string;
   // }) => Promise<void>;
   signUpWithPasskey: (username: string) => Promise<void>;
-  loginWithPasskey: () => Promise<void>;
+  loginWithPasskey: (username: string) => Promise<void>;
   // loginWithOAuth: (params: {
   //   oidcToken: string;
   //   providerName: string;
@@ -93,7 +96,7 @@ export const AuthRelayContext = createContext<AuthRelayProviderType>({
   // initOtpLogin: async () => Promise.resolve(),
   // completeOtpAuth: async () => Promise.resolve(),
   signUpWithPasskey: async (username: string) => Promise.resolve(),
-  loginWithPasskey: async () => Promise.resolve(),
+  loginWithPasskey: async (username: string) => Promise.resolve(),
   // loginWithOAuth: async () => Promise.resolve(),
   clearError: () => { },
 });
@@ -107,8 +110,15 @@ export const AuthRelayProvider: React.FC<AuthRelayProviderProps> = ({
 }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   // const router = useRouter();
-  const { createEmbeddedKey, createSession, createSessionFromEmbeddedKey } =
-    useTurnkey();
+
+  // Only use Turnkey React Native hooks on mobile
+  const turnkeyHooks = Platform.OS !== 'web' ? useTurnkey() : {
+    createEmbeddedKey: async () => '',
+    createSession: async () => { },
+    createSessionFromEmbeddedKey: async () => { },
+  };
+
+  const { createEmbeddedKey, createSession, createSessionFromEmbeddedKey } = turnkeyHooks;
 
   // const initOtpLogin = async ({
   //   otpType,
@@ -182,96 +192,240 @@ export const AuthRelayProvider: React.FC<AuthRelayProviderProps> = ({
   //   }
   // };
 
-  // User will be prompted once for passkey creation then will leverage an api key session to have a smooth "one tap" login experience
+  // Cross-platform passkey signup - handles both web and mobile
   const signUpWithPasskey = async (username: string) => {
-    if (!isSupported()) {
+    // Check platform-specific support
+    const supported = Platform.OS === 'web'
+      ? !!(window.PublicKeyCredential && window.navigator.credentials)
+      : isSupported();
+
+    if (!supported) {
       throw new Error("Passkeys are not supported on this device");
     }
 
     dispatch({ type: "LOADING", payload: LoginMethod.Passkey });
 
     try {
-      const authenticatorParams = await createPasskey({
-        authenticatorName: "End-User Passkey",
-        rp: {
-          id: RP_ID,
-          name: PASSKEY_APP_NAME,
-        },
-        user: {
-          id: uuidv4(),
-          // Name and displayName must match
-          // This name is visible to the user. This is what's shown in the passkey prompt
-          name: username,
-          displayName: username,
-        },
-      });
+      const userId = uuidv4();
 
-      const publicKey = await createEmbeddedKey({ isCompressed: true });
-      const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/create-sub-org`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          passkey: {
-            challenge: authenticatorParams.challenge,
-            attestation: authenticatorParams.attestation,
-          },
-          apiKeys: [
-            {
-              apiKeyName: "Passkey API Key",
-              publicKey,
-              curveType: "API_KEY_CURVE_P256",
+      if (Platform.OS === 'web') {
+        const exists = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/sub-org-id`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filterValue: username,
+          }),
+        }).then((res) => res.json());
+
+        const currentDomain = window.location.hostname;
+        if (exists) {
+
+        }
+
+        // Web implementation using platform-specific module
+        // Use current domain as rpId for web to avoid SecurityError
+        // const currentDomain = window.location.hostname;
+        const credential = await createWebPasskey({
+          apiBaseUrl: TURNKEY_API_URL,
+          organizationId: TURNKEY_PARENT_ORG_ID,
+          rpId: currentDomain,
+          appName: PASSKEY_APP_NAME,
+          username,
+          userId,
+        });
+
+        // For web, the passkey creation handles the sub-organization setup
+        // You might need to integrate this with your backend for user storage
+        // dispatch({ type: "PASSKEY", payload: { username, userId } as any });
+        // const publicKey = await createEmbeddedKey({ isCompressed: true });
+        const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/create-sub-org`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            // email: 'lior.agnin@fuse.io',
+            userName: username,
+            passkey: {
+              challenge: credential.encodedChallenge,
+              attestation: credential.attestation,
             },
-          ],
-        }),
-      }).then((res) => res.json());
+          }),
+        }).then((res) => res.json());
 
-      const subOrganizationId = response.subOrganizationId;
-      if (subOrganizationId) {
-        // Successfully created sub-organization, proceed with the session create
-        await createSessionFromEmbeddedKey({ subOrganizationId });
+        const subOrganizationId = response.subOrganizationId;
+        if (subOrganizationId) {
+          await createSessionFromEmbeddedKey({ subOrganizationId });
+          dispatch({ type: "PASSKEY", payload: { username, subOrganizationId } as any });
+        }
+      } else {
+        // Mobile implementation (existing flow)
+        const authenticatorParams = await createPasskey({
+          authenticatorName: "End-User Passkey",
+          rp: {
+            id: RP_ID,
+            name: PASSKEY_APP_NAME,
+          },
+          user: {
+            id: userId,
+            name: username,
+            displayName: username,
+          },
+        });
+
+        const publicKey = await createEmbeddedKey({ isCompressed: true });
+        const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/create-sub-org`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            passkey: {
+              challenge: authenticatorParams.challenge,
+              attestation: authenticatorParams.attestation,
+            },
+            apiKeys: [
+              {
+                apiKeyName: "Passkey API Key",
+                publicKey,
+                curveType: "API_KEY_CURVE_P256",
+              },
+            ],
+          }),
+        }).then((res) => res.json());
+
+        const subOrganizationId = response.subOrganizationId;
+        if (subOrganizationId) {
+          await createSessionFromEmbeddedKey({ subOrganizationId });
+          dispatch({ type: "PASSKEY", payload: { username, subOrganizationId } as any });
+        }
       }
     } catch (error: any) {
+      console.log("error", error);
       dispatch({ type: "ERROR", payload: error.message });
     } finally {
       dispatch({ type: "LOADING", payload: null });
     }
   };
 
-  const loginWithPasskey = async () => {
-    if (!isSupported()) {
-      throw new Error("Passkeys are not supported on this device");
-    }
+  const loginWithPasskey = async (username: string) => {
     dispatch({ type: "LOADING", payload: LoginMethod.Passkey });
 
     try {
-      const stamper = new PasskeyStamper({
-        rpId: RP_ID,
-      });
+      const currentDomain = window.location.hostname;
+      if (Platform.OS === 'web') {
+        const subOrgId = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/sub-org-id`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filterValue: username,
+          }),
+        }).then((res) => res.json());
+        if (subOrgId.organizationId) {
+          console.log("subOrgId found, logging in");
+          console.log("subOrgId", subOrgId);
+          const turnkey = getTurnkey({
+            apiBaseUrl: TURNKEY_API_URL,
+            organizationId: TURNKEY_PARENT_ORG_ID,
+            rpId: currentDomain,
+          });
 
-      const httpClient = new TurnkeyClient(
-        { baseUrl: TURNKEY_API_URL },
-        stamper
-      );
+          const indexedDbClient = await turnkey.indexedDbClient();
+          const passkeyClient = turnkey.passkeyClient();
+          await indexedDbClient?.resetKeyPair();
+          const pubKey = await indexedDbClient!.getPublicKey();
+          await passkeyClient?.loginWithPasskey({
+            sessionType: SessionType.READ_WRITE,
+            publicKey: pubKey!,
+            expirationSeconds: "3600",
+          });
+          dispatch({ type: "PASSKEY", payload: { username, subOrganizationId: subOrgId } as any });
+          return;
+        } else {
+          console.log("subOrgId not found, creating new subOrgId");
+          const userId = uuidv4();
+          const { encodedChallenge, attestation } = await createWebPasskey({
+            apiBaseUrl: TURNKEY_API_URL,
+            organizationId: TURNKEY_PARENT_ORG_ID,
+            rpId: currentDomain,
+            appName: PASSKEY_APP_NAME,
+            username,
+            userId,
+          });
 
-      const targetPublicKey = await createEmbeddedKey();
+          const response = await fetch(`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/create-sub-org`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userName: username,
+              passkey: {
+                challenge: encodedChallenge,
+                attestation: attestation,
+              },
+            }),
+          }).then((res) => res.json());
 
-      const sessionResponse = await httpClient.createReadWriteSession({
-        type: "ACTIVITY_TYPE_CREATE_READ_WRITE_SESSION_V2",
-        timestampMs: Date.now().toString(),
-        organizationId: TURNKEY_PARENT_ORG_ID,
-        parameters: {
-          targetPublicKey,
-        },
-      });
+          const subOrganizationId = response.subOrganizationId;
+          if (subOrganizationId) {
+            const turnkey = getTurnkey({
+              apiBaseUrl: TURNKEY_API_URL,
+              organizationId: TURNKEY_PARENT_ORG_ID,
+              rpId: currentDomain,
+            });
+            const indexedDbClient = await turnkey.indexedDbClient();
+            await indexedDbClient!.resetKeyPair();
+            const pubKey = await indexedDbClient!.getPublicKey();
+            const passkeyClient = turnkey.passkeyClient();
+            await passkeyClient?.loginWithPasskey({
+              sessionType: SessionType.READ_WRITE,
+              publicKey: pubKey!,
+              expirationSeconds: "3600",
+            });
+            // await createSessionFromEmbeddedKey({ subOrganizationId });
+            dispatch({ type: "PASSKEY", payload: { username, subOrganizationId } as any });
+          }
+        }
 
-      const credentialBundle =
-        sessionResponse.activity.result.createReadWriteSessionResultV2
-          ?.credentialBundle;
+        // Web implementation using platform-specific module
+        // Use current domain as rpId for web to avoid SecurityError
+        const result = await loginWebPasskey({
+          apiBaseUrl: TURNKEY_API_URL,
+          organizationId: TURNKEY_PARENT_ORG_ID,
+          rpId: currentDomain,
+        });
 
-      if (credentialBundle) {
-        await createSession({ bundle: credentialBundle });
+        console.log("result", result);
+
+        dispatch({ type: "PASSKEY", payload: result as any });
+      } else {
+        // Mobile implementation (existing flow)
+        const stamper = new PasskeyStamper({
+          rpId: currentDomain,
+        });
+
+        const httpClient = new TurnkeyClient(
+          { baseUrl: TURNKEY_API_URL },
+          stamper
+        );
+
+        const targetPublicKey = await createEmbeddedKey();
+
+        const sessionResponse = await httpClient.createReadWriteSession({
+          type: "ACTIVITY_TYPE_CREATE_READ_WRITE_SESSION_V2",
+          timestampMs: Date.now().toString(),
+          organizationId: TURNKEY_PARENT_ORG_ID,
+          parameters: {
+            targetPublicKey,
+          },
+        });
+
+        const credentialBundle =
+          sessionResponse.activity.result.createReadWriteSessionResultV2
+            ?.credentialBundle;
+
+        if (credentialBundle) {
+          await createSession({ bundle: credentialBundle });
+          dispatch({ type: "PASSKEY", payload: { authenticated: true } as any });
+        }
       }
     } catch (error: any) {
+      console.log("error", error);
       dispatch({ type: "ERROR", payload: error.message });
     } finally {
       dispatch({ type: "LOADING", payload: null });
