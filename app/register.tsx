@@ -6,18 +6,40 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
+import { useAuthRelay } from '@/hooks/useAuthRelayer'
 import useUser from '@/hooks/useUser'
-import { Status } from '@/lib/types'
+import { LoginMethod, Status } from '@/lib/types'
 import { useUserStore } from '@/store/useUserStore'
 
 export default function Register() {
   const [username, setUsername] = useState('')
   const { handleSignup, handleLogin, handleDummyLogin } = useUser()
   const { signupInfo, loginInfo } = useUserStore()
+  const { state, signUpWithPasskey, loginWithPasskey, clearError } = useAuthRelay();
 
-  const handleSignupForm = () => {
-    handleSignup(username)
-  }
+  // const handleSignupForm = () => {
+  //   handleSignup(username)
+  // }
+
+  // const handlePasskeySignup = async () => {
+  //   if (!username.trim()) return;
+
+  //   try {
+  //     await signUpWithPasskey(username);
+  //   } catch (error) {
+  //     console.error('Passkey signup error:', error);
+  //   }
+  // };
+
+  const handlePasskeyLogin = async () => {
+    try {
+      await loginWithPasskey(username);
+    } catch (error) {
+      console.error('Passkey login error:', error);
+    }
+  };
+
+  const isPasskeyLoading = state.loading === LoginMethod.Passkey;
 
   return (
     <SafeAreaView className="bg-background text-foreground flex-1">
@@ -49,56 +71,83 @@ export default function Register() {
               />
               <Button
                 variant="brand"
-                onPress={handleSignupForm}
-                disabled={signupInfo.status === Status.PENDING || !username}
+                onPress={handlePasskeyLogin}
+                disabled={isPasskeyLoading || signupInfo.status === Status.PENDING || !username}
                 className="rounded-xl md:rounded-twice h-14"
               >
                 <Text className="text-lg font-semibold">
-                  {signupInfo.status === Status.ERROR ?
-                    signupInfo.message || 'Error creating account' :
-                    signupInfo.status === Status.PENDING ?
-                      'Creating' :
-                      'Create Account'
+                  {isPasskeyLoading ?
+                    `Creating Account (${Platform.OS})...` :
+                    state.error ?
+                      state.error :
+                      signupInfo.status === Status.ERROR ?
+                        signupInfo.message || 'Error creating account' :
+                        signupInfo.status === Status.PENDING ?
+                          'Creating' :
+                          `Create Account`
                   }
                 </Text>
-                {signupInfo.status === Status.PENDING && (
+                {(signupInfo.status === Status.PENDING || isPasskeyLoading) && (
                   <ActivityIndicator color="gray" />
                 )}
               </Button>
             </View>
 
-            <Text className="text-center">OR</Text>
+            {/* <Text className="text-center">OR</Text> */}
 
-            <Button
-              onPress={handleLogin}
-              disabled={loginInfo.status === Status.PENDING}
+            {/* <Button
+              disabled={isPasskeyLoading || loginInfo.status === Status.PENDING}
+              onPress={handlePasskeyLogin}
               variant="outline"
               className="rounded-xl md:rounded-twice h-14"
             >
               <Text className="text-lg font-semibold">
-                {loginInfo.status === Status.ERROR ?
-                  loginInfo.message || 'Error logging in' :
-                  loginInfo.status === Status.PENDING ?
-                    'Logging in' :
-                    'Login'
+                {isPasskeyLoading ?
+                  `Logging in (${Platform.OS})...` :
+                  state.error ?
+                    state.error :
+                    loginInfo.status === Status.ERROR ?
+                      loginInfo.message || 'Error logging in' :
+                      loginInfo.status === Status.PENDING ?
+                        'Logging in' :
+                        'Login with Passkey'
                 }
               </Text>
-              {loginInfo.status === Status.PENDING && (
+              {(loginInfo.status === Status.PENDING || isPasskeyLoading) && (
                 <ActivityIndicator color="gray" />
               )}
-            </Button>
+            </Button> */}
 
-            {/* TODO: Remove when passkey works */}
-            {Platform.OS !== 'web' && (
+            {/* Dummy login for development/testing */}
+            {__DEV__ && (
               <Button
                 onPress={handleDummyLogin}
                 variant="outline"
                 className="rounded-xl md:rounded-twice h-14"
               >
                 <Text className="text-lg font-semibold">
-                  Dummy Login
+                  Dummy Login (Dev Only)
                 </Text>
               </Button>
+            )}
+
+            {/* Success message for cross-platform auth */}
+            {state.user && (
+              <View style={{
+                backgroundColor: '#e8f5e8',
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 16,
+                borderLeftWidth: 4,
+                borderLeftColor: '#4caf50'
+              }}>
+                <Text style={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                  ✅ Passkey Authentication Successful!
+                </Text>
+                <Text style={{ color: '#2e7d32', fontSize: 12, marginTop: 4 }}>
+                  Platform: {Platform.OS === 'web' ? 'Web (Browser SDK)' : 'Mobile (React Native SDK)'}
+                </Text>
+              </View>
             )}
 
             <Text className='text-center text-sm text-muted-foreground max-w-64 mx-auto'>
