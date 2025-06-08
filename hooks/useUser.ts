@@ -10,26 +10,86 @@ import {
   toSafeSmartAccount
 } from "permissionless/accounts";
 import { erc7579Actions } from "permissionless/actions/erc7579";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as passkeys from "react-native-passkeys";
 import { toAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
 
 import { path } from "@/constants/path";
 import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api";
-import { USER } from "@/lib/config";
+import { TURNKEY_API_URL, TURNKEY_PARENT_ORG_ID, USER } from "@/lib/config";
 import { pimlicoClient } from '@/lib/pimlico';
+import { getTurnkey } from "@/lib/turnkey-web";
 import { PasskeyArgType, Status, User } from "@/lib/types";
 import { bufferToBase64URLString, decodePublicKey, getNonce, setGlobalLogoutHandler, withRefreshToken } from "@/lib/utils";
 import { publicClient } from "@/lib/wagmi";
+import { useUserStore } from "@/store/useUserStore";
+import { Session } from "@turnkey/sdk-browser";
 import { Chain, http } from 'viem';
 import {
   entryPoint07Address
 } from "viem/account-abstraction";
-import { useUserStore } from "@/store/useUserStore";
 import { fetchIsDeposited } from "./useAnalytics";
 
+export const useTurnkeyUser = () => {
+  // const { turnkey, client } = useTurnkey()
+  const router = useRouter()
+  const [user, setUser] = useState<Session | undefined>(undefined)
+  // const getTurnkey = useCallback(() => {
+  //   return getTurnkey({
+  //     apiBaseUrl: TURNKEY_API_URL,
+  //     organizationId: TURNKEY_PARENT_ORG_ID,
+  //     rpId: window.location.hostname,
+  //   })
+  // }, [])
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const turnkey = getTurnkey({
+        apiBaseUrl: TURNKEY_API_URL,
+        organizationId: TURNKEY_PARENT_ORG_ID,
+        rpId: window.location.hostname,
+      })
+      if (turnkey) {
+        // Try and get the current user
+        const currentUser = await turnkey.getSession()
+        console.log("currentUser", currentUser)
+
+        // If the user is not found, we assume the user is not logged in
+        if (!currentUser) {
+          router.push("/")
+          return
+        }
+
+        // Use our read-only session to get the user's email
+        // const client = await turnkey.currentUserSession()
+
+        let userData: Session = currentUser
+
+        // Get the user's email
+        // const { user } =
+        //   (await client?.getUser({
+        //     organizationId: currentUser?.organization?.organizationId,
+        //     userId: currentUser?.userId,
+        //   })) || {}
+
+        // Set the user's email in the userData object
+        userData = {
+          ...currentUser,
+          // email: user?.userEmail as Email,
+        }
+        setUser(userData)
+      }
+    }
+    fetchUser()
+  }, [])
+
+  return { user }
+}
+
 const useUser = () => {
+  const turnkeyUser = useTurnkeyUser()
+  console.log("turnkeyUser", turnkeyUser)
   const router = useRouter();
   const queryClient = useQueryClient();
   const {
