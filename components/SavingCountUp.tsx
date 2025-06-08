@@ -12,7 +12,7 @@ interface SavingCountUpProps {
 }
 
 const SECONDS_PER_YEAR = 31_557_600;
-const DURATION = 1000;
+const DURATION = 500;
 
 const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
   const [liveYield, setLiveYield] = useState<number>(0);
