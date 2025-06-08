@@ -37,7 +37,7 @@ const TokenSelector = ({ tokens, setSelectedToken, setOpen }: TokenSelectorProps
       {tokensWithBalance.map((token) => (
         <Button
           key={token.address}
-          variant="outline"
+          variant="secondary"
           className="bg-primary/10 border-primary/0 rounded-2xl justify-between h-16 px-4"
           disabled={token.isComingSoon}
           onPress={() => handleTokenClick(token)}

@@ -21,37 +21,37 @@ export default function Register() {
 
   return (
     <SafeAreaView className="bg-background text-foreground flex-1">
-      <View className='flex-1 justify-between px-4 py-8'>
-        <View className="flex-1 justify-center items-center gap-20 w-full max-w-lg mx-auto">
-          <View className="flex-row items-center gap-5">
-            <Image
-              source={require("@/assets/images/solid-logo-4x.png")}
-              alt="Solid logo"
-              style={{ width: 73, height: 73 }}
-              contentFit="contain"
-            />
-            <Image
-              source={require("@/assets/images/solid-4x.png")}
-              alt="Solid"
-              style={{ width: 153, height: 78 }}
-              contentFit="contain"
-            />
+      <View className='flex-1 justify-center gap-10 px-4 py-8 w-full max-w-lg mx-auto'>
+        <View className="flex-row items-center gap-5">
+          <Image
+            source={require("@/assets/images/solid-logo-4x.png")}
+            alt="Solid logo"
+            style={{ width: 37, height: 40 }}
+            contentFit="contain"
+          />
+        </View>
+        <View className="gap-8">
+          <View className='flex-col gap-2'>
+            <Text className='text-3xl font-semibold'>Welcome!</Text>
+            <Text className='text-muted-foreground max-w-[23rem]'>
+              Sign up with your email or connect a Web3 wallet to get started.
+            </Text>
           </View>
 
-          <View className='w-full flex-col gap-10'>
+          <View className='w-full flex-col gap-8'>
             <View className='flex-col gap-5'>
               <TextInput
                 id="username"
                 value={username}
                 onChangeText={setUsername}
                 placeholder='Choose a username'
-                className="h-14 px-6 rounded-xl md:rounded-twice border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground"
+                className="h-14 px-6 rounded-xl border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground"
               />
               <Button
                 variant="brand"
                 onPress={handleSignupForm}
                 disabled={signupInfo.status === Status.PENDING || !username}
-                className="rounded-xl md:rounded-twice h-14"
+                className="rounded-xl h-14"
               >
                 <Text className="text-lg font-semibold">
                   {signupInfo.status === Status.ERROR ?
@@ -67,13 +67,17 @@ export default function Register() {
               </Button>
             </View>
 
-            <Text className="text-center">OR</Text>
+            <View className='flex-row items-center gap-4'>
+              <View className='flex-1 h-px bg-border' />
+              <Text className="text-center text-muted-foreground">OR</Text>
+              <View className='flex-1 h-px bg-border' />
+            </View>
 
             <Button
               onPress={handleLogin}
               disabled={loginInfo.status === Status.PENDING}
-              variant="outline"
-              className="rounded-xl md:rounded-twice h-14"
+              variant="secondary"
+              className="rounded-xl h-14"
             >
               <Text className="text-lg font-semibold">
                 {loginInfo.status === Status.ERROR ?
@@ -93,25 +97,19 @@ export default function Register() {
               <Button
                 onPress={handleDummyLogin}
                 variant="outline"
-                className="rounded-xl md:rounded-twice h-14"
+                className="rounded-xl h-14"
               >
                 <Text className="text-lg font-semibold">
                   Dummy Login
                 </Text>
               </Button>
             )}
-
-            <Text className='text-center text-sm text-muted-foreground max-w-64 mx-auto'>
-              By continuing, you agree with Solid{' '}
-              <Link href="/" className='hover:underline'>Terms of Use</Link> and{' '}
-              <Link href="/" className='hover:underline'>Privacy Policy</Link>.
-            </Text>
           </View>
+          <Text className="text-sm text-muted-foreground">
+            Your Solid Account is secured with a passkey - a safer replacement for passwords.{' '}
+            <Link href="/" className='underline hover:opacity-70'>Learn more</Link>
+          </Text>
         </View>
-        <Text className="text-center text-sm text-muted-foreground max-w-[19rem] mx-auto">
-          Your Solid Account is secured with a passkey - a safer replacement for passwords.{' '}
-          <Link href="/" className='hover:underline'>Learn more</Link>
-        </Text>
       </View>
     </SafeAreaView>
   )
