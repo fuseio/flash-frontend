@@ -3,12 +3,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter,
+  DialogTrigger
 } from "@/components/ui/dialog"
 import {
   Withdraw,
-  WithdrawFooter,
   WithdrawTitle,
   WithdrawTrigger
 } from "."
@@ -26,9 +24,6 @@ const WithdrawModal = () => {
           </DialogTitle>
         </DialogHeader>
         <Withdraw />
-        <DialogFooter>
-          <WithdrawFooter />
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
