@@ -11,14 +11,14 @@ import faqs from "@/constants/faqs";
 import { useLatestTokenTransfer, useTotalAPY, useTransactions } from "@/hooks/useAnalytics";
 import { useDimension } from "@/hooks/useDimension";
 import useUser from "@/hooks/useUser";
-import { useVaultBalance } from "@/hooks/useVault";
+import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
-import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import { Image } from "@/components/ui/Image";
+import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 
 export default function Dashboard() {
   const { user } = useUser();
-  const { data: balance, isLoading: isBalanceLoading } = useVaultBalance(user?.safeAddress as Address)
+  const { data: balance, isLoading: isBalanceLoading } = useFuseVaultBalance(user?.safeAddress as Address)
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
   const { data: lastTimestamp } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
   const { data: transactions, isLoading: isTransactionsLoading } = useTransactions(user?.safeAddress ?? "")
