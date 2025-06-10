@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AnimatedRollingNumber } from "react-native-animated-rolling-numbers";
 
 import { Text } from "@/components/ui/text";
-import { isDesktop } from '@/lib/utils';
+import { useDimension } from '@/hooks/useDimension';
 
 interface SavingCountUpProps {
   balance: number;
@@ -16,6 +16,7 @@ const DURATION = 500;
 
 const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
   const [liveYield, setLiveYield] = useState<number>(0);
+  const { isDesktop } = useDimension();
 
   const calculateLiveYield = useCallback((currentTime: number) => {
     const deltaTime = currentTime - lastTimestamp;
@@ -43,14 +44,14 @@ const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
     <View className="flex-row items-baseline text-foreground">
       <AnimatedRollingNumber
         value={wholeNumber}
-        textStyle={{ fontSize: isDesktop() ? 96 : 36, ...styles.digit }}
+        textStyle={{ fontSize: isDesktop ? 96 : 36, ...styles.digit }}
         spinningAnimationConfig={{ duration: DURATION }}
       />
       <Text className="text-2xl md:text-4.5xl font-medium">.</Text>
       <AnimatedRollingNumber
         value={decimalPart}
         formattedText={decimalPart.toString().padStart(7, '0')}
-        textStyle={{ fontSize: isDesktop() ? 40 : 24, ...styles.digit }}
+        textStyle={{ fontSize: isDesktop ? 40 : 24, ...styles.digit }}
         spinningAnimationConfig={{ duration: DURATION }}
       />
     </View>
