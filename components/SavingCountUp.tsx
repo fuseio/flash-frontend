@@ -44,14 +44,14 @@ const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
     <View className="flex-row items-baseline text-foreground">
       <AnimatedRollingNumber
         value={wholeNumber}
-        textStyle={{ fontSize: isDesktop ? 96 : 36, ...styles.digit }}
+        textStyle={{ fontSize: isDesktop ? 96 : 48, fontWeight: isDesktop ? "medium" : "semibold", ...styles.digit }}
         spinningAnimationConfig={{ duration: DURATION }}
       />
       <Text className="text-2xl md:text-4.5xl font-medium">.</Text>
       <AnimatedRollingNumber
         value={decimalPart}
         formattedText={decimalPart.toString().padStart(7, '0')}
-        textStyle={{ fontSize: isDesktop ? 40 : 24, ...styles.digit }}
+        textStyle={{ fontSize: isDesktop ? 40 : 24, fontWeight: isDesktop ? "medium" : "semibold", ...styles.digit }}
         spinningAnimationConfig={{ duration: DURATION }}
       />
     </View>
@@ -60,7 +60,6 @@ const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
 
 const styles = StyleSheet.create({
   digit: {
-    fontWeight: "medium",
     color: "#ffffff",
   },
 });

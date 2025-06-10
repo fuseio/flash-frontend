@@ -68,7 +68,7 @@ export default function TabLayout() {
           options={{
             title: 'Card',
             tabBarIcon: ({ color }) => <CreditCard size={28} color={color} />,
-            href: Platform.OS === 'web' ? null : path.CARD,
+            href: null,
           }}
         />
         <Tabs.Screen
@@ -77,6 +77,13 @@ export default function TabLayout() {
             title: 'Earn',
             tabBarIcon: ({ color }) => <Leaf size={28} color={color} />,
             href: Platform.OS === 'web' ? null : path.EARN,
+          }}
+        />
+        <Tabs.Screen
+          name="buy-crypto/index"
+          options={{
+            title: 'Buy Crypto',
+            href: null,
           }}
         />
       </Tabs>

@@ -102,7 +102,7 @@ export default function Earn() {
               <Button
                 key={transfer.date}
                 variant="outline"
-                className="h-auto flex-row justify-between bg-primary/10 border-0 rounded-xl md:rounded-twice p-4"
+                className="min-h-20 flex-row justify-between bg-primary/10 border-0 rounded-xl md:rounded-twice p-4"
               >
                 <View className="flex-row items-center gap-2">
                   <Image source={TOKEN_IMAGES[transfer.imageId]} className="w-10 h-10" />
