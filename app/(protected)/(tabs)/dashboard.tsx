@@ -3,25 +3,25 @@ import { Link } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { Address } from "viem";
 
+import FAQ from "@/components/FAQ";
 import SavingCountUp from "@/components/SavingCountUp";
+import Transaction from "@/components/Transaction";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
+import WithdrawModal from "@/components/Withdraw/WithdrawModal";
+import faqs from "@/constants/faqs";
 import { path } from "@/constants/path";
 import { useLatestTokenTransfer, useTotalAPY, useTransactions } from "@/hooks/useAnalytics";
 import useUser from "@/hooks/useUser";
+import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
-import { useVaultBalance } from "@/hooks/useVault";
-import Transaction from "@/components/Transaction";
-import WithdrawModal from "@/components/Withdraw/WithdrawModal";
-import FAQ from "@/components/FAQ";
-import faqs from "@/constants/faqs";
 
 import Deposit from "@/assets/images/deposit";
 
 export default function Dashboard() {
   const { user } = useUser();
-  const { data: balance, isLoading: isBalanceLoading } = useVaultBalance(user?.safeAddress as Address)
+  const { data: balance, isLoading: isBalanceLoading } = useFuseVaultBalance(user?.safeAddress as Address)
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
   const { data: lastTimestamp } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
   const { data: transactions, isLoading: isTransactionsLoading } = useTransactions(user?.safeAddress ?? "")

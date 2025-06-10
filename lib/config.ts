@@ -12,9 +12,13 @@ type Addresses = {
     vault: Address;
     paymasterAddress: Address;
     bridgePaymasterAddress: Address;
+    boringQueue: Address;
   }
   fuse: {
     vault: Address;
+    teller: Address;
+    nativeFeeToken: Address;
+    bridgePaymasterAddress: Address;
   }
 }
 
@@ -29,9 +33,13 @@ export const ADDRESSES: Addresses = {
     vault: "0x3e2cD0AeF639CD72Aff864b85acD5c07E2c5e3FA",
     paymasterAddress: "0x6666666666667849c56f2850848ce1c4da65c68b",
     bridgePaymasterAddress: "0x1C8d847799858a8f4CD3b5dF46D222ae04eC79b1",
+    boringQueue: "0x5090eee1a6e568c46178861fddd31e2c33f4d5a4",
   },
   fuse: {
-    vault: "0x740636B7e6E6F6a4FD80A8781CfD3AA993821C1D"
+    vault: "0x740636B7e6E6F6a4FD80A8781CfD3AA993821C1D",
+    teller: "0xcBA3D8DC1DdE5fbD4c04cBbD5624Dc79D300963d",
+    nativeFeeToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    bridgePaymasterAddress: "0x7Af15A003de1937bD6CA60c70598DBaca2401e1E",
   }
 };
 
