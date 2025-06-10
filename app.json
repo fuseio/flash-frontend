@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "flash-frontend",
-    "slug": "flash-frontend",
+    "name": "Solid",
+    "slug": "solid",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "flashfrontend",
+    "scheme": "solid",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "owner": "fuseio",
@@ -18,7 +18,8 @@
       "associatedDomains": [
         "webcredentials:rocksolid.cash",
         "applinks:rocksolid.cash"
-      ]
+      ],
+      "appleTeamId": "QC9255BHMY"
     },
     "android": {
       "adaptiveIcon": {
@@ -38,7 +39,10 @@
               "pathPrefix": "/"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -57,10 +61,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/splash/splash-icon.png",
           "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#262626"
+          "resizeMode": "native",
+          "backgroundColor": "#94F27F"
         }
       ],
       [
