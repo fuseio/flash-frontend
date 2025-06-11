@@ -19,6 +19,11 @@ const dashboard: MenuItem = {
   href: path.DASHBOARD,
 }
 
+const wallet: MenuItem = {
+  label: "Wallet",
+  href: path.WALLET,
+}
+
 const defaultMenuItems: MenuItem[] = [
   {
     label: "Deposit",
@@ -44,7 +49,7 @@ const useNav = () => {
     let newMenuItems: MenuItem[] = []
 
     if (isDashboard) {
-      newMenuItems = [dashboard]
+      newMenuItems = [dashboard, wallet]
     } else {
       newMenuItems = [home]
     }

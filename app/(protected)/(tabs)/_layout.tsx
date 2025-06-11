@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { CreditCard, House, LayoutDashboard, Leaf, Wallet } from 'lucide-react-native';
+import { CreditCard, House, LayoutDashboard, Leaf, Plus, Wallet } from 'lucide-react-native';
 import React from 'react';
 import { Platform } from 'react-native';
 
@@ -56,11 +56,19 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="wallet"
+          options={{
+            title: 'Wallet',
+            tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
+            href: isDashboard ? path.WALLET : null,
+          }}
+        />
+        <Tabs.Screen
           name="deposit"
           options={{
             title: 'Deposit',
             headerShown: false,
-            tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
+            tabBarIcon: ({ color }) => <Plus size={28} color={color} />,
           }}
         />
         <Tabs.Screen

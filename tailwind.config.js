@@ -59,6 +59,9 @@ module.exports = {
           DEFAULT: 'hsl(var(--brand))',
           foreground: 'hsl(var(--brand-foreground))',
         },
+        points: {
+          DEFAULT: 'hsl(var(--points))',
+        },
       },
       borderWidth: {
         hairline: hairlineWidth(),
