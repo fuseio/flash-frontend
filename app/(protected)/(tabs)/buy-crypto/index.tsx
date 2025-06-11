@@ -35,16 +35,18 @@ export async function createWidgetSignature({
 // Build Mercuryo widget URL
 export async function buildMercuryoWidgetUrl({
   address,
-  widgetId,
-  widgetSecret,
-  userIp,
 }: {
   address: string;
-  widgetId: string;
-  widgetSecret: string;
-  userIp: string;
 }): Promise<string> {
   const merchantTransactionId = Date.now().toString();
+
+  const userIp = await getClientIp();
+  const widgetId = process.env.EXPO_PUBLIC_MERCURYO_WIDGET_ID;
+  const widgetSecret = process.env.EXPO_PUBLIC_MERCURYO_WIDGET_SECRET;
+
+  if (!widgetId || !widgetSecret) {
+    throw new Error("Mercuryo widget ID or secret is not set");
+  }
 
   try {
     const signature = await createWidgetSignature({
@@ -54,10 +56,11 @@ export async function buildMercuryoWidgetUrl({
       merchantTransactionId,
     });
 
-    let url = `https://sandbox-exchange.mrcr.io/?widget_id=${widgetId}`;
-    url += `&address=${address}`;
+    let url = `https://exchange.mercuryo.io/?widget_id=${widgetId}`;
     url += `&merchant_transaction_id=${merchantTransactionId}`;
     url += `&signature=${encodeURIComponent(signature)}`;
+    url += `&address=${address}`;
+    url += `&networks=ETHEREUM`;
     url += `&type=buy`;
     url += `&fiat_currency=EUR`;
 
@@ -130,7 +133,7 @@ export default function MercuryoIframeWidget({
     const buildUrl = async () => {
       // Reset error when user data changes
       setError(null);
-      
+
       const address = user?.safeAddress;
 
       console.log("address", address);
@@ -148,20 +151,7 @@ export default function MercuryoIframeWidget({
       }
 
       try {
-        const userIp = await getClientIp();
-        const widgetId = process.env.EXPO_PUBLIC_MERCURYO_WIDGET_ID;
-        const widgetSecret = process.env.EXPO_PUBLIC_MERCURYO_WIDGET_SECRET;
-
-        if (!widgetId || !widgetSecret) {
-          throw new Error("Mercuryo widget ID or secret is not set");
-        }
-
-        const widgetUrl = await buildMercuryoWidgetUrl({
-          address,
-          widgetId,
-          widgetSecret,
-          userIp,
-        });
+        const widgetUrl = await buildMercuryoWidgetUrl({ address });
 
         console.log("Built Mercuryo URL:", widgetUrl);
         setFinalUrl(widgetUrl);
