@@ -98,6 +98,7 @@ const useWithdraw = (): WithdrawResult => {
       console.error(error);
       setWithdrawStatus(Status.ERROR);
       setError(error instanceof Error ? error.message : "Unknown error");
+      throw error;
     }
   };
 

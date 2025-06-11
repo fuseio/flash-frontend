@@ -2,8 +2,11 @@ import * as DialogPrimitive from '@rn-primitives/dialog';
 import * as React from 'react';
 import { Platform, StyleSheet, View, type ViewProps } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
+
 import { X } from '@/lib/icons/X';
 import { cn } from '@/lib/utils';
+import { toastProps } from '@/lib/toast';
 
 const Dialog = DialogPrimitive.Root;
 
@@ -87,6 +90,7 @@ const DialogContent = React.forwardRef<
               className={cn('text-muted-foreground', open && 'text-accent-foreground')}
             />
           </DialogPrimitive.Close>
+          <Toast {...toastProps} />
         </DialogPrimitive.Content>
       </DialogOverlay>
     </DialogPortal>
@@ -143,5 +147,6 @@ export {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 };
+

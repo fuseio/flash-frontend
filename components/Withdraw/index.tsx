@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { ActivityIndicator, Image, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Linking, TextInput, View } from "react-native";
+import Toast from 'react-native-toast-message';
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-
-import WithdrawIcon from "@/assets/images/withdraw";
 import useBridgeToMainnet from "@/hooks/useBridgeToMainnet";
 import useUser from "@/hooks/useUser";
 import { useEthereumVaultBalance, useFuseVaultBalance } from "@/hooks/useVault";
@@ -12,6 +11,8 @@ import useWithdraw from "@/hooks/useWithdraw";
 import { Status } from "@/lib/types";
 import { Address } from "abitype";
 import { Skeleton } from "../ui/skeleton";
+
+import WithdrawIcon from "@/assets/images/withdraw";
 
 const Withdraw = () => {
   const [fuseAmount, setFuseAmount] = useState("");
@@ -51,11 +52,37 @@ const Withdraw = () => {
   };
 
   const handleBridge = async () => {
-    await bridge(fuseAmount);
+    try {
+      await bridge(fuseAmount);
+      Toast.show({
+        type: 'success',
+        text1: 'Bridge transaction submitted',
+        text2: 'Click to view on LayerZero Scan',
+        onPress: () => {
+          Linking.openURL('https://layerzeroscan.com/');
+        },
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error while bridging',
+      });
+    }
   };
 
   const handleWithdraw = async () => {
-    await withdraw(ethereumAmount);
+    try {
+      await withdraw(ethereumAmount);
+      Toast.show({
+        type: 'success',
+        text1: 'Withdrawal transaction completed',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error while withdrawing',
+      });
+    }
   };
 
   return (

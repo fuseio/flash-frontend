@@ -115,6 +115,7 @@ const useBridgeToMainnet = (): BridgeResult => {
       console.error(error);
       setBridgeStatus(Status.ERROR);
       setError(error instanceof Error ? error.message : "Unknown error");
+      throw error;
     }
   };
 
