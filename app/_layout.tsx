@@ -10,8 +10,10 @@ import Head from 'expo-router/head';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WagmiProvider } from 'wagmi';
+import Toast from 'react-native-toast-message';
 
 import { config } from '@/lib/wagmi';
+import { toastProps } from '@/lib/toast';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -54,6 +56,7 @@ export default function RootLayout() {
         </QueryClientProvider>
       </WagmiProvider>
       <PortalHost />
+      <Toast {...toastProps}/>
     </SafeAreaProvider>
   );
 }
