@@ -11,13 +11,13 @@
     "owner": "fuseio",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "cash.rocksolid.ios",
+      "bundleIdentifier": "xyz.solid.ios",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
       "associatedDomains": [
-        "webcredentials:rocksolid.cash",
-        "applinks:rocksolid.cash"
+        "webcredentials:solid.xyz",
+        "applinks:solid.xyz"
       ]
     },
     "android": {
@@ -26,7 +26,7 @@
         "backgroundColor": "#262626"
       },
       "edgeToEdgeEnabled": true,
-      "package": "cash.rocksolid.android",
+      "package": "xyz.solid.android",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -34,7 +34,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "rocksolid.cash",
+              "host": "solid.xyz",
               "pathPrefix": "/"
             }
           ],
@@ -51,7 +51,7 @@
       [
         "expo-router",
         {
-          "headOrigin": "https://rocksolid.cash"
+          "headOrigin": "https://solid.xyz"
         }
       ],
       [
