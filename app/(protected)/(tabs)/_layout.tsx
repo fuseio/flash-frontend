@@ -5,13 +5,14 @@ import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { isDesktop } from '@/lib/utils';
+import { useDimension } from '@/hooks/useDimension';
 import Navbar from '@/components/Navbar';
 import { path } from '@/constants/path';
 import useNav from '@/hooks/useNav';
 
 export default function TabLayout() {
   const { isDashboard } = useNav();
+  const { isDesktop } = useDimension();
 
   return (
     <>
@@ -30,7 +31,7 @@ export default function TabLayout() {
             default: {
               backgroundColor: "#262626",
               borderColor: "#686163",
-              display: isDesktop() ? 'none' : 'flex',
+              display: isDesktop ? 'none' : 'flex',
             },
           }),
         }}
@@ -67,7 +68,7 @@ export default function TabLayout() {
           options={{
             title: 'Card',
             tabBarIcon: ({ color }) => <CreditCard size={28} color={color} />,
-            href: Platform.OS === 'web' ? null : path.CARD,
+            href: null,
           }}
         />
         <Tabs.Screen
@@ -76,6 +77,13 @@ export default function TabLayout() {
             title: 'Earn',
             tabBarIcon: ({ color }) => <Leaf size={28} color={color} />,
             href: Platform.OS === 'web' ? null : path.EARN,
+          }}
+        />
+        <Tabs.Screen
+          name="buy-crypto/index"
+          options={{
+            title: 'Buy Crypto',
+            href: null,
           }}
         />
       </Tabs>

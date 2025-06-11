@@ -25,7 +25,7 @@ const TokenSelectorModal = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="text-primary-foreground h-12 gap-1 rounded-full">
-          <Image source={TOKEN_IMAGES[selectedToken.imageId]} alt={selectedToken.symbol} className="w-8 h-8" />
+          <Image source={TOKEN_IMAGES[selectedToken.imageId]} alt={selectedToken.symbol} style={{ width: 32, height: 32 }} />
           <Text className="text-lg font-bold">
             {selectedToken.symbol}
           </Text>

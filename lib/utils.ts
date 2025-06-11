@@ -81,11 +81,6 @@ export function bufferToBase64URLString(buffer: ArrayBuffer): string {
   return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-export function isDesktop() {
-  if (Platform.OS !== 'web') return false;
-  return window.innerWidth >= 768;
-}
-
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
   // Convert URL-safe base64 to standard base64 and add padding if needed
   const standardBase64 = base64.replace(/-/g, "+").replace(/_/g, "/");

@@ -1,5 +1,4 @@
 import * as AccordionPrimitive from '@rn-primitives/accordion';
-import { Minus, Plus } from 'lucide-react-native';
 import * as React from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import Animated, {
@@ -11,8 +10,11 @@ import Animated, {
   useDerivedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { cn } from '@/lib/utils';
+
 import { TextClassContext } from '@/components/ui/text';
+import { cn } from '@/lib/utils';
+import { Minus } from '@/lib/icons/Minus';
+import { Plus } from '@/lib/icons/Plus';
 
 function Accordion({
   children,
