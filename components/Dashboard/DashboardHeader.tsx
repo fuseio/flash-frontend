@@ -4,8 +4,9 @@ import { View } from "react-native";
 import { Text } from "../ui/text";
 import { path } from "@/constants/path";
 import { buttonVariants } from "../ui/button";
-import Deposit from "@/assets/images/deposit";
 import WithdrawModal from "../Withdraw/WithdrawModal";
+
+import Deposit from "@/assets/images/deposit";
 
 const DashboardHeader = () => {
   return (
