@@ -64,7 +64,7 @@ export const executeTransactions = async (
   const { metadata: webauthn, signature } = await sign({
     credentialId: passkey.credentialId,
     challenge: userOpHashToSign,
-    rpId: __DEV__ ? "solid.xyz" : 'localhost',
+    rpId: __DEV__ ? "localhost" : 'solid.xyz',
   });
 
   const encodedSignature = getWebauthnValidatorSignature({
