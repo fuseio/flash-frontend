@@ -3,14 +3,16 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "npm run codegen && expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web",
-    "lint": "expo lint"
+    "android": "npm run codegen && expo run:android",
+    "ios": "npm run codegen && expo run:ios",
+    "web": "npm run codegen && expo start --web",
+    "lint": "expo lint",
+    "codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
+    "@apollo/client": "^3.13.8",
     "@expo-google-fonts/mona-sans": "^0.3.0",
     "@expo/vector-icons": "^14.1.0",
     "@noble/hashes": "^1.8.0",
@@ -52,6 +54,7 @@
     "expo-system-ui": "~5.0.7",
     "expo-updates": "~0.28.13",
     "expo-web-browser": "~14.1.6",
+    "graphql": "^16.11.0",
     "immer": "^10.1.1",
     "lucide-react-native": "^0.510.0",
     "nativewind": "^4.1.23",
@@ -85,6 +88,10 @@
   "devDependencies": {
     "@babel/core": "^7.27.1",
     "@babel/plugin-transform-class-static-block": "^7.27.1",
+    "@graphql-codegen/cli": "5.0.7",
+    "@graphql-codegen/client-preset": "4.8.2",
+    "@graphql-codegen/introspection": "4.0.3",
+    "@graphql-codegen/typescript-react-apollo": "^4.3.3",
     "@types/react": "~19.0.10",
     "eslint": "^9.26.0",
     "eslint-config-expo": "~9.2.0",
