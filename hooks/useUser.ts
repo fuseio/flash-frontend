@@ -40,14 +40,12 @@ interface UseUserReturn {
   safeAA: (passkey: PasskeyArgType, chain: Chain) => Promise<any>;
   checkBalance: (user: User) => Promise<void>;
   isLoading: boolean;
-  error: Error | null;
 }
 
 const useUser = (): UseUserReturn => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
   const {
     users,
@@ -136,14 +134,12 @@ const useUser = (): UseUserReturn => {
       }
     } catch (error) {
       console.error("Error fetching tokens:", error);
-      setError(error instanceof Error ? error : new Error('Failed to fetch tokens'));
     }
     router.replace(path.HOME);
   }, [queryClient, router, updateUser]);
 
   const handleSignup = useCallback(async (username: string) => {
     setIsLoading(true);
-    setError(null);
     try {
       setSignupInfo({ status: Status.PENDING });
 
@@ -189,7 +185,6 @@ const useUser = (): UseUserReturn => {
       } else {
         setSignupInfo({ status: Status.ERROR });
       }
-      setError(error instanceof Error ? error : new Error('Signup failed'));
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -198,7 +193,6 @@ const useUser = (): UseUserReturn => {
 
   const handleLogin = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
     try {
       setLoginInfo({ status: Status.PENDING });
       const optionsJSON = await generateAuthenticationOptions();
@@ -219,7 +213,6 @@ const useUser = (): UseUserReturn => {
       }
     } catch (error: any) {
       console.error(error);
-      setError(error instanceof Error ? error : new Error('Login failed'));
       setLoginInfo({ status: Status.ERROR });
     } finally {
       setIsLoading(false);
@@ -228,7 +221,6 @@ const useUser = (): UseUserReturn => {
 
   const handleDummyLogin = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
     try {
       await storeUser({
         username: "dummy",
@@ -245,7 +237,6 @@ const useUser = (): UseUserReturn => {
       });
       router.replace(path.HOME);
     } catch (error) {
-      setError(error instanceof Error ? error : new Error('Dummy login failed'));
     } finally {
       setIsLoading(false);
     }
@@ -258,12 +249,10 @@ const useUser = (): UseUserReturn => {
 
   const handleSelectUser = useCallback(async (username: string) => {
     setIsLoading(true);
-    setError(null);
     try {
       selectUser(username);
       router.replace(path.HOME);
     } catch (error) {
-      setError(error instanceof Error ? error : new Error('Failed to select user'));
     } finally {
       setIsLoading(false);
     }
@@ -289,7 +278,6 @@ const useUser = (): UseUserReturn => {
     safeAA,
     checkBalance,
     isLoading,
-    error,
   };
 };
 
