@@ -10,7 +10,7 @@ import {
   toSafeSmartAccount
 } from "permissionless/accounts";
 import { erc7579Actions } from "permissionless/actions/erc7579";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import * as passkeys from "react-native-passkeys";
 import { toAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
@@ -39,13 +39,11 @@ interface UseUserReturn {
   handleRemoveUsers: () => void;
   safeAA: (passkey: PasskeyArgType, chain: Chain) => Promise<any>;
   checkBalance: (user: User) => Promise<void>;
-  isLoading: boolean;
 }
 
 const useUser = (): UseUserReturn => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [isLoading, setIsLoading] = useState(false);
 
   const {
     users,
@@ -139,7 +137,6 @@ const useUser = (): UseUserReturn => {
   }, [queryClient, router, updateUser]);
 
   const handleSignup = useCallback(async (username: string) => {
-    setIsLoading(true);
     try {
       setSignupInfo({ status: Status.PENDING });
 
@@ -186,13 +183,10 @@ const useUser = (): UseUserReturn => {
         setSignupInfo({ status: Status.ERROR });
       }
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   }, [checkBalance, safeAA, setSignupInfo, storeUser]);
 
   const handleLogin = useCallback(async () => {
-    setIsLoading(true);
     try {
       setLoginInfo({ status: Status.PENDING });
       const optionsJSON = await generateAuthenticationOptions();
@@ -214,13 +208,10 @@ const useUser = (): UseUserReturn => {
     } catch (error: any) {
       console.error(error);
       setLoginInfo({ status: Status.ERROR });
-    } finally {
-      setIsLoading(false);
     }
   }, [checkBalance, setLoginInfo, storeUser]);
 
   const handleDummyLogin = useCallback(async () => {
-    setIsLoading(true);
     try {
       await storeUser({
         username: "dummy",
@@ -237,8 +228,6 @@ const useUser = (): UseUserReturn => {
       });
       router.replace(path.HOME);
     } catch (error) {
-    } finally {
-      setIsLoading(false);
     }
   }, [router, storeUser]);
 
@@ -248,13 +237,10 @@ const useUser = (): UseUserReturn => {
   }, [unselectUser, router]);
 
   const handleSelectUser = useCallback(async (username: string) => {
-    setIsLoading(true);
     try {
       selectUser(username);
       router.replace(path.HOME);
     } catch (error) {
-    } finally {
-      setIsLoading(false);
     }
   }, [checkBalance, router, selectUser, user]);
 
@@ -277,7 +263,6 @@ const useUser = (): UseUserReturn => {
     handleRemoveUsers,
     safeAA,
     checkBalance,
-    isLoading,
   };
 };
 
