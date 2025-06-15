@@ -6,18 +6,19 @@ import { executeTransactions } from "@/lib/execute";
 import { Status } from "@/lib/types";
 import { Address } from "abitype";
 import { useState } from "react";
+import { TransactionReceipt } from "viem";
 import { fuse } from "viem/chains";
 import {
-    encodeAbiParameters,
-    encodeFunctionData,
-    parseAbiParameters,
-    parseUnits,
+  encodeAbiParameters,
+  encodeFunctionData,
+  parseAbiParameters,
+  parseUnits,
 } from "viem/utils";
 import { useReadContract } from "wagmi";
 import useUser from "./useUser";
 
 type BridgeResult = {
-  bridge: (amount: string) => Promise<void>;
+  bridge: (amount: string) => Promise<TransactionReceipt>;
   bridgeStatus: Status;
   error: string | null;
 };
@@ -102,7 +103,7 @@ const useBridgeToMainnet = (): BridgeResult => {
 
       const smartAccountClient = await safeAA(user.passkey, fuse);
 
-      await executeTransactions(
+      const transaction = await executeTransactions(
         smartAccountClient,
         user.passkey,
         transactions,
@@ -111,6 +112,7 @@ const useBridgeToMainnet = (): BridgeResult => {
       );
 
       setBridgeStatus(Status.SUCCESS);
+      return transaction;
     } catch (error) {
       console.error(error);
       setBridgeStatus(Status.ERROR);
