@@ -5,7 +5,7 @@ import { ArrowUpRight, Plus, SendHorizontal } from "lucide-react-native";
 
 import { Text } from "@/components/ui/text";
 import { formatNumber } from "@/lib/utils";
-import { PointsBadge, SavingCard, WalletCard } from "@/components/Wallet";
+import { PointsBadge, SavingCard, WalletCard, WalletTabs } from "@/components/Wallet";
 import { path } from "@/constants/path";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -48,9 +48,13 @@ export default function Wallet() {
             </View>
           </View>
 
-          <View className="flex-col md:flex-row items-center justify-between gap-6 h-40">
-            <WalletCard balance={balance} className="w-full md:w-[50%]" />
-            <SavingCard balance={balance} className="w-full md:w-[50%]" />
+          <View className="flex-col md:flex-row items-center justify-between gap-6">
+            <WalletCard balance={balance} className="w-full md:w-[50%] h-40" />
+            <SavingCard balance={balance} className="w-full md:w-[50%] h-40" />
+          </View>
+
+          <View className="md:mt-16">
+            <WalletTabs />
           </View>
         </View>
       </ScrollView>
