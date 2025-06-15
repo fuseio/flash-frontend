@@ -44,5 +44,3 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
-
-graphql/generated/
