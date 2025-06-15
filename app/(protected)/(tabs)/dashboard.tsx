@@ -1,10 +1,12 @@
 import { ScrollView, View } from "react-native";
-import { Address } from "viem";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Address } from "viem";
 
+import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import FAQ from "@/components/FAQ";
 import SavingCountUp from "@/components/SavingCountUp";
 import Transaction from "@/components/Transaction";
+import { Image } from "@/components/ui/Image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import faqs from "@/constants/faqs";
@@ -13,16 +15,23 @@ import { useDimension } from "@/hooks/useDimension";
 import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
-import { Image } from "@/components/ui/Image";
-import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
+import { User } from "@/lib/types";
+import { useEffect } from "react";
 
 export default function Dashboard() {
-  const { user } = useUser();
+  const { user, checkBalance } = useUser();
   const { data: balance, isLoading: isBalanceLoading } = useFuseVaultBalance(user?.safeAddress as Address)
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
   const { data: lastTimestamp } = useLatestTokenTransfer(user?.safeAddress ?? "", ADDRESSES.fuse.vault)
   const { data: transactions, isLoading: isTransactionsLoading } = useTransactions(user?.safeAddress ?? "")
   const { isScreenMedium } = useDimension();
+
+  useEffect(() => {
+    if (user) {
+      checkBalance(user as User);
+    }
+  }, [user, checkBalance]);
+
 
   return (
     <SafeAreaView
