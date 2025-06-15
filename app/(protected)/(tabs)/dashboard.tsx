@@ -20,9 +20,11 @@ import { useDimension } from "@/hooks/useDimension";
 import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
-import { useMemo } from "react";
+import { User } from "@/lib/types";
+import { useEffect, useMemo } from "react";
+
 export default function Dashboard() {
-  const { user } = useUser();
+  const { user, checkBalance } = useUser();
   const { data: balance, isLoading: isBalanceLoading } = useFuseVaultBalance(
     user?.safeAddress as Address
   );
@@ -42,6 +44,13 @@ export default function Dashboard() {
     [userTransactions]
   );
   const { isScreenMedium } = useDimension();
+
+  useEffect(() => {
+    if (user) {
+      checkBalance(user as User);
+    }
+  }, [user, checkBalance]);
+
 
   return (
     <SafeAreaView

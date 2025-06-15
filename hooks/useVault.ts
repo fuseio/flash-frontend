@@ -14,7 +14,7 @@ export const fetchVaultBalance = async (
   safeAddress: Address,
   chainId: number,
   vaultAddress: Address,
-  decimals: number = 6
+  decimals = 6,
 ) => {
   const balance = await queryClient.fetchQuery(
     readContractQueryOptions(config, {
@@ -23,7 +23,7 @@ export const fetchVaultBalance = async (
       functionName: "balanceOf",
       args: [safeAddress],
       chainId: chainId,
-    })
+    }),
   );
 
   return Number(formatUnits(balance, decimals)) || 0;
@@ -39,7 +39,7 @@ export const useFuseVaultBalance = (safeAddress: Address) => {
         queryClient,
         safeAddress,
         fuse.id,
-        ADDRESSES.fuse.vault
+        ADDRESSES.fuse.vault,
       ),
     enabled: !!safeAddress,
     refetchOnWindowFocus: false,
@@ -56,7 +56,7 @@ export const useEthereumVaultBalance = (safeAddress: Address) => {
         queryClient,
         safeAddress,
         mainnet.id,
-        ADDRESSES.ethereum.vault
+        ADDRESSES.ethereum.vault,
       ),
     enabled: !!safeAddress,
     refetchOnWindowFocus: false,

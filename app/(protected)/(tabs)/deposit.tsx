@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { Fuel } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, Linking, ScrollView, View } from "react-native";
 import { formatUnits, parseUnits } from "viem";
 
 import { CheckConnectionWrapper } from "@/components/CheckConnectionWrapper";
@@ -16,6 +16,7 @@ import { useTotalAPY } from "@/hooks/useAnalytics";
 import useDeposit from "@/hooks/useDeposit";
 import { Status } from "@/lib/types";
 import { compactNumberFormat } from "@/lib/utils";
+import Toast from 'react-native-toast-message';
 
 export default function Deposit() {
   const [amount, setAmount] = useState<string>("");
@@ -41,9 +42,24 @@ export default function Deposit() {
   };
 
   const handleClick = async () => {
-    if (!amount) return;
-    if (!balance || balance < amountWei) return;
-    await deposit(amount);
+    try {
+      if (!amount) return;
+      if (!balance || balance < amountWei) return;
+      const transaction = await deposit(amount);
+      Toast.show({
+        type: 'success',
+        text1: 'Deposit transaction submitted',
+        text2: 'Click to view on LayerZero Scan',
+        onPress: () => {
+          Linking.openURL(`https://layerzeroscan.com/tx/${transaction.transactionHash}`);
+        },
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error while depositing',
+      });
+    }
   };
 
   return (

@@ -4,6 +4,7 @@ import {
   encodeFunctionData,
   parseAbiParameters,
   parseUnits,
+  TransactionReceipt,
   type Address
 } from "viem";
 import { mainnet } from "viem/chains";
@@ -22,7 +23,7 @@ type DepositResult = {
   allowance: bigint | undefined;
   balance: bigint | undefined;
   approve: (amount: string) => Promise<void>;
-  deposit: (amount: string) => Promise<void>;
+  deposit: (amount: string) => Promise<TransactionReceipt>;
   approveStatus: Status;
   depositStatus: Status;
   error: string | null;
@@ -167,7 +168,7 @@ const useDeposit = (): DepositResult => {
 
       const smartAccountClient = await safeAA(user.passkey, mainnet);
 
-      await executeTransactions(
+      const transaction = await executeTransactions(
         smartAccountClient,
         user.passkey,
         transactions,
@@ -180,10 +181,12 @@ const useDeposit = (): DepositResult => {
         isDeposited: true,
       });
       setDepositStatus(Status.SUCCESS);
+      return transaction;
     } catch (error) {
       console.error(error);
       setDepositStatus(Status.ERROR);
       setError(error instanceof Error ? error.message : "Unknown error");
+      throw error;
     }
   };
 

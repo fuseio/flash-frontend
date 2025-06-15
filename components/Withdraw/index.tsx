@@ -53,13 +53,13 @@ const Withdraw = () => {
 
   const handleBridge = async () => {
     try {
-      await bridge(fuseAmount);
+      const transaction = await bridge(fuseAmount);
       Toast.show({
         type: 'success',
         text1: 'Bridge transaction submitted',
         text2: 'Click to view on LayerZero Scan',
         onPress: () => {
-          Linking.openURL('https://layerzeroscan.com/');
+          Linking.openURL(`https://layerzeroscan.com/tx/${transaction.transactionHash}`);
         },
       });
     } catch (error) {
