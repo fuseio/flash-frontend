@@ -19,7 +19,7 @@ export default function Home() {
   const { isScreenMedium } = useDimension();
 
   if (user?.isDeposited) {
-    return <Redirect href={path.DASHBOARD} />;
+    return <Redirect href={path.WALLET} />;
   }
 
   return (

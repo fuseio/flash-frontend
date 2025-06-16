@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react"
-import { Href } from "expo-router"
+import { Href } from "expo-router";
+import { useEffect, useState } from "react";
 
-import useUser from "@/hooks/useUser"
 import { path } from "@/constants/path";
+import useUser from "@/hooks/useUser";
 
 type MenuItem = {
   label: string;
@@ -15,28 +15,28 @@ const home: MenuItem = {
 }
 
 const dashboard: MenuItem = {
-  label: "Dashboard",
+  label: "Savings",
   href: path.DASHBOARD,
 }
 
 const wallet: MenuItem = {
-  label: "Wallet",
+  label: "Home",
   href: path.WALLET,
 }
 
 const defaultMenuItems: MenuItem[] = [
-  {
-    label: "Deposit",
-    href: path.DEPOSIT,
-  },
-  {
-    label: "Card",
-    href: path.CARD,
-  },
-  {
-    label: "Buy Crypto",
-    href: path.BUY_CRYPTO,
-  }
+  // {
+  //   label: "Deposit",
+  //   href: path.DEPOSIT,
+  // },
+  // {
+  //   label: "Card",
+  //   href: path.CARD,
+  // },
+  // {
+  //   label: "Buy Crypto",
+  //   href: path.BUY_CRYPTO,
+  // }
 ]
 
 const useNav = () => {
@@ -49,7 +49,7 @@ const useNav = () => {
     let newMenuItems: MenuItem[] = []
 
     if (isDashboard) {
-      newMenuItems = [dashboard, wallet]
+      newMenuItems = [wallet, dashboard]
     } else {
       newMenuItems = [home]
     }

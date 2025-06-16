@@ -1,18 +1,37 @@
-import { Link } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowUpRight, Plus, SendHorizontal } from "lucide-react-native";
+import { Address } from "viem";
 
+import DepositAddressModal from "@/components/DepositAddress/DepositAddressModal";
 import { Text } from "@/components/ui/text";
+import { SavingCard, WalletCard, WalletTabs } from "@/components/Wallet";
+import WithdrawToAddressModal from "@/components/WithdrawToAddressModal/WithdrawToAddressModal";
+import { useLatestTokenTransfer, useTotalAPY } from "@/hooks/useAnalytics";
+import { useUnmarshalBalance } from "@/hooks/useUnmarshalBalance";
+import useUser from "@/hooks/useUser";
+import { useFuseVaultBalance } from "@/hooks/useVault";
+import { ADDRESSES } from "@/lib/config";
 import { formatNumber } from "@/lib/utils";
-import { PointsBadge, SavingCard, WalletCard, WalletTabs } from "@/components/Wallet";
-import { path } from "@/constants/path";
-import { buttonVariants } from "@/components/ui/button";
 
-const balance = 2112.44;
-const points = 50;
+// const points = 50;
 
 export default function Wallet() {
+  const { user } = useUser();
+  const { data: fuseVaultBalance } = useFuseVaultBalance(
+    user?.safeAddress as Address
+  );
+  const {
+    totalUSD: totalBalance,
+    soUSDValue,
+    totalUSDExcludingSoUSD,
+    // isLoading: isBalanceLoading
+  } = useUnmarshalBalance(user?.safeAddress);
+  const { data: totalAPY } = useTotalAPY();
+  const { data: lastTimestamp } = useLatestTokenTransfer(
+    user?.safeAddress ?? "",
+    ADDRESSES.fuse.vault
+  );
+
   return (
     <SafeAreaView
       className="bg-background text-foreground flex-1"
@@ -22,35 +41,24 @@ export default function Wallet() {
         <View className="gap-16 px-4 py-8 md:py-16 w-full max-w-7xl mx-auto">
           <View className="flex-col md:flex-row items-center justify-between gap-y-4">
             <View className="flex-row items-center gap-6">
-              <Text className="text-5xl font-semibold">${formatNumber(balance)}</Text>
-              <PointsBadge points={points} />
+              <Text className="text-5xl font-semibold">${formatNumber(totalBalance ?? 0)}</Text>
+              {/* <PointsBadge points={points} /> */}
             </View>
 
             <View className="flex-row items-center gap-2">
-              <Link href={path.DEPOSIT} className={buttonVariants({ variant: "brand", className: "h-12 rounded-xl" })}>
-                <View className="flex-row items-center gap-2">
-                  <Plus />
-                  <Text className="text-primary-foreground font-bold hidden md:block">Add funds</Text>
-                </View>
-              </Link>
-              <Link href={path.DEPOSIT} className={buttonVariants({ variant: "secondary", className: "h-12 rounded-xl" })}>
-                <View className="flex-row items-center gap-2">
-                  <ArrowUpRight color="white" />
-                  <Text className="font-bold hidden md:block">Withdraw</Text>
-                </View>
-              </Link>
-              <Link href={path.DEPOSIT} className={buttonVariants({ variant: "secondary", className: "h-12 rounded-xl" })}>
-                <View className="flex-row items-center gap-2">
-                  <SendHorizontal color="white" />
-                  <Text className="font-bold hidden md:block">Send</Text>
-                </View>
-              </Link>
+              <DepositAddressModal />
+              <WithdrawToAddressModal />
             </View>
           </View>
 
           <View className="flex-col md:flex-row items-center justify-between gap-6">
-            <WalletCard balance={balance} className="w-full md:w-[50%] h-40" />
-            <SavingCard balance={balance} className="w-full md:w-[50%] h-40" />
+            <WalletCard balance={totalUSDExcludingSoUSD ?? 0} className="w-full md:w-[50%] h-40" />
+            <SavingCard
+              balance={soUSDValue ?? 0}
+              apy={totalAPY ?? 0}
+              lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
+              className="w-full md:w-[50%] h-40"
+            />
           </View>
 
           <View className="md:mt-16">
