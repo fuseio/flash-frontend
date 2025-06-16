@@ -16,7 +16,7 @@ export default function TabLayout() {
 
   return (
     <>
-      <Navbar />
+      {isDesktop ? <Navbar /> : null}
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "white",
