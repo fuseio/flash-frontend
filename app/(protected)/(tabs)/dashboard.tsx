@@ -1,6 +1,8 @@
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Address } from "viem";
+import { useMemo } from "react";
+import { Redirect } from "expo-router";
 
 import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import FAQ from "@/components/FAQ";
@@ -20,11 +22,10 @@ import { useDimension } from "@/hooks/useDimension";
 import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
-import { User } from "@/lib/types";
-import { useEffect, useMemo } from "react";
+import { path } from "@/constants/path";
 
 export default function Dashboard() {
-  const { user, checkBalance } = useUser();
+  const { user } = useUser();
   const { data: balance, isLoading: isBalanceLoading } = useFuseVaultBalance(
     user?.safeAddress as Address
   );
@@ -45,12 +46,9 @@ export default function Dashboard() {
   );
   const { isScreenMedium } = useDimension();
 
-  useEffect(() => {
-    if (user) {
-      checkBalance(user as User);
-    }
-  }, [user, checkBalance]);
-
+  if (user?.isDeposited !== undefined && !user.isDeposited) {
+    return <Redirect href={path.HOME} />;
+  }
 
   return (
     <SafeAreaView
