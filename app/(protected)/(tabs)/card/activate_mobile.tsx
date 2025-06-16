@@ -8,7 +8,9 @@ import { StepIndicator } from "@/components/Card/StepIndicator";
 import { Text } from "@/components/ui/text";
 import { useCardSteps } from "@/hooks/useCardSteps";
 
-export default function CardDetailsMobile() {
+// Implement buttons. Start with KYC.
+
+export default function ActivateMobile() {
   const router = useRouter();
 
   const { steps, activeStepId, isStepButtonEnabled, toggleStep } =
