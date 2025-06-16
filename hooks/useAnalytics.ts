@@ -1,16 +1,16 @@
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { formatUnits } from "viem";
+import { infoClient } from "@/graphql/clients";
 
 import {
+  GetUserTransactionsDocument,
   GetUserTransactionsQuery
 } from "@/graphql/generated/user-info";
 import {
-  fetchInternalTransactions,
   fetchLayerZeroBridgeTransactions,
   fetchTokenTransfer,
   fetchTotalAPY
 } from "@/lib/api";
-import { ADDRESSES } from "@/lib/config";
 import { Transaction } from "@/lib/types";
 
 const ANALYTICS = "analytics";
@@ -63,16 +63,14 @@ export const isDepositedQueryOptions = (safeAddress: string) => {
   return {
     queryKey: [ANALYTICS, "isDeposited", safeAddress],
     queryFn: async () => {
-      const internalTransactions = await fetchInternalTransactions(safeAddress);
-      let deposited = false;
-
-      internalTransactions.items.forEach(async (internalTransaction) => {
-        if (internalTransaction.to.hash !== ADDRESSES.ethereum.teller) return;
-
-        deposited = true;
+      const { data } = await infoClient.query({
+        query: GetUserTransactionsDocument,
+        variables: {
+          address: safeAddress,
+        },
       });
 
-      return deposited;
+      return data?.deposits?.length;
     },
     enabled: !!safeAddress,
     refetchOnWindowFocus: false,
