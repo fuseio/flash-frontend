@@ -26,6 +26,8 @@ export default function Wallet() {
   );
   const {
     totalUSD: totalBalance,
+    ethereum,
+    fuse,
     // soUSDValue,
     totalUSDExcludingSoUSD,
     // isLoading: isBalanceLoading
@@ -37,7 +39,7 @@ export default function Wallet() {
   );
   const { isDesktop } = useDimension();
 
-  const hasFunds = (totalBalance ?? 0) > 0;
+  const hasFunds = ethereum.length > 0 || fuse.length > 0;
 
   return (
     <React.Fragment>
