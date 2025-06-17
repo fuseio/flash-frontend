@@ -24,7 +24,7 @@ const DepositAddressModal = () => {
           </View>
         </View>
       </DialogTrigger>
-      <DialogContent className="md:gap-8 md:max-w-sm bg-[#30302E]">
+      <DialogContent className="md:gap-8 md:max-w-sm bg-modal-background">
         <View className="gap-2 md:gap-4">
           <DialogTitle>Deposit address</DialogTitle>
           <TokenSelectorDeposit />

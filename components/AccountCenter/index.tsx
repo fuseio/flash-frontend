@@ -32,7 +32,7 @@ const AccountCenterTrigger = (props: any) => {
     triggerButton = (
       <Button
         size="sm"
-        className="flex-row justify-between gap-2 bg-[#3A3A3A] rounded-full border-0 min-w-0"
+        className="flex-row justify-between gap-2 bg-button-secondary rounded-full border-0 min-w-0"
         {...props}
       >
         <UserAvatar />
