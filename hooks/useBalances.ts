@@ -6,29 +6,23 @@ import { readContract } from 'viem/actions';
 import { mainnet } from 'viem/chains';
 
 interface TokenBalance {
-  contract_ticker_symbol: string;
-  contract_name: string;
-  contract_address: string;
+  contractTickerSymbol: string;
+  contractName: string;
+  contractAddress: string;
   balance: string;
-  balance_24h?: string;
-  quote_rate?: number;
+  balance24h?: string;
+  quoteRate?: number;
   quote?: number;
-  quote_24h?: number;
-  logo_url?: string;
-  contract_decimals: number;
+  quote24h?: number;
+  logoUrl?: string;
+  contractDecimals: number;
   type: string;
   verified?: boolean;
-  coin_gecko_id?: string;
+  coinGeckoId?: string;
   chainId: number;
 }
 
-interface UnmarshalResponse {
-  items_on_page: number;
-  next_offset: number;
-  assets: TokenBalance[];
-}
-
-// Blockscout response structure for Fuse
+// Blockscout response structure for both Ethereum and Fuse
 interface BlockscoutTokenBalance {
   token: {
     address: string;
@@ -63,7 +57,7 @@ interface BalanceData {
   error: string | null;
 }
 
-// Chain IDs for Unmarshal API
+// Chain IDs
 const ETHEREUM_CHAIN_ID = 1;
 const FUSE_CHAIN_ID = 122;
 
@@ -84,7 +78,7 @@ const ACCOUNTANT_ABI = [
   }
 ] as const;
 
-export const useUnmarshalBalance = (address: Address | undefined): BalanceData => {
+export const useBalances = (address: Address | undefined): BalanceData => {
   const [balanceData, setBalanceData] = useState<BalanceData>({
     totalUSD: 0,
     soUSDValue: 0,
@@ -107,8 +101,8 @@ export const useUnmarshalBalance = (address: Address | undefined): BalanceData =
       try {
         // Make parallel requests to both chains and get soUSD rate
         const [ethereumResponse, fuseResponse, soUSDRate] = await Promise.allSettled([
-          // Ethereum via Unmarshal
-          fetch(`https://api.unmarshal.com/v2/ethereum/address/${address}/assets?verified=true&includeLowVolume=true&auth_key=${process.env.EXPO_PUBLIC_UNMARSHAL_API_KEY}`, {
+          // Ethereum via Blockscout
+          fetch(`https://eth.blockscout.com/api/v2/addresses/${address}/token-balances`, {
             headers: {
               accept: 'application/json',
             },
@@ -130,14 +124,27 @@ export const useUnmarshalBalance = (address: Address | undefined): BalanceData =
         let fuseTokens: TokenBalance[] = [];
         let rate = BigInt(0);
 
-        // Process Ethereum response (Unmarshal)
+        // Convert Blockscout format to our standard format
+        const convertBlockscoutToTokenBalance = (item: BlockscoutTokenBalance, chainId: number): TokenBalance => ({
+          contractTickerSymbol: item.token.symbol,
+          contractName: item.token.name,
+          contractAddress: item.token.address,
+          balance: item.value,
+          quoteRate: item.token.exchange_rate ? parseFloat(item.token.exchange_rate) : 0,
+          quote: 0, // Will be calculated
+          logoUrl: item.token.icon_url,
+          contractDecimals: parseInt(item.token.decimals),
+          type: item.token.type,
+          verified: true, // Assume verified if it's on Blockscout
+          chainId: chainId,
+        });
+
+        // Process Ethereum response (Blockscout)
         if (ethereumResponse.status === 'fulfilled' && ethereumResponse.value.ok) {
-          const ethereumData: UnmarshalResponse = await ethereumResponse.value.json();
-          // Add chainId to Ethereum tokens
-          ethereumTokens = (ethereumData.assets || []).map(token => ({
-            ...token,
-            chainId: ETHEREUM_CHAIN_ID,
-          }));
+          const ethereumData: BlockscoutResponse = await ethereumResponse.value.json();
+          // Filter out NFTs and only include ERC-20 tokens
+          const erc20Tokens = ethereumData.filter(item => item.token.type === 'ERC-20');
+          ethereumTokens = erc20Tokens.map(item => convertBlockscoutToTokenBalance(item, ETHEREUM_CHAIN_ID));
         } else if (ethereumResponse.status === 'rejected') {
           console.warn('Failed to fetch Ethereum balances:', ethereumResponse.reason);
         }
@@ -145,20 +152,9 @@ export const useUnmarshalBalance = (address: Address | undefined): BalanceData =
         // Process Fuse response (Blockscout)
         if (fuseResponse.status === 'fulfilled' && fuseResponse.value.ok) {
           const fuseData: BlockscoutResponse = await fuseResponse.value.json();
-          // Convert Blockscout format to our standard format
-          fuseTokens = fuseData.map((item): TokenBalance => ({
-            contract_ticker_symbol: item.token.symbol,
-            contract_name: item.token.name,
-            contract_address: item.token.address,
-            balance: item.value,
-            quote_rate: item.token.exchange_rate ? parseFloat(item.token.exchange_rate) : 0,
-            quote: 0, // Will be calculated
-            logo_url: item.token.icon_url,
-            contract_decimals: parseInt(item.token.decimals),
-            type: item.token.type,
-            verified: true, // Assume verified if it's on Blockscout
-            chainId: FUSE_CHAIN_ID,
-          }));
+          // Filter out NFTs and only include ERC-20 tokens
+          const erc20Tokens = fuseData.filter(item => item.token.type === 'ERC-20');
+          fuseTokens = erc20Tokens.map(item => convertBlockscoutToTokenBalance(item, FUSE_CHAIN_ID));
         } else if (fuseResponse.status === 'rejected') {
           console.warn('Failed to fetch Fuse balances:', fuseResponse.reason);
         }
@@ -172,32 +168,28 @@ export const useUnmarshalBalance = (address: Address | undefined): BalanceData =
 
         // Helper function to check if token is soUSD (vault token)
         const isSoUSDToken = (token: TokenBalance): boolean => {
-          return token.contract_address.toLowerCase() === ADDRESSES.ethereum.vault.toLowerCase() ||
-                 token.contract_address.toLowerCase() === ADDRESSES.fuse.vault.toLowerCase();
+          return token.contractAddress.toLowerCase() === ADDRESSES.ethereum.vault.toLowerCase() ||
+            token.contractAddress.toLowerCase() === ADDRESSES.fuse.vault.toLowerCase();
         };
 
         // Calculate token values separately for soUSD and regular tokens
         const calculateTokenValue = (token: TokenBalance): { soUSDValue: number; regularValue: number } => {
           if (!token.balance) return { soUSDValue: 0, regularValue: 0 };
 
-          // Convert balance from raw format to decimal format using contract_decimals
-          const formattedBalance = parseFloat(token.balance) / Math.pow(10, token.contract_decimals);
-          
+          // Convert balance from raw format to decimal format using contractDecimals
+          const formattedBalance = parseFloat(token.balance) / Math.pow(10, token.contractDecimals);
+
           // Special handling for soUSD tokens - use rate from AccountantWithRateProviders
           if (isSoUSDToken(token) && rate > 0) {
-            console.log('rate: ', rate);
             // Rate is in 18 decimals, so divide by 10^18 to get the actual rate
-            const soUSDRate = Number(rate) / Math.pow(10, 6);
+            const soUSDRate = Number(rate) / Math.pow(10, 18);
             const value = formattedBalance * soUSDRate;
-            console.log('formattedBalance: ', formattedBalance);
-            console.log('value: ', value);
-            console.log('soUSDRate: ', soUSDRate);
             return { soUSDValue: value, regularValue: 0 };
           }
-          
-          // For regular tokens, use quote_rate
-          if (!token.quote_rate) return { soUSDValue: 0, regularValue: 0 };
-          const value = formattedBalance * token.quote_rate;
+
+          // For regular tokens, use quoteRate
+          if (!token.quoteRate) return { soUSDValue: 0, regularValue: 0 };
+          const value = formattedBalance * token.quoteRate;
           return { soUSDValue: 0, regularValue: value };
         };
 
@@ -225,9 +217,6 @@ export const useUnmarshalBalance = (address: Address | undefined): BalanceData =
         );
 
         const totalSoUSD = ethereumTotals.soUSD + fuseTotals.soUSD;
-        console.log('ethereumTotals.soUSD: ', ethereumTotals.soUSD);
-        console.log('fuseTotals.soUSD: ', fuseTotals.soUSD);
-        console.log('totalSoUSD: ', totalSoUSD);
         const totalRegular = ethereumTotals.regular + fuseTotals.regular;
 
         setBalanceData({

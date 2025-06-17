@@ -13,8 +13,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Text } from '@/components/ui/text';
+import { useBalances } from '@/hooks/useBalances';
 import { useDimension } from '@/hooks/useDimension';
-import { useUnmarshalBalance } from '@/hooks/useUnmarshalBalance';
 import useUser from '@/hooks/useUser';
 import { cn, compactNumberFormat, formatNumber } from '@/lib/utils';
 
@@ -55,17 +55,17 @@ const WalletTokenTab = () => {
   const { isScreenMedium } = useDimension();
   const { user } = useUser();
 
-  const { ethereum, fuse, isLoading } = useUnmarshalBalance(user?.safeAddress);
+  const { ethereum, fuse, isLoading } = useBalances(user?.safeAddress);
 
   // Combine and sort tokens by USD value (descending)
   const allTokens = useMemo(() => {
     const combined = [...ethereum, ...fuse];
     return combined.sort((a, b) => {
-      const balanceA = Number(formatUnits(BigInt(a.balance || '0'), a.contract_decimals));
-      const balanceUSD_A = balanceA * (a.quote_rate || 0);
+      const balanceA = Number(formatUnits(BigInt(a.balance || '0'), a.contractDecimals));
+      const balanceUSD_A = balanceA * (a.quoteRate || 0);
 
-      const balanceB = Number(formatUnits(BigInt(b.balance || '0'), b.contract_decimals));
-      const balanceUSD_B = balanceB * (b.quote_rate || 0);
+      const balanceB = Number(formatUnits(BigInt(b.balance || '0'), b.contractDecimals));
+      const balanceUSD_B = balanceB * (b.quoteRate || 0);
 
       return balanceUSD_B - balanceUSD_A; // Descending order
     });
@@ -90,19 +90,19 @@ const WalletTokenTab = () => {
       case 1: // Ethereum
         return require('@/assets/images/ethereum-square-4x.png');
       case 122: // Fuse
-        return { uri: 'https://static.debank.com/image/chain/logo_url/fuse/7a21b958761d52d04ff0ce829d1703f4.png' }; // You'll need to add this asset
+        return { uri: 'https://static.debank.com/image/chain/logo_url/fuse/7a21b958761d52d04ff0ce829d1703f4.png' };
       default:
         return require('@/assets/images/ethereum-square-4x.png');
     }
   };
 
   const getTokenIcon = (token: any): { type: 'image' | 'component'; source?: any; component?: React.ReactNode } => {
-    if (token.logo_url) {
-      return { type: 'image', source: { uri: token.logo_url } };
+    if (token.logoUrl) {
+      return { type: 'image', source: { uri: token.logoUrl } };
     }
 
     // Fallback to default token icons based on symbol
-    switch (token.contract_ticker_symbol?.toUpperCase()) {
+    switch (token.contractTickerSymbol?.toUpperCase()) {
       case 'USDC':
         return { type: 'image', source: require('@/assets/images/usdc.png') };
       case 'WETH':
@@ -114,7 +114,7 @@ const WalletTokenTab = () => {
           component: (
             <DefaultTokenIcon
               size={isScreenMedium ? 34 : 24}
-              symbol={token.contract_ticker_symbol || 'T'}
+              symbol={token.contractTickerSymbol || 'T'}
             />
           )
         };
@@ -159,8 +159,8 @@ const WalletTokenTab = () => {
               }}
               showsVerticalScrollIndicator={false}
               renderItem={({ item: token, index }) => {
-                const balance = Number(formatUnits(BigInt(token.balance || '0'), token.contract_decimals));
-                const balanceUSD = balance * (token.quote_rate || 0);
+                const balance = Number(formatUnits(BigInt(token.balance || '0'), token.contractDecimals));
+                const balanceUSD = balance * (token.quoteRate || 0);
                 const displayBalance = isScreenMedium ?
                   balance.toFixed(6) :
                   balance < 0.001 ?
@@ -171,7 +171,7 @@ const WalletTokenTab = () => {
 
                 return (
                   <TableRow
-                    key={`${token.contract_address}-${token.chainId}`}
+                    key={`${token.contractAddress}-${token.chainId}`}
                     className={cn('bg-card active:bg-secondary items-center border-border/40',
                       index === 0 && 'rounded-t-twice',
                       index === allTokens.length - 1 && 'rounded-b-twice border-0',
@@ -188,9 +188,9 @@ const WalletTokenTab = () => {
                           tokenIcon.component
                         )}
                         <View className='items-start'>
-                          <Text className='font-bold'>{token.contract_ticker_symbol || 'Unknown'}</Text>
+                          <Text className='font-bold'>{token.contractTickerSymbol || 'Unknown'}</Text>
                           <Text className='text-sm text-muted-foreground'>
-                            {displayBalance} {isScreenMedium ? token.contract_ticker_symbol : ''}
+                            {displayBalance} {isScreenMedium ? token.contractTickerSymbol : ''}
                           </Text>
                         </View>
                       </View>
@@ -199,15 +199,15 @@ const WalletTokenTab = () => {
                       <View className='items-start'>
                         <Text className='font-bold'>${format(balanceUSD)}</Text>
                         <Text className='text-sm text-muted-foreground'>
-                          {token.contract_name || token.contract_ticker_symbol}
+                          {token.contractName || token.contractTickerSymbol}
                         </Text>
                       </View>
                     </TableCell>
                     <TableCell className="p-3 md:p-6" style={{ width: columnWidths[2] }}>
                       <View className='items-start'>
-                        <Text className='font-bold'>${format(token.quote_rate || 0)}</Text>
+                        <Text className='font-bold'>${format(token.quoteRate || 0)}</Text>
                         <Text className='text-sm text-muted-foreground'>
-                          per {token.contract_ticker_symbol}
+                          per {token.contractTickerSymbol}
                         </Text>
                       </View>
                     </TableCell>

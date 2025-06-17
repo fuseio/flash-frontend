@@ -7,7 +7,7 @@ import { Text } from "@/components/ui/text";
 import { SavingCard, WalletCard, WalletTabs } from "@/components/Wallet";
 import WithdrawToAddressModal from "@/components/WithdrawToAddressModal/WithdrawToAddressModal";
 import { useLatestTokenTransfer, useTotalAPY } from "@/hooks/useAnalytics";
-import { useUnmarshalBalance } from "@/hooks/useUnmarshalBalance";
+import { useBalances } from "@/hooks/useBalances";
 import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
@@ -22,10 +22,10 @@ export default function Wallet() {
   );
   const {
     totalUSD: totalBalance,
-    soUSDValue,
+    // soUSDValue,
     totalUSDExcludingSoUSD,
     // isLoading: isBalanceLoading
-  } = useUnmarshalBalance(user?.safeAddress);
+  } = useBalances(user?.safeAddress);
   const { data: totalAPY } = useTotalAPY();
   const { data: lastTimestamp } = useLatestTokenTransfer(
     user?.safeAddress ?? "",
@@ -54,7 +54,7 @@ export default function Wallet() {
           <View className="flex-col md:flex-row items-center justify-between gap-6">
             <WalletCard balance={totalUSDExcludingSoUSD ?? 0} className="w-full md:w-[50%] h-40" />
             <SavingCard
-              balance={soUSDValue ?? 0}
+              balance={fuseVaultBalance ?? 0}
               apy={totalAPY ?? 0}
               lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
               className="w-full md:w-[50%] h-40"
