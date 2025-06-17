@@ -2,6 +2,7 @@ import { FlashList } from '@shopify/flash-list';
 import React, { useMemo, useState } from 'react';
 import { Image, LayoutChangeEvent, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { formatUnits } from 'viem';
 
 import {
   Table,
@@ -12,25 +13,63 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Text } from '@/components/ui/text';
-import { cn, compactNumberFormat, formatNumber } from '@/lib/utils';
+import { useBalances } from '@/hooks/useBalances';
 import { useDimension } from '@/hooks/useDimension';
-
-const TOKENS = new Array(2).fill(0).map(() => ({
-  name: "USDC",
-  balance: 0.0026476,
-  balanceUSD: 2131.96,
-  balanceUSDChange: -0.8,
-  priceUSD: 2131.96,
-  priceUSDChange: -4,
-  network: "Ethereum"
-}));
+import useUser from '@/hooks/useUser';
+import { cn, compactNumberFormat, formatNumber } from '@/lib/utils';
 
 const MIN_COLUMN_WIDTHS = new Array(4).fill(50);
+
+// Custom Default Token Icon Component
+const DefaultTokenIcon = ({ size = 24, symbol = '?' }: { size?: number; symbol?: string }) => {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: '#6366f1', // Nice purple color
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#e5e7eb',
+      }}
+    >
+      <Text
+        style={{
+          color: 'white',
+          fontSize: size * 0.4,
+          fontWeight: 'bold',
+          textAlign: 'center',
+        }}
+      >
+        {symbol.charAt(0).toUpperCase()}
+      </Text>
+    </View>
+  );
+};
 
 const WalletTokenTab = () => {
   const insets = useSafeAreaInsets();
   const [width, setWidth] = useState(0);
   const { isScreenMedium } = useDimension();
+  const { user } = useUser();
+
+  const { ethereum, fuse, isLoading } = useBalances(user?.safeAddress);
+
+  // Combine and sort tokens by USD value (descending)
+  const allTokens = useMemo(() => {
+    const combined = [...ethereum, ...fuse];
+    return combined.sort((a, b) => {
+      const balanceA = Number(formatUnits(BigInt(a.balance || '0'), a.contractDecimals));
+      const balanceUSD_A = balanceA * (a.quoteRate || 0);
+
+      const balanceB = Number(formatUnits(BigInt(b.balance || '0'), b.contractDecimals));
+      const balanceUSD_B = balanceB * (b.quoteRate || 0);
+
+      return balanceUSD_B - balanceUSD_A; // Descending order
+    });
+  }, [ethereum, fuse]);
 
   const format = isScreenMedium ? formatNumber : compactNumberFormat;
 
@@ -45,6 +84,50 @@ const WalletTokenTab = () => {
       return evenWidth > minWidth ? evenWidth : minWidth;
     });
   }, [width]);
+
+  const getNetworkIcon = (chainId: number) => {
+    switch (chainId) {
+      case 1: // Ethereum
+        return require('@/assets/images/ethereum-square-4x.png');
+      case 122: // Fuse
+        return { uri: 'https://static.debank.com/image/chain/logo_url/fuse/7a21b958761d52d04ff0ce829d1703f4.png' };
+      default:
+        return require('@/assets/images/ethereum-square-4x.png');
+    }
+  };
+
+  const getTokenIcon = (token: any): { type: 'image' | 'component'; source?: any; component?: React.ReactNode } => {
+    if (token.logoUrl) {
+      return { type: 'image', source: { uri: token.logoUrl } };
+    }
+
+    // Fallback to default token icons based on symbol
+    switch (token.contractTickerSymbol?.toUpperCase()) {
+      case 'USDC':
+        return { type: 'image', source: require('@/assets/images/usdc.png') };
+      case 'WETH':
+      case 'ETH':
+        return { type: 'image', source: require('@/assets/images/ethereum-square-4x.png') };
+      default:
+        return {
+          type: 'component',
+          component: (
+            <DefaultTokenIcon
+              size={isScreenMedium ? 34 : 24}
+              symbol={token.contractTickerSymbol || 'T'}
+            />
+          )
+        };
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center p-8">
+        <Text className="text-lg">Loading tokens...</Text>
+      </View>
+    );
+  }
 
   return (
     <>
@@ -63,69 +146,76 @@ const WalletTokenTab = () => {
                 <Text className="text-sm">Price</Text>
               </TableHead>
               <TableHead className='px-3 md:px-6' style={{ width: columnWidths[3] }}>
-                <Text className="text-sm">Networks</Text>
+                <Text className="text-sm">Network</Text>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <FlashList
-              data={TOKENS}
+              data={allTokens}
               estimatedItemSize={45}
               contentContainerStyle={{
                 paddingBottom: insets.bottom,
               }}
               showsVerticalScrollIndicator={false}
               renderItem={({ item: token, index }) => {
+                const balance = Number(formatUnits(BigInt(token.balance || '0'), token.contractDecimals));
+                const balanceUSD = balance * (token.quoteRate || 0);
+                const displayBalance = isScreenMedium ?
+                  balance.toFixed(6) :
+                  balance < 0.001 ?
+                    "<0.001" :
+                    balance.toFixed(3);
+
+                const tokenIcon = getTokenIcon(token);
+
                 return (
                   <TableRow
-                    key={token.name}
+                    key={`${token.contractAddress}-${token.chainId}`}
                     className={cn('bg-card active:bg-secondary items-center border-border/40',
                       index === 0 && 'rounded-t-twice',
-                      index === TOKENS.length - 1 && 'rounded-b-twice border-0',
+                      index === allTokens.length - 1 && 'rounded-b-twice border-0',
                     )}
                   >
                     <TableCell className="p-3 md:p-6" style={{ width: columnWidths[0] }}>
                       <View className='flex-row items-center gap-2'>
-                        <Image source={require('@/assets/images/usdc.png')} style={{ width: isScreenMedium ? 34 : 24, height: isScreenMedium ? 34 : 24 }} />
+                        {tokenIcon.type === 'image' ? (
+                          <Image
+                            source={tokenIcon.source}
+                            style={{ width: isScreenMedium ? 34 : 24, height: isScreenMedium ? 34 : 24 }}
+                          />
+                        ) : (
+                          tokenIcon.component
+                        )}
                         <View className='items-start'>
-                          <Text className='font-bold'>{token.name}</Text>
+                          <Text className='font-bold'>{token.contractTickerSymbol || 'Unknown'}</Text>
                           <Text className='text-sm text-muted-foreground'>
-                            {isScreenMedium ?
-                              token.balance :
-                              !token.balance ?
-                                "0" :
-                                token.balance < 0.001 ?
-                                  "<0.001" :
-                                  token.balance.toFixed(3)
-                            } {isScreenMedium ? token.name : ''}
+                            {displayBalance} {isScreenMedium ? token.contractTickerSymbol : ''}
                           </Text>
                         </View>
                       </View>
                     </TableCell>
                     <TableCell className="p-3 md:p-6" style={{ width: columnWidths[1] }}>
                       <View className='items-start'>
-                        <Text className='font-bold'>${format(token.balanceUSD)}</Text>
-                        <Text className={cn(
-                          'text-sm text-muted-foreground font-medium',
-                          token.balanceUSDChange > 0 ? 'text-green-500' : 'text-red-500'
-                        )}>
-                          {token.balanceUSDChange > 0 ? '+' : '-'}${format(Math.abs(token.balanceUSDChange))}
+                        <Text className='font-bold'>${format(balanceUSD)}</Text>
+                        <Text className='text-sm text-muted-foreground'>
+                          {token.contractName || token.contractTickerSymbol}
                         </Text>
                       </View>
                     </TableCell>
                     <TableCell className="p-3 md:p-6" style={{ width: columnWidths[2] }}>
                       <View className='items-start'>
-                        <Text className='font-bold'>${format(token.balanceUSD)}</Text>
-                        <Text className={cn(
-                          'text-sm text-muted-foreground font-medium',
-                          token.balanceUSDChange > 0 ? 'text-green-500' : 'text-red-500'
-                        )}>
-                          {token.balanceUSDChange > 0 ? '+' : '-'}${format(Math.abs(token.balanceUSDChange))}
+                        <Text className='font-bold'>${format(token.quoteRate || 0)}</Text>
+                        <Text className='text-sm text-muted-foreground'>
+                          per {token.contractTickerSymbol}
                         </Text>
                       </View>
                     </TableCell>
                     <TableCell className="p-3 md:p-6" style={{ width: columnWidths[3] }}>
-                      <Image source={require('@/assets/images/ethereum-square-4x.png')} style={{ width: 21, height: 21 }} />
+                      <Image
+                        source={getNetworkIcon(token.chainId)}
+                        style={{ width: 21, height: 21 }}
+                      />
                     </TableCell>
                   </TableRow>
                 );
@@ -136,6 +226,6 @@ const WalletTokenTab = () => {
       </ScrollView>
     </>
   );
-}
+};
 
 export default WalletTokenTab;

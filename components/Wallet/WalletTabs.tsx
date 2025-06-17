@@ -76,12 +76,12 @@ const WalletTabs = () => {
         <TabsTrigger value={Tab.TOKENS} className='px-6 pl-0' onLayout={(e) => handleLayout(e, TabElement.TRIGGER, Tab.TOKENS)}>
           <Text onLayout={(e) => handleLayout(e, TabElement.TEXT, Tab.TOKENS)}>Tokens</Text>
         </TabsTrigger>
-        <TabsTrigger value={Tab.COLLECTIBLES} className='px-6' onLayout={(e) => handleLayout(e, TabElement.TRIGGER, Tab.COLLECTIBLES)}>
+        {/* <TabsTrigger value={Tab.COLLECTIBLES} className='px-6' onLayout={(e) => handleLayout(e, TabElement.TRIGGER, Tab.COLLECTIBLES)}>
           <Text onLayout={(e) => handleLayout(e, TabElement.TEXT, Tab.COLLECTIBLES)}>Collectibles</Text>
-        </TabsTrigger>
-        <TabsTrigger value={Tab.ACTIVITY} className='px-6' onLayout={(e) => handleLayout(e, TabElement.TRIGGER, Tab.ACTIVITY)}>
+        </TabsTrigger> */}
+        {/* <TabsTrigger value={Tab.ACTIVITY} className='px-6' onLayout={(e) => handleLayout(e, TabElement.TRIGGER, Tab.ACTIVITY)}>
           <Text onLayout={(e) => handleLayout(e, TabElement.TEXT, Tab.ACTIVITY)}>Activity</Text>
-        </TabsTrigger>
+        </TabsTrigger> */}
       </TabsList>
       <TabsContent value={Tab.TOKENS}>
         <WalletTokenTab />

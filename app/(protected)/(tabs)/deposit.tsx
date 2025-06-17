@@ -1,10 +1,13 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Image } from "expo-image";
 import { Fuel } from "lucide-react-native";
-import { useState } from "react";
+import { useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Linking, ScrollView, View } from "react-native";
-import { formatUnits, parseUnits } from "viem";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from 'react-native-toast-message';
+import { formatUnits } from "viem";
+import { z } from "zod";
 
 import { CheckConnectionWrapper } from "@/components/CheckConnectionWrapper";
 import TokenCard from "@/components/TokenCard";
@@ -16,39 +19,77 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { useTotalAPY } from "@/hooks/useAnalytics";
 import useDeposit from "@/hooks/useDeposit";
+import { useDimension } from "@/hooks/useDimension";
 import { Status } from "@/lib/types";
 import { compactNumberFormat } from "@/lib/utils";
-import { useDimension } from "@/hooks/useDimension";
 
 export default function Deposit() {
-  const [amount, setAmount] = useState<string>("");
   const { balance, deposit, depositStatus } = useDeposit();
   const isLoading = depositStatus === Status.PENDING;
   const { data: totalAPY } = useTotalAPY();
   const { isDesktop } = useDimension();
 
-  const amountWei = parseUnits(amount, 6);
   const formattedBalance = balance ? formatUnits(balance, 6) : "0";
 
+  // Create dynamic schema based on balance
+  const depositSchema = useMemo(() => {
+    const balanceAmount = balance ? Number(formatUnits(balance, 6)) : 0;
+
+    return z.object({
+      amount: z
+        .number()
+        .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`)
+    });
+  }, [balance]);
+
+  type DepositFormData = z.infer<typeof depositSchema>;
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+    watch,
+    reset,
+  } = useForm<DepositFormData>({
+    resolver: zodResolver(depositSchema),
+    mode: "onChange",
+    defaultValues: {
+      amount: 0,
+    },
+  });
+
+  const watchedAmount = watch("amount");
+
+  // Additional validation for balance
+  const hasInsufficientBalance = () => {
+    if (!balance || !watchedAmount) return false;
+    const balanceAmount = Number(formatUnits(balance, 6));
+    const requestedAmount = watchedAmount;
+    return requestedAmount > balanceAmount;
+  };
+
   const getButtonText = () => {
-    if (!amount) return "Enter an amount";
-    if (
-      !balance ||
-      balance < amountWei
-      // || balance < parseUnits(costInUsd.toFixed(3), 6)
-    )
-      return "Insufficient balance";
+    if (errors.amount) return errors.amount.message;
+    if (hasInsufficientBalance()) return "Insufficient balance";
     if (depositStatus === Status.PENDING) return "Depositing";
     if (depositStatus === Status.ERROR) return "Error while depositing";
     if (depositStatus === Status.SUCCESS) return "Successfully deposited";
+    if (!isValid || !watchedAmount) return "Enter an amount";
     return "Deposit";
   };
 
-  const handleClick = async () => {
+  const onSubmit = async (data: DepositFormData) => {
+    if (hasInsufficientBalance()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Insufficient balance',
+      });
+      return;
+    }
+
     try {
-      if (!amount) return;
-      if (!balance || balance < amountWei) return;
-      const transaction = await deposit(amount);
+      const transaction = await deposit(data.amount.toString());
+      reset(); // Reset form after successful transaction
       Toast.show({
         type: 'success',
         text1: 'Deposit transaction submitted',
@@ -63,6 +104,15 @@ export default function Deposit() {
         text1: 'Error while depositing',
       });
     }
+  };
+
+  const isFormDisabled = () => {
+    return (
+      isLoading ||
+      !isValid ||
+      hasInsufficientBalance() ||
+      !watchedAmount
+    );
   };
 
   return (
@@ -83,11 +133,17 @@ export default function Deposit() {
           </View>
           <View className="gap-4">
             <View className="gap-1">
-              <TokenCard
-                amount={amount}
-                onAmountChange={setAmount}
-                balance={formattedBalance}
-                price={1}
+              <Controller
+                control={control}
+                name="amount"
+                render={({ field: { onChange, value } }) => (
+                  <TokenCard
+                    amount={value.toString()}
+                    onAmountChange={(val) => onChange(parseFloat(val) || 0)}
+                    balance={formattedBalance}
+                    price={1}
+                  />
+                )}
               />
               <TokenDivider />
               <TokenDetails>
@@ -102,7 +158,7 @@ export default function Deposit() {
                       contentFit="contain"
                     />
                     <Text className="text-2xl font-semibold">
-                      {compactNumberFormat(Number(amount))} fUSDC
+                      {compactNumberFormat(Number(watchedAmount))} fUSDC
                     </Text>
                     {/* <Text className="text-lg opacity-40 text-right">
                     {`(${compactNumberFormat(costInUsd)} USDC in fee)`}
@@ -122,7 +178,7 @@ export default function Deposit() {
                     <Text className="text-sm opacity-40">
                       {totalAPY ? (
                         `Earn ~${compactNumberFormat(
-                          Number(amount) * (totalAPY / 100)
+                          Number(watchedAmount) * (totalAPY / 100)
                         )} USDC/year`
                       ) : (
                         <Skeleton className="w-20 h-6" />
@@ -137,10 +193,8 @@ export default function Deposit() {
                 <Button
                   variant="brand"
                   className="rounded-2xl h-12"
-                  onPress={handleClick}
-                  disabled={
-                    !amount || !balance || balance < amountWei || isLoading
-                  }
+                  onPress={handleSubmit(onSubmit)}
+                  disabled={isFormDisabled()}
                 >
                   <Text className="text-lg font-semibold">
                     {getButtonText()}

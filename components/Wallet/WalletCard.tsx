@@ -1,8 +1,8 @@
-import { Image, View } from "react-native";
 import { Wallet } from "lucide-react-native";
+import { View } from "react-native";
 
-import { Text } from "../ui/text";
 import { cn, formatNumber } from "@/lib/utils";
+import { Text } from "../ui/text";
 
 type WalletCardProps = {
   balance: number;
@@ -19,7 +19,7 @@ const WalletCard = ({ balance, className }: WalletCardProps) => {
 
       <View className="flex-row justify-between items-center">
         <Text className="text-3xl font-semibold">${formatNumber(balance)}</Text>
-        <Image source={require('@/assets/images/eth-bitcoin-usdc-4x.png')} style={{ width: 78, height: 28 }} />
+        {/* <Image source={require('@/assets/images/eth-bitcoin-usdc-4x.png')} style={{ width: 78, height: 28 }} /> */}
       </View>
     </View>
   )
