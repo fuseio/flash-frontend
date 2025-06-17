@@ -127,7 +127,7 @@ const useUser = (): UseUserReturn => {
           ...user,
           isDeposited: true,
         });
-        router.replace(path.DASHBOARD);
+        router.replace(path.SAVINGS);
         return;
       }
     } catch (error) {
