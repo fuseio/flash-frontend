@@ -30,11 +30,17 @@ export default function CardLayout() {
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen 
-        name="details_mobile" 
+        name="activate_mobile" 
         options={{ 
           title: "Solid card",
         }} 
       />
+      <Stack.Screen 
+        name="user_info_mobile" 
+        options={{ 
+          title: "Personal Information",
+        }} 
+      />
     </Stack>
   );
-} 
+}
