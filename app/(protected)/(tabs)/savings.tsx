@@ -123,7 +123,7 @@ export default function Dashboard() {
 
               <View className="gap-2.5 bg-card p-6">
                 <Text className="text-lg text-primary/50 font-medium">
-                  Your fUSDC Balance
+                  Your soUSD Balance
                 </Text>
                 <View className="flex-row items-center gap-1">
                   {isBalanceLoading ? (
