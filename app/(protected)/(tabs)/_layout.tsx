@@ -41,6 +41,7 @@ export default function TabLayout() {
           name="index"
           options={{
             title: 'Home',
+            headerShown: false,
             tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
             href: hasDeposited ? path.HOME : null,
           }}
