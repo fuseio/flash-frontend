@@ -41,13 +41,11 @@ const WithdrawToAddress = () => {
     return z.object({
       amount: z
         .number()
-        .min(0.000001, "Amount must be greater than 0")
         .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`),
       address: z
         .string()
-        .min(1, "Address is required")
         .refine(isAddress, "Please enter a valid Ethereum address")
-        .transform(val => val as Address),
+        .transform(value => value.toLowerCase()),
     });
   }, [balance]);
 
@@ -64,7 +62,7 @@ const WithdrawToAddress = () => {
     mode: "onChange",
     defaultValues: {
       amount: 0,
-      address: "",
+      address: "0x",
     },
   });
 

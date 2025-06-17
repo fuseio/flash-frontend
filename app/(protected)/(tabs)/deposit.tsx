@@ -6,7 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Linking, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from 'react-native-toast-message';
-import { formatUnits, parseUnits } from "viem";
+import { formatUnits } from "viem";
 import { z } from "zod";
 
 import { CheckConnectionWrapper } from "@/components/CheckConnectionWrapper";
@@ -59,7 +59,6 @@ export default function Deposit() {
   });
 
   const watchedAmount = watch("amount");
-  const amountWei = parseUnits(watchedAmount.toString(), 6);
 
   // Additional validation for balance
   const hasInsufficientBalance = () => {
@@ -89,8 +88,6 @@ export default function Deposit() {
     }
 
     try {
-      if (!data.amount) return;
-      if (!balance || balance < amountWei) return;
       const transaction = await deposit(data.amount.toString());
       reset(); // Reset form after successful transaction
       Toast.show({
