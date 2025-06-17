@@ -15,7 +15,6 @@ import {
 import { Text } from '@/components/ui/text';
 import { useBalances } from '@/hooks/useBalances';
 import { useDimension } from '@/hooks/useDimension';
-import useUser from '@/hooks/useUser';
 import { cn, compactNumberFormat, formatNumber } from '@/lib/utils';
 
 const MIN_COLUMN_WIDTHS = new Array(4).fill(50);
@@ -53,9 +52,8 @@ const WalletTokenTab = () => {
   const insets = useSafeAreaInsets();
   const [width, setWidth] = useState(0);
   const { isScreenMedium } = useDimension();
-  const { user } = useUser();
 
-  const { ethereum, fuse, isLoading } = useBalances(user?.safeAddress);
+  const { ethereum, fuse, isLoading } = useBalances();
 
   // Combine and sort tokens by USD value (descending)
   const allTokens = useMemo(() => {

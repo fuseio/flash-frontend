@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react-native"
 import { View } from "react-native"
 
+import UserAvatar from "@/assets/images/user"
 import CopyToClipboard from "@/components/CopyToClipboard"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
@@ -31,11 +32,12 @@ const AccountCenterTrigger = (props: any) => {
     triggerButton = (
       <Button
         size="sm"
-        className="w-full rounded-full justify-around"
+        className="flex-row justify-between gap-2 bg-button-secondary rounded-full border-0 min-w-0"
         {...props}
       >
-        <Text className="font-semibold">{eclipseUsername(user.username)}</Text>
-        <ChevronDown />
+        <UserAvatar />
+        <Text className="text-white font-medium text-sm">{eclipseUsername(user.username)}</Text>
+        <ChevronDown size={14} color="white" />
       </Button>
     )
   }

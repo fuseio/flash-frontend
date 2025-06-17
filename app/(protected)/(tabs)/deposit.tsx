@@ -158,7 +158,7 @@ export default function Deposit() {
                       contentFit="contain"
                     />
                     <Text className="text-2xl font-semibold">
-                      {compactNumberFormat(Number(watchedAmount))} fUSDC
+                      {compactNumberFormat(Number(watchedAmount))} soUSD
                     </Text>
                     {/* <Text className="text-lg opacity-40 text-right">
                     {`(${compactNumberFormat(costInUsd)} USDC in fee)`}

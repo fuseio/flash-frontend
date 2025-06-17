@@ -1,5 +1,5 @@
 import { Href } from "expo-router";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 import { path } from "@/constants/path";
 import useUser from "@/hooks/useUser";
@@ -14,14 +14,9 @@ const home: MenuItem = {
   href: path.HOME,
 }
 
-const dashboard: MenuItem = {
+const savings: MenuItem = {
   label: "Savings",
-  href: path.DASHBOARD,
-}
-
-const wallet: MenuItem = {
-  label: "Home",
-  href: path.WALLET,
+  href: path.SAVINGS,
 }
 
 const defaultMenuItems: MenuItem[] = [
@@ -41,26 +36,17 @@ const defaultMenuItems: MenuItem[] = [
 
 const useNav = () => {
   const { user } = useUser();
-  const isDashboard = user?.isDeposited
+  const hasDeposited = user?.isDeposited;
 
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-
-  useEffect(() => {
-    let newMenuItems: MenuItem[] = []
-
-    if (isDashboard) {
-      newMenuItems = [wallet, dashboard]
-    } else {
-      newMenuItems = [home]
-    }
-
-    setMenuItems([...newMenuItems, ...defaultMenuItems])
-  }, [isDashboard])
+  const menuItems = useMemo<MenuItem[]>(() => {
+    const coreMenuItems = [home, savings];
+    return [...coreMenuItems, ...defaultMenuItems];
+  }, [hasDeposited]);
 
   return {
     menuItems,
-    isDashboard,
-  }
+    hasDeposited,
+  };
 }
 
 export default useNav;

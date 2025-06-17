@@ -1,17 +1,17 @@
 import { Tabs } from 'expo-router';
-import { CreditCard, House, LayoutDashboard, Leaf, Plus, Wallet } from 'lucide-react-native';
+import { CreditCard, House, LayoutDashboard, Leaf, Plus } from 'lucide-react-native';
 import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useDimension } from '@/hooks/useDimension';
 import Navbar from '@/components/Navbar';
+import TabBarBackground from '@/components/ui/TabBarBackground';
 import { path } from '@/constants/path';
+import { useDimension } from '@/hooks/useDimension';
 import useNav from '@/hooks/useNav';
 
 export default function TabLayout() {
-  const { isDashboard } = useNav();
+  const { hasDeposited } = useNav();
   const { isDesktop } = useDimension();
 
   return (
@@ -43,26 +43,19 @@ export default function TabLayout() {
             title: 'Home',
             headerShown: false,
             tabBarIcon: ({ color }) => <House size={28} color={color} />,
-            href: isDashboard ? null : path.HOME,
+            href: path.HOME,
           }}
         />
         <Tabs.Screen
-          name="dashboard"
+          name="savings"
           options={{
-            title: 'Dashboard',
+            title: 'Savings',
             headerShown: false,
             tabBarIcon: ({ color }) => <LayoutDashboard size={28} color={color} />,
-            href: isDashboard ? path.DASHBOARD : null,
+            href: path.SAVINGS,
           }}
         />
-        <Tabs.Screen
-          name="wallet"
-          options={{
-            title: 'Wallet',
-            tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
-            href: isDashboard ? path.WALLET : null,
-          }}
-        />
+        
         <Tabs.Screen
           name="deposit"
           options={{
