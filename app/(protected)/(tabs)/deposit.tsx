@@ -1,8 +1,11 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Image } from "expo-image";
 import { Fuel } from "lucide-react-native";
-import { useState } from "react";
+import { useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Linking, ScrollView, View } from "react-native";
 import { formatUnits, parseUnits } from "viem";
+import * as yup from "yup";
 
 import { CheckConnectionWrapper } from "@/components/CheckConnectionWrapper";
 import TokenCard from "@/components/TokenCard";
@@ -19,33 +22,81 @@ import { compactNumberFormat } from "@/lib/utils";
 import Toast from 'react-native-toast-message';
 
 export default function Deposit() {
-  const [amount, setAmount] = useState<string>("");
   const { balance, deposit, depositStatus } = useDeposit();
   const isLoading = depositStatus === Status.PENDING;
   const { data: totalAPY } = useTotalAPY();
 
-  const amountWei = parseUnits(amount, 6);
   const formattedBalance = balance ? formatUnits(balance, 6) : "0";
 
+  // Create dynamic schema based on balance
+  const depositSchema = useMemo(() => {
+    const balanceAmount = balance ? Number(formatUnits(balance, 6)) : 0;
+
+    return yup.object().shape({
+      amount: yup
+        .number()
+        .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`)
+        .required("Amount is required")
+        .test("is-positive", "Amount must be greater than 0", (value) => {
+          return value > 0;
+        })
+        .test("is-number", "Please enter a valid number", (value) => {
+          return !isNaN(value);
+        }),
+    });
+  }, [balance]);
+
+  type DepositFormData = yup.InferType<typeof depositSchema>;
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+    watch,
+    reset,
+  } = useForm<DepositFormData>({
+    resolver: yupResolver(depositSchema),
+    mode: "onChange",
+    defaultValues: {
+      amount: 0,
+    },
+  });
+
+  const watchedAmount = watch("amount");
+  const amountWei = parseUnits(watchedAmount.toString(), 6);
+
+  // Additional validation for balance
+  const hasInsufficientBalance = () => {
+    if (!balance || !watchedAmount) return false;
+    const balanceAmount = Number(formatUnits(balance, 6));
+    const requestedAmount = watchedAmount;
+    return requestedAmount > balanceAmount;
+  };
+
   const getButtonText = () => {
-    if (!amount) return "Enter an amount";
-    if (
-      !balance ||
-      balance < amountWei
-      // || balance < parseUnits(costInUsd.toFixed(3), 6)
-    )
-      return "Insufficient balance";
+    if (errors.amount) return errors.amount.message;
+    if (hasInsufficientBalance()) return "Insufficient balance";
     if (depositStatus === Status.PENDING) return "Depositing";
     if (depositStatus === Status.ERROR) return "Error while depositing";
     if (depositStatus === Status.SUCCESS) return "Successfully deposited";
+    if (!isValid || !watchedAmount) return "Enter an amount";
     return "Deposit";
   };
 
-  const handleClick = async () => {
+  const onSubmit = async (data: DepositFormData) => {
+    if (hasInsufficientBalance()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Insufficient balance',
+      });
+      return;
+    }
+
     try {
-      if (!amount) return;
+      if (!data.amount) return;
       if (!balance || balance < amountWei) return;
-      const transaction = await deposit(amount);
+      const transaction = await deposit(data.amount.toString());
+      reset(); // Reset form after successful transaction
       Toast.show({
         type: 'success',
         text1: 'Deposit transaction submitted',
@@ -62,6 +113,15 @@ export default function Deposit() {
     }
   };
 
+  const isFormDisabled = () => {
+    return (
+      isLoading ||
+      !isValid ||
+      hasInsufficientBalance() ||
+      !watchedAmount
+    );
+  };
+
   return (
     <ScrollView className="bg-background text-foreground flex-1">
       <View className="w-full max-w-2xl mx-auto gap-16 px-4 py-8 md:py-16">
@@ -76,11 +136,17 @@ export default function Deposit() {
         </View>
         <View className="gap-4">
           <View className="gap-1">
-            <TokenCard
-              amount={amount}
-              onAmountChange={setAmount}
-              balance={formattedBalance}
-              price={1}
+            <Controller
+              control={control}
+              name="amount"
+              render={({ field: { onChange, value } }) => (
+                <TokenCard
+                  amount={value.toString()}
+                  onAmountChange={(val) => onChange(parseFloat(val) || 0)}
+                  balance={formattedBalance}
+                  price={1}
+                />
+              )}
             />
             <TokenDivider />
             <TokenDetails>
@@ -95,7 +161,7 @@ export default function Deposit() {
                     contentFit="contain"
                   />
                   <Text className="text-2xl font-semibold">
-                    {compactNumberFormat(Number(amount))} fUSDC
+                    {compactNumberFormat(Number(watchedAmount))} fUSDC
                   </Text>
                   {/* <Text className="text-lg opacity-40 text-right">
                     {`(${compactNumberFormat(costInUsd)} USDC in fee)`}
@@ -115,7 +181,7 @@ export default function Deposit() {
                   <Text className="text-sm opacity-40">
                     {totalAPY ? (
                       `Earn ~${compactNumberFormat(
-                        Number(amount) * (totalAPY / 100)
+                        Number(watchedAmount) * (totalAPY / 100)
                       )} USDC/year`
                     ) : (
                       <Skeleton className="w-20 h-6" />
@@ -130,10 +196,8 @@ export default function Deposit() {
               <Button
                 variant="brand"
                 className="rounded-2xl h-12"
-                onPress={handleClick}
-                disabled={
-                  !amount || !balance || balance < amountWei || isLoading
-                }
+                onPress={handleSubmit(onSubmit)}
+                disabled={isFormDisabled()}
               >
                 <Text className="text-lg font-semibold">
                   {getButtonText()}

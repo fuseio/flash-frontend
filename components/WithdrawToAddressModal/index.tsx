@@ -65,6 +65,7 @@ const WithdrawToAddress = () => {
     handleSubmit,
     formState: { errors, isValid },
     watch,
+    reset,
   } = useForm<WithdrawFormData>({
     resolver: yupResolver(withdrawSchema),
     mode: "onChange",
@@ -109,6 +110,7 @@ const WithdrawToAddress = () => {
 
     try {
       const transaction = await withdrawToAddress(data.amount.toString(), data.address as Address);
+      reset(); // Reset form after successful transaction
       Toast.show({
         type: 'success',
         text1: 'Withdrawal transaction completed',
