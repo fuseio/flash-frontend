@@ -182,7 +182,7 @@ export const useBalances = (address: Address | undefined): BalanceData => {
           // Special handling for soUSD tokens - use rate from AccountantWithRateProviders
           if (isSoUSDToken(token) && rate > 0) {
             // Rate is in 18 decimals, so divide by 10^18 to get the actual rate
-            const soUSDRate = Number(rate) / Math.pow(10, 18);
+            const soUSDRate = Number(rate) / Math.pow(10, 6);
             const value = formattedBalance * soUSDRate;
             return { soUSDValue: value, regularValue: 0 };
           }
