@@ -48,6 +48,13 @@ export default function ProtectedLayout() {
           headerTitle: 'Account details',
         }}
       />
+      <Stack.Screen
+        name="send"
+        options={{
+          headerTitle: 'Send',
+          headerBackTitle: 'Back',
+        }}
+      />
     </Stack>
   );
 }

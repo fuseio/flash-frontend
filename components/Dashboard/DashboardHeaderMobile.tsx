@@ -44,7 +44,7 @@ const DashboardHeaderMobile = ({ balance, totalAPY, lastTimestamp }: DashboardHe
           <Button
             size="icon"
             className="h-14 w-14 rounded-full"
-            onPress={() => router.push(path.DEPOSIT)}
+            onPress={() => router.push(path.SEND)}
           >
             <SendHorizontal size={28} />
           </Button>
