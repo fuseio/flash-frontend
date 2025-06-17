@@ -16,6 +16,7 @@ import { Address } from "abitype";
 import { Skeleton } from "../ui/skeleton";
 
 import WithdrawIcon from "@/assets/images/withdraw";
+import { formatNumber } from "@/lib/utils";
 
 const Withdraw = () => {
   const { user } = useUser();
@@ -29,6 +30,7 @@ const Withdraw = () => {
   // Create dynamic schema for bridge form based on fuse balance
   const bridgeSchema = useMemo(() => {
     const balanceAmount = fuseBalance || 0;
+    console.log('fuseBalance: ', fuseBalance);
 
     return yup.object().shape({
       amount: yup
@@ -47,6 +49,7 @@ const Withdraw = () => {
   // Create dynamic schema for withdraw form based on ethereum balance
   const withdrawSchema = useMemo(() => {
     const balanceAmount = ethereumBalance || 0;
+    console.log('ethereumBalance: ', ethereumBalance);
 
     return yup.object().shape({
       amount: yup
@@ -215,7 +218,7 @@ const Withdraw = () => {
           {isFuseBalanceLoading ? (
             <Skeleton className="w-20 h-8 rounded-md" />
           ) : fuseBalance ? (
-            `${fuseBalance.toFixed(2)}`
+            `${formatNumber(fuseBalance, 4)}`
           ) : (
             "0"
           )}
@@ -267,7 +270,7 @@ const Withdraw = () => {
           {isEthereumBalanceLoading ? (
             <Skeleton className="w-20 h-8 rounded-md" />
           ) : ethereumBalance ? (
-            `${ethereumBalance.toFixed(2)}`
+            `${formatNumber(ethereumBalance, 4)}`
           ) : (
             "0"
           )}
