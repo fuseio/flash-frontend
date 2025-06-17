@@ -13,6 +13,7 @@ type Addresses = {
     paymasterAddress: Address;
     bridgePaymasterAddress: Address;
     boringQueue: Address;
+    accountant: Address;
   }
   fuse: {
     vault: Address;
@@ -34,6 +35,7 @@ export const ADDRESSES: Addresses = {
     paymasterAddress: "0x6666666666667849c56f2850848ce1c4da65c68b",
     bridgePaymasterAddress: "0x1C8d847799858a8f4CD3b5dF46D222ae04eC79b1",
     boringQueue: "0x5090eee1a6e568c46178861fddd31e2c33f4d5a4",
+    accountant: "0xC594ea2B28F5766eB66D101E0F59A958Feb9C0c5",
   },
   fuse: {
     vault: "0x740636B7e6E6F6a4FD80A8781CfD3AA993821C1D",
