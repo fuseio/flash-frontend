@@ -1,9 +1,9 @@
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Image, Linking, TextInput, View } from "react-native";
 import Toast from 'react-native-toast-message';
-import * as yup from "yup";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -32,17 +32,10 @@ const Withdraw = () => {
     const balanceAmount = fuseBalance || 0;
     console.log('fuseBalance: ', fuseBalance);
 
-    return yup.object().shape({
-      amount: yup
+    return z.object({
+      amount: z
         .number()
         .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} soUSD`)
-        .required("Amount is required")
-        .test("is-positive", "Amount must be greater than 0", (value) => {
-          return value > 0;
-        })
-        .test("is-number", "Please enter a valid number", (value) => {
-          return !isNaN(value);
-        }),
     });
   }, [fuseBalance]);
 
@@ -51,22 +44,15 @@ const Withdraw = () => {
     const balanceAmount = ethereumBalance || 0;
     console.log('ethereumBalance: ', ethereumBalance);
 
-    return yup.object().shape({
-      amount: yup
+    return z.object({
+      amount: z
         .number()
         .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} soUSD`)
-        .required("Amount is required")
-        .test("is-positive", "Amount must be greater than 0", (value) => {
-          return value > 0;
-        })
-        .test("is-number", "Please enter a valid number", (value) => {
-          return !isNaN(value);
-        }),
     });
   }, [ethereumBalance]);
 
-  type BridgeFormData = yup.InferType<typeof bridgeSchema>;
-  type WithdrawFormData = yup.InferType<typeof withdrawSchema>;
+  type BridgeFormData = z.infer<typeof bridgeSchema>;
+  type WithdrawFormData = z.infer<typeof withdrawSchema>;
 
   // Bridge form setup
   const {
@@ -76,7 +62,7 @@ const Withdraw = () => {
     watch: watchBridge,
     reset: resetBridge,
   } = useForm<BridgeFormData>({
-    resolver: yupResolver(bridgeSchema),
+    resolver: zodResolver(bridgeSchema),
     mode: "onChange",
     defaultValues: {
       amount: 0,
@@ -91,7 +77,7 @@ const Withdraw = () => {
     watch: watchWithdraw,
     reset: resetWithdraw,
   } = useForm<WithdrawFormData>({
-    resolver: yupResolver(withdrawSchema),
+    resolver: zodResolver(withdrawSchema),
     mode: "onChange",
     defaultValues: {
       amount: 0,

@@ -1,31 +1,29 @@
-import { yupResolver } from "@hookform/resolvers/yup"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Image } from 'expo-image'
 import { Link } from 'expo-router'
 import { useEffect } from 'react'
 import { Controller, useForm } from "react-hook-form"
 import { ActivityIndicator, Platform, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import * as yup from "yup"
+import { z } from "zod"
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
 import useUser from '@/hooks/useUser'
 import { Status } from '@/lib/types'
+import { cn } from "@/lib/utils"
 import { useUserStore } from '@/store/useUserStore'
 
-const registerSchema = yup.object().shape({
-  username: yup
+const registerSchema = z.object({
+  username: z
     .string()
-    .required("Username is required")
     .min(3, "Username must be at least 3 characters")
     .max(20, "Username must be less than 20 characters")
-    .matches(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores")
-    .test("no-spaces", "Username cannot contain spaces", (value) => {
-      return value ? !value.includes(" ") : true;
-    }),
+    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores")
+    .refine(value => !value.includes(" "), "Username cannot contain spaces")
 });
 
-type RegisterFormData = yup.InferType<typeof registerSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function Register() {
   const { handleSignup, handleLogin, handleDummyLogin } = useUser()
@@ -38,7 +36,7 @@ export default function Register() {
     watch,
     reset,
   } = useForm<RegisterFormData>({
-    resolver: yupResolver(registerSchema),
+    resolver: zodResolver(registerSchema),
     mode: "onChange",
     defaultValues: {
       username: "",
@@ -105,8 +103,7 @@ export default function Register() {
                     onChangeText={onChange}
                     onBlur={onBlur}
                     placeholder='Choose a username'
-                    className={`h-14 px-6 rounded-xl border text-lg text-foreground font-semibold placeholder:text-muted-foreground ${errors.username ? 'border-red-500' : 'border-border'
-                      }`}
+                    className={cn('h-14 px-6 rounded-xl border text-lg font-semibold placeholder:text-muted-foreground', errors.username ? 'border-red-500' : 'border-border')}
                   />
                 )}
               />

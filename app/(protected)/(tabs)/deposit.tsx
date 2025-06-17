@@ -1,11 +1,11 @@
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Image } from "expo-image";
 import { Fuel } from "lucide-react-native";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Linking, ScrollView, View } from "react-native";
 import { formatUnits, parseUnits } from "viem";
-import * as yup from "yup";
+import { z } from "zod";
 
 import { CheckConnectionWrapper } from "@/components/CheckConnectionWrapper";
 import TokenCard from "@/components/TokenCard";
@@ -32,21 +32,14 @@ export default function Deposit() {
   const depositSchema = useMemo(() => {
     const balanceAmount = balance ? Number(formatUnits(balance, 6)) : 0;
 
-    return yup.object().shape({
-      amount: yup
+    return z.object({
+      amount: z
         .number()
         .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`)
-        .required("Amount is required")
-        .test("is-positive", "Amount must be greater than 0", (value) => {
-          return value > 0;
-        })
-        .test("is-number", "Please enter a valid number", (value) => {
-          return !isNaN(value);
-        }),
     });
   }, [balance]);
 
-  type DepositFormData = yup.InferType<typeof depositSchema>;
+  type DepositFormData = z.infer<typeof depositSchema>;
 
   const {
     control,
@@ -55,7 +48,7 @@ export default function Deposit() {
     watch,
     reset,
   } = useForm<DepositFormData>({
-    resolver: yupResolver(depositSchema),
+    resolver: zodResolver(depositSchema),
     mode: "onChange",
     defaultValues: {
       amount: 0,

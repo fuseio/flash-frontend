@@ -1,8 +1,8 @@
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Image, Linking, TextInput, View } from "react-native";
 import Toast from 'react-native-toast-message';
-import * as yup from "yup";
+import { z } from "zod";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -38,27 +38,20 @@ const WithdrawToAddress = () => {
   const withdrawSchema = useMemo(() => {
     const balanceAmount = balance ? Number(formatUnits(balance, 6)) : 0;
 
-    return yup.object().shape({
-      amount: yup
+    return z.object({
+      amount: z
         .number()
-        .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`)
-        .required("Amount is required")
-        .test("is-positive", "Amount must be greater than 0", (value) => {
-          return value > 0;
-        })
-        .test("is-number", "Please enter a valid number", (value) => {
-          return !isNaN(value);
-        }),
-      address: yup
+        .min(0.000001, "Amount must be greater than 0")
+        .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`),
+      address: z
         .string()
-        .required("Address is required")
-        .test("is-valid-address", "Please enter a valid Ethereum address", (value) => {
-          return value ? isAddress(value) : false;
-        }),
+        .min(1, "Address is required")
+        .refine(isAddress, "Please enter a valid Ethereum address")
+        .transform(val => val as Address),
     });
   }, [balance]);
 
-  type WithdrawFormData = yup.InferType<typeof withdrawSchema>;
+  type WithdrawFormData = z.infer<typeof withdrawSchema>;
 
   const {
     control,
@@ -67,7 +60,7 @@ const WithdrawToAddress = () => {
     watch,
     reset,
   } = useForm<WithdrawFormData>({
-    resolver: yupResolver(withdrawSchema),
+    resolver: zodResolver(withdrawSchema),
     mode: "onChange",
     defaultValues: {
       amount: 0,
