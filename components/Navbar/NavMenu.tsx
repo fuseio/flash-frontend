@@ -35,7 +35,11 @@ export function NavMenu() {
         {menuItems.map((item) => (
           <NavigationMenuItem key={item.label} value={item.label}>
             <NavigationMenuLink
-              onPress={() => router.push(item.href)}
+              onPress={() => {
+                console.log('pathname', pathname)
+                console.log('item.href', item.href)
+                router.push(item.href)
+              }}
               active={pathname === item.href}
             >
               <Text>{item.label}</Text>

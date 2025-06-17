@@ -43,16 +43,16 @@ export default function TabLayout() {
             title: 'Home',
             headerShown: false,
             tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
-            href: hasDeposited ? path.HOME : null,
+            href: path.HOME,
           }}
         />
         <Tabs.Screen
-          name="dashboard"
+          name="savings"
           options={{
-            title: 'Dashboard',
+            title: 'Savings',
             headerShown: false,
             tabBarIcon: ({ color }) => <LayoutDashboard size={28} color={color} />,
-            href: hasDeposited ? path.DASHBOARD : null,
+            href: path.SAVINGS,
           }}
         />
         

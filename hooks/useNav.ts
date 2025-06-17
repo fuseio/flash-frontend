@@ -14,9 +14,9 @@ const home: MenuItem = {
   href: path.HOME,
 }
 
-const dashboard: MenuItem = {
+const savings: MenuItem = {
   label: "Savings",
-  href: path.DASHBOARD,
+  href: path.SAVINGS,
 }
 
 const defaultMenuItems: MenuItem[] = [
@@ -39,7 +39,7 @@ const useNav = () => {
   const hasDeposited = user?.isDeposited;
 
   const menuItems = useMemo<MenuItem[]>(() => {
-    const coreMenuItems = [home, dashboard];
+    const coreMenuItems = [home, savings];
     return [...coreMenuItems, ...defaultMenuItems];
   }, [hasDeposited]);
 

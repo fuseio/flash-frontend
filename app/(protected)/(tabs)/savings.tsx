@@ -1,11 +1,11 @@
+import React, { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Address } from "viem";
-import React, { useMemo } from "react";
-import { Redirect } from "expo-router";
 
 import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import FAQ from "@/components/FAQ";
+import NavbarMobile from "@/components/Navbar/NavbarMobile";
 import SavingCountUp from "@/components/SavingCountUp";
 import Transaction from "@/components/Transaction";
 import { Image } from "@/components/ui/Image";
@@ -22,8 +22,6 @@ import { useDimension } from "@/hooks/useDimension";
 import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
-import { path } from "@/constants/path";
-import NavbarMobile from "@/components/Navbar/NavbarMobile";
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -46,10 +44,6 @@ export default function Dashboard() {
     [userTransactions]
   );
   const { isScreenMedium, isDesktop } = useDimension();
-
-  if (!user?.isDeposited) {
-    return <Redirect href={path.HOME} />;
-  }
 
   return (
     <>
