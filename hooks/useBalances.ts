@@ -1,9 +1,9 @@
 import { ADDRESSES } from '@/lib/config';
 import { publicClient } from '@/lib/wagmi';
 import { useEffect, useState } from 'react';
-import { Address } from 'viem';
 import { readContract } from 'viem/actions';
 import { mainnet } from 'viem/chains';
+import useUser from './useUser';
 
 interface TokenBalance {
   contractTickerSymbol: string;
@@ -78,7 +78,8 @@ const ACCOUNTANT_ABI = [
   }
 ] as const;
 
-export const useBalances = (address: Address | undefined): BalanceData => {
+export const useBalances = (): BalanceData => {
+  const { user } = useUser();
   const [balanceData, setBalanceData] = useState<BalanceData>({
     totalUSD: 0,
     soUSDValue: 0,
@@ -90,7 +91,7 @@ export const useBalances = (address: Address | undefined): BalanceData => {
   });
 
   useEffect(() => {
-    if (!address) {
+    if (!user?.safeAddress) {
       setBalanceData(prev => ({ ...prev, isLoading: false }));
       return;
     }
@@ -102,13 +103,13 @@ export const useBalances = (address: Address | undefined): BalanceData => {
         // Make parallel requests to both chains and get soUSD rate
         const [ethereumResponse, fuseResponse, soUSDRate] = await Promise.allSettled([
           // Ethereum via Blockscout
-          fetch(`https://eth.blockscout.com/api/v2/addresses/${address}/token-balances`, {
+          fetch(`https://eth.blockscout.com/api/v2/addresses/${user?.safeAddress}/token-balances`, {
             headers: {
               accept: 'application/json',
             },
           }),
           // Fuse via Blockscout
-          fetch(`https://explorer.fuse.io/api/v2/addresses/${address}/token-balances`, {
+          fetch(`https://explorer.fuse.io/api/v2/addresses/${user?.safeAddress}/token-balances`, {
             headers: {
               accept: 'application/json',
             },
@@ -240,7 +241,7 @@ export const useBalances = (address: Address | undefined): BalanceData => {
     };
 
     fetchBalances();
-  }, [address]);
+  }, [user?.safeAddress]);
 
   return balanceData;
 }; 
