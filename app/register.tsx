@@ -162,7 +162,7 @@ export default function Register() {
           </View>
           <Text className="text-sm text-muted-foreground">
             Your Solid Account is secured with a passkey - a safer replacement for passwords.{' '}
-            <Link href="/" className='underline hover:opacity-70'>Learn more</Link>
+            <Link href="https://solid-3.gitbook.io/solid.xyz-docs" target="_blank" className='underline hover:opacity-70'>Learn more</Link>
           </Text>
         </View>
       </View>

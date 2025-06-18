@@ -36,7 +36,7 @@ export default function SavingsEmptyState() {
                   <Text className="font-medium opacity-70">
                     Our Solid vault will automatically manage your funds to maximize your yield without exposing you to unnecessary risk.
                   </Text>{" "}
-                  <Link href="/" className='text-primary font-medium underline hover:opacity-70'>How it works</Link>
+                  <Link href="https://solid-3.gitbook.io/solid.xyz-docs" target="_blank" className='text-primary font-medium underline hover:opacity-70'>How it works</Link>
                 </Text>
               </View>
               <View className="flex-row items-center gap-5 h-20">

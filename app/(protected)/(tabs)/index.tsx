@@ -17,7 +17,9 @@ import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
 import { formatNumber } from "@/lib/utils";
 import { Link } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { fuse, mainnet } from "viem/chains";
+import { useBalance } from "wagmi";
 
 // const points = 50;
 
@@ -29,11 +31,10 @@ export default function Wallet() {
   );
   const {
     totalUSD: totalBalance,
-    ethereum,
-    fuse,
-    // soUSDValue,
+    ethereumTokens,
+    fuseTokens,
     totalUSDExcludingSoUSD,
-    // isLoading: isBalanceLoading
+    refresh,
   } = useBalances();
   const { data: totalAPY } = useTotalAPY();
   const { data: lastTimestamp } = useLatestTokenTransfer(
@@ -41,8 +42,22 @@ export default function Wallet() {
     ADDRESSES.fuse.vault
   );
   const { isDesktop } = useDimension();
+  const { queryKey: usdcQueryKey, data: usdcBalance } = useBalance({
+    address: user?.safeAddress as Address,
+    token: ADDRESSES.ethereum.usdc,
+    chainId: mainnet.id,
+  })
+  const { queryKey: soUSDQueryKey, data: soUSDBalance } = useBalance({
+    address: user?.safeAddress as Address,
+    token: ADDRESSES.fuse.vault,
+    chainId: fuse.id,
+  })
 
-  const hasFunds = ethereum.length > 0 || fuse.length > 0;
+  useEffect(() => {
+    refresh()
+  }, [soUSDBalance, usdcBalance])
+
+  const hasFunds = ethereumTokens.length > 0 || fuseTokens.length > 0;
 
   return (
     <React.Fragment>
@@ -84,7 +99,7 @@ export default function Wallet() {
                   </View>
 
                   <View className="flex-row justify-between items-end">
-                    <TouchableOpacity className="bg-button-dark px-8 py-3 rounded-xl border border-[#4E4E4E]" onPress={() => setIsDepositAddressModalOpen(true)}>
+                    <TouchableOpacity className="bg-button-dark px-10 py-3 rounded-xl border border-[#4E4E4E]" onPress={() => setIsDepositAddressModalOpen(true)}>
                       <Text className="text-white font-medium">Add funds</Text>
                     </TouchableOpacity>
 
@@ -111,7 +126,7 @@ export default function Wallet() {
                   </View>
 
                   <View className="flex-row justify-between items-end">
-                    <Link href={path.SAVINGS} className="bg-button-earning px-8 py-3 rounded-xl">
+                    <Link href={path.SAVINGS} className="bg-button-earning px-10 py-3 rounded-xl">
                       <Text className="text-white font-medium">Start earning</Text>
                     </Link>
 

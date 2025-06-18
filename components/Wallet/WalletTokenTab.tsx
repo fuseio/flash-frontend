@@ -53,11 +53,11 @@ const WalletTokenTab = () => {
   const [width, setWidth] = useState(0);
   const { isScreenMedium } = useDimension();
 
-  const { ethereum, fuse, isLoading } = useBalances();
+  const { ethereumTokens, fuseTokens, isLoading } = useBalances();
 
   // Combine and sort tokens by USD value (descending)
   const allTokens = useMemo(() => {
-    const combined = [...ethereum, ...fuse];
+    const combined = [...ethereumTokens, ...fuseTokens];
     return combined.sort((a, b) => {
       const balanceA = Number(formatUnits(BigInt(a.balance || '0'), a.contractDecimals));
       const balanceUSD_A = balanceA * (a.quoteRate || 0);
@@ -67,7 +67,7 @@ const WalletTokenTab = () => {
 
       return balanceUSD_B - balanceUSD_A; // Descending order
     });
-  }, [ethereum, fuse]);
+  }, [ethereumTokens, fuseTokens]);
 
   const format = isScreenMedium ? formatNumber : compactNumberFormat;
 
@@ -169,7 +169,7 @@ const WalletTokenTab = () => {
 
                 return (
                   <TableRow
-                    key={`${token.contractAddress}-${token.chainId}`}
+                    key={`${token.contractAddress}-${token.balance}`}
                     className={cn('bg-card active:bg-secondary items-center border-border/40',
                       index === 0 && 'rounded-t-twice',
                       index === allTokens.length - 1 && 'rounded-b-twice border-0',
