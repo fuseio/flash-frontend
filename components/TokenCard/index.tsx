@@ -22,7 +22,7 @@ const TokenCard = ({ amount, onAmountChange, balance, price }: TokenCardProps) =
         <TokenSelectorModal />
         <View className="flex flex-col flex-1 items-end">
           <TextInput
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             className="w-full text-right text-primary text-2xl md:text-5xl font-semibold web:focus:outline-none"
             value={amount}
             placeholder="0"

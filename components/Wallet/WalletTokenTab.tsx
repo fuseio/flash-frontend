@@ -160,10 +160,10 @@ const WalletTokenTab = () => {
                 const balance = Number(formatUnits(BigInt(token.balance || '0'), token.contractDecimals));
                 const balanceUSD = balance * (token.quoteRate || 0);
                 const displayBalance = isScreenMedium ?
-                  balance.toFixed(6) :
+                  formatNumber(balance, 4) :
                   balance < 0.001 ?
                     "<0.001" :
-                    balance.toFixed(3);
+                    formatNumber(balance, 3);
 
                 const tokenIcon = getTokenIcon(token);
 

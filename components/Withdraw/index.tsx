@@ -5,7 +5,7 @@ import { ActivityIndicator, Image, Linking, TextInput, View } from "react-native
 import Toast from 'react-native-toast-message';
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import useBridgeToMainnet from "@/hooks/useBridgeToMainnet";
 import useUser from "@/hooks/useUser";
@@ -15,8 +15,8 @@ import { Status } from "@/lib/types";
 import { Address } from "abitype";
 import { Skeleton } from "../ui/skeleton";
 
-import WithdrawIcon from "@/assets/images/withdraw";
 import { formatNumber } from "@/lib/utils";
+import { ArrowUpRight } from "lucide-react-native";
 
 const Withdraw = () => {
   const { user } = useUser();
@@ -30,29 +30,31 @@ const Withdraw = () => {
   // Create dynamic schema for bridge form based on fuse balance
   const bridgeSchema = useMemo(() => {
     const balanceAmount = fuseBalance || 0;
-    console.log('fuseBalance: ', fuseBalance);
-
     return z.object({
       amount: z
-        .number()
-        .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} soUSD`)
+        .string()
+        .refine((val) => val !== "" && !isNaN(Number(val)), "Please enter a valid amount")
+        .refine((val) => Number(val) > 0, "Amount must be greater than 0")
+        .refine((val) => Number(val) <= balanceAmount, `Available balance is ${formatNumber(balanceAmount, 4)} soUSD`)
+        .transform((val) => Number(val)),
     });
   }, [fuseBalance]);
 
   // Create dynamic schema for withdraw form based on ethereum balance
   const withdrawSchema = useMemo(() => {
     const balanceAmount = ethereumBalance || 0;
-    console.log('ethereumBalance: ', ethereumBalance);
-
     return z.object({
       amount: z
-        .number()
-        .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} soUSD`)
+        .string()
+        .refine((val) => val !== "" && !isNaN(Number(val)), "Please enter a valid amount")
+        .refine((val) => Number(val) > 0, "Amount must be greater than 0")
+        .refine((val) => Number(val) <= balanceAmount, `Available balance is ${formatNumber(balanceAmount, 4)} soUSD`)
+        .transform((val) => Number(val)),
     });
   }, [ethereumBalance]);
 
-  type BridgeFormData = z.infer<typeof bridgeSchema>;
-  type WithdrawFormData = z.infer<typeof withdrawSchema>;
+  type BridgeFormData = { amount: string; };
+  type WithdrawFormData = { amount: string; };
 
   // Bridge form setup
   const {
@@ -62,10 +64,10 @@ const Withdraw = () => {
     watch: watchBridge,
     reset: resetBridge,
   } = useForm<BridgeFormData>({
-    resolver: zodResolver(bridgeSchema),
+    resolver: zodResolver(bridgeSchema) as any,
     mode: "onChange",
     defaultValues: {
-      amount: 0,
+      amount: '',
     },
   });
 
@@ -77,10 +79,10 @@ const Withdraw = () => {
     watch: watchWithdraw,
     reset: resetWithdraw,
   } = useForm<WithdrawFormData>({
-    resolver: zodResolver(withdrawSchema),
+    resolver: zodResolver(withdrawSchema) as any,
     mode: "onChange",
     defaultValues: {
-      amount: 0,
+      amount: '',
     },
   });
 
@@ -93,21 +95,8 @@ const Withdraw = () => {
   const { withdraw, withdrawStatus } = useWithdraw();
   const isWithdrawLoading = withdrawStatus === Status.PENDING;
 
-  // Additional validation for bridge balance
-  const hasBridgeInsufficientBalance = () => {
-    if (!fuseBalance || !watchedBridgeAmount) return false;
-    return watchedBridgeAmount > fuseBalance;
-  };
-
-  // Additional validation for withdraw balance
-  const hasWithdrawInsufficientBalance = () => {
-    if (!ethereumBalance || !watchedWithdrawAmount) return false;
-    return watchedWithdrawAmount > ethereumBalance;
-  };
-
   const getBridgeText = () => {
     if (bridgeErrors.amount) return bridgeErrors.amount.message;
-    if (hasBridgeInsufficientBalance()) return "Insufficient balance";
     if (bridgeStatus === Status.PENDING) return "Bridging";
     if (bridgeStatus === Status.ERROR) return "Error while bridging";
     if (bridgeStatus === Status.SUCCESS) return "Successfully Bridged";
@@ -117,7 +106,6 @@ const Withdraw = () => {
 
   const getWithdrawText = () => {
     if (withdrawErrors.amount) return withdrawErrors.amount.message;
-    if (hasWithdrawInsufficientBalance()) return "Insufficient balance";
     if (withdrawStatus === Status.PENDING) return "Withdrawing";
     if (withdrawStatus === Status.ERROR) return "Error while Withdrawing";
     if (withdrawStatus === Status.SUCCESS) return "Withdrawal Successful";
@@ -126,14 +114,6 @@ const Withdraw = () => {
   };
 
   const onBridgeSubmit = async (data: BridgeFormData) => {
-    if (hasBridgeInsufficientBalance()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Insufficient balance',
-      });
-      return;
-    }
-
     try {
       const transaction = await bridge(data.amount.toString());
       resetBridge(); // Reset form after successful transaction
@@ -154,14 +134,6 @@ const Withdraw = () => {
   };
 
   const onWithdrawSubmit = async (data: WithdrawFormData) => {
-    if (hasWithdrawInsufficientBalance()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Insufficient balance',
-      });
-      return;
-    }
-
     try {
       await withdraw(data.amount.toString());
       resetWithdraw(); // Reset form after successful transaction
@@ -181,7 +153,6 @@ const Withdraw = () => {
     return (
       isBridgeLoading ||
       !isBridgeValid ||
-      hasBridgeInsufficientBalance() ||
       !watchedBridgeAmount
     );
   };
@@ -190,7 +161,6 @@ const Withdraw = () => {
     return (
       isWithdrawLoading ||
       !isWithdrawValid ||
-      hasWithdrawInsufficientBalance() ||
       !watchedWithdrawAmount
     );
   };
@@ -217,11 +187,11 @@ const Withdraw = () => {
             name="amount"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
                 className="w-full text-2xl md:text-3xl text-primary font-semibold web:focus:outline-none"
                 value={value.toString()}
                 placeholder="0.0"
-                onChangeText={(text) => onChange(parseFloat(text) || 0)}
+                onChangeText={onChange}
                 onBlur={onBlur}
               />
             )}
@@ -269,11 +239,11 @@ const Withdraw = () => {
             name="amount"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
                 className="w-full text-2xl md:text-3xl text-primary font-semibold web:focus:outline-none"
                 value={value.toString()}
                 placeholder="0.0"
-                onChangeText={(text) => onChange(parseFloat(text) || 0)}
+                onChangeText={onChange}
                 onBlur={onBlur}
               />
             )}
@@ -308,11 +278,13 @@ const WithdrawTrigger = (props: any) => {
   return (
     <Button
       variant="outline"
-      className="flex-col items-center gap-3 w-28 h-20 rounded-xl md:rounded-twice"
+      className={buttonVariants({ variant: "secondary", className: "h-12 rounded-xl" })}
       {...props}
     >
-      <WithdrawIcon className="size-6" />
-      <Text className="font-semibold">Withdraw</Text>
+      <View className="flex-row items-center gap-2">
+        <ArrowUpRight color="white" />
+        <Text className="font-bold hidden md:block">Withdraw</Text>
+      </View>
     </Button>
   );
 };

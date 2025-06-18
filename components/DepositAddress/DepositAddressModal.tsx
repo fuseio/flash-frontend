@@ -13,9 +13,9 @@ import { buttonVariants } from "../ui/button"
 import TokenSelectorFooter from "./Footer"
 import TokenSelectorDeposit from "./QRCodeAndAddress"
 
-const DepositAddressModal = () => {
+const DepositAddressModal = ({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) => {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <View className={buttonVariants({ variant: "brand", className: "h-12 rounded-xl" })}>
           <View className="flex-row items-center gap-2">
