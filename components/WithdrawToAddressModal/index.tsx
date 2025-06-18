@@ -14,7 +14,7 @@ import { Skeleton } from "../ui/skeleton";
 
 import useWithdrawToAddress from "@/hooks/useWithdrawToAddress";
 import { ADDRESSES } from "@/lib/config";
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { useRouter } from "expo-router";
 import { ArrowUpRight } from "lucide-react-native";
 import { useMemo } from "react";
@@ -114,7 +114,7 @@ const WithdrawToAddress = () => {
   };
 
   return (
-    <View className="flex-col gap-6 p-6">
+    <View className="flex-col gap-6 px-6 pb-6">
       <View className="flex-row justify-between items-center mb-2">
         <Text className="opacity-60">Withdraw amount</Text>
         <Text className="text-sm opacity-60">Balance: {
@@ -127,8 +127,7 @@ const WithdrawToAddress = () => {
           )
         }</Text>
       </View>
-
-      <View className={`bg-primary/10 rounded-2xl p-4 w-full ${errors.amount ? 'border border-red-500' : ''}`}>
+      <View className={cn('bg-primary/10 rounded-2xl p-4 w-full', errors.amount && 'border border-red-500')}>
         <View className="flex-row items-center justify-between w-full">
           <View className="flex-1 min-w-0">
             <Controller

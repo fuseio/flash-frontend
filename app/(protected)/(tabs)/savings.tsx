@@ -28,6 +28,7 @@ import { useBlockNumber } from "wagmi";
 
 export default function Dashboard() {
   const { user } = useUser();
+  const { isScreenMedium, isDesktop } = useDimension();
   const {
     data: balance,
     isLoading: isBalanceLoading,
@@ -78,10 +79,8 @@ export default function Dashboard() {
   }, [userDepositTransactions])
 
 
-  const { isScreenMedium, isDesktop } = useDimension();
 
-  // If balance is 0, show a different ui
-  if (balance === 0) {
+  if (balance === 0 && userDepositTransactions?.deposits?.length === 0) {
     return <SavingsEmptyState />
   }
 

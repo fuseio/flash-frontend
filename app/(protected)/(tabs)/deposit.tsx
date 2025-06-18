@@ -20,6 +20,7 @@ import { Text } from "@/components/ui/text";
 import { useTotalAPY } from "@/hooks/useAnalytics";
 import useDeposit from "@/hooks/useDeposit";
 import { useDimension } from "@/hooks/useDimension";
+import { useEstimateDepositGas } from "@/hooks/useEstimateDepositGas";
 import { Status } from "@/lib/types";
 import { compactNumberFormat, formatNumber } from "@/lib/utils";
 import { useRouter } from "expo-router";
@@ -30,6 +31,7 @@ export default function Deposit() {
   const isLoading = depositStatus === Status.PENDING;
   const { data: totalAPY } = useTotalAPY();
   const { isDesktop } = useDimension();
+  const { costInUsd, loading } = useEstimateDepositGas();
 
   const formattedBalance = balance ? formatUnits(balance, 6) : "0";
 
@@ -155,7 +157,7 @@ export default function Deposit() {
                         <Skeleton className="w-20 h-8" />
                       )}
                     </Text>
-                    <Text className="text-sm opacity-40">
+                    <Text className="text-base opacity-40">
                       {totalAPY ? (
                         `Earn ~${compactNumberFormat(
                           Number(watchedAmount) * (totalAPY / 100)
@@ -169,6 +171,16 @@ export default function Deposit() {
               </TokenDetails>
             </View>
             <View className="gap-2">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center gap-1 pb-5 pt-2">
+                  <Fuel size={18} />
+                  <Text className="text-base text-white">Fee</Text>
+                </View>
+                <Text className="text-base text-muted-foreground">
+                  {`~ $${loading ? "..." : formatNumber(costInUsd, 2)
+                    } USDC in fee`}
+                </Text>
+              </View>
               <CheckConnectionWrapper props={{ size: "xl" }}>
                 <Button
                   variant="brand"
@@ -184,15 +196,6 @@ export default function Deposit() {
                   )}
                 </Button>
               </CheckConnectionWrapper>
-              <View className="flex-row items-center self-end gap-1">
-                <Fuel size={14} />
-                <Text className="text-sm text-muted-foreground">
-                  Gaslesss
-                  {/* {`~ $${
-                  loading ? "..." : costInUsd.toFixed(2)
-                } in gas payable in USDC`} */}
-                </Text>
-              </View>
             </View>
           </View>
         </View>

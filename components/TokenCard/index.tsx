@@ -14,7 +14,7 @@ interface TokenCardProps {
 
 const TokenCard = ({ amount, onAmountChange, balance, price }: TokenCardProps) => {
   return (
-    <View className="flex flex-col gap-2 bg-card border border-border rounded-xl md:rounded-twice p-6 md:p-10">
+    <View className="flex flex-col gap-2 bg-card rounded-xl md:rounded-twice p-6 md:p-10">
       <Text className="text-lg font-medium opacity-40">
         Amount to deposit
       </Text>

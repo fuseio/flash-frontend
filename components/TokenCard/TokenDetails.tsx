@@ -9,7 +9,7 @@ const TokenDetails = ({ children }: TokenDetailsProps) => {
   const childrenArray = Array.isArray(children) ? children : [children];
 
   return (
-    <View className="flex flex-col bg-card border border-border rounded-xl md:rounded-twice">
+    <View className="flex flex-col bg-card rounded-xl md:rounded-twice">
       {childrenArray.map((child, index) => (
         <View key={index}>
           {child}
