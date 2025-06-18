@@ -163,7 +163,7 @@ const WalletTokenTab = () => {
                   formatNumber(balance, 4) :
                   balance < 0.001 ?
                     "<0.001" :
-                    balance.toFixed(3);
+                    formatNumber(balance, 3);
 
                 const tokenIcon = getTokenIcon(token);
 
