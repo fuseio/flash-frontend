@@ -14,6 +14,7 @@ type Path = {
   EARN: Href;
   BUY_CRYPTO: Href;
   SETTINGS: Href;
+  SEND: Href;
 }
 
 export const path: Path = {
@@ -30,4 +31,5 @@ export const path: Path = {
   EARN: "/earn",
   BUY_CRYPTO: "/buy-crypto",
   SETTINGS: "/settings",
+  SEND: "/send",
 }
