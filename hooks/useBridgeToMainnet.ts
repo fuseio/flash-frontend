@@ -62,21 +62,6 @@ const useBridgeToMainnet = (): BridgeResult => {
       setError(null);
 
       const amountWei = parseUnits(amount, 6);
-      if (balance && balance < amountWei) {
-        throw new Error("Insufficient soUSD balance");
-      }
-
-      let transactions = [];
-
-      transactions.push({
-        to: ADDRESSES.fuse.vault,
-        data: encodeFunctionData({
-          abi: ERC20_ABI,
-          functionName: "transfer",
-          args: [ADDRESSES.fuse.bridgePaymasterAddress, amountWei],
-        }),
-        value: 0n,
-      });
 
       const callData = encodeFunctionData({
         abi: ETHEREUM_TELLER_ABI,
@@ -90,16 +75,26 @@ const useBridgeToMainnet = (): BridgeResult => {
         ],
       });
 
-      // Add deposit transaction
-      transactions.push({
-        to: ADDRESSES.fuse.bridgePaymasterAddress,
-        data: encodeFunctionData({
-          abi: BridgePayamster_ABI,
-          functionName: "callWithValue",
-          args: [ADDRESSES.fuse.teller, callData, fee ? fee : 0n],
-        }),
-        value: 0n,
-      });
+      const transactions = [
+        {
+          to: ADDRESSES.fuse.vault,
+          data: encodeFunctionData({
+            abi: ERC20_ABI,
+            functionName: "transfer",
+            args: [ADDRESSES.fuse.bridgePaymasterAddress, amountWei],
+          }),
+          value: 0n,
+        },
+        {
+          to: ADDRESSES.fuse.bridgePaymasterAddress,
+          data: encodeFunctionData({
+            abi: BridgePayamster_ABI,
+            functionName: "callWithValue",
+            args: [ADDRESSES.fuse.teller, callData, fee ? fee : 0n],
+          }),
+          value: 0n,
+        },
+      ];
 
       const smartAccountClient = await safeAA(user.passkey, fuse);
 

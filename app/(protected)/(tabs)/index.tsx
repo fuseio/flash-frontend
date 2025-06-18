@@ -8,6 +8,7 @@ import NavbarMobile from "@/components/Navbar/NavbarMobile";
 import { Text } from "@/components/ui/text";
 import { SavingCard, WalletCard, WalletTabs } from "@/components/Wallet";
 import WithdrawToAddressModal from "@/components/WithdrawToAddressModal/WithdrawToAddressModal";
+import { path } from "@/constants/path";
 import { useLatestTokenTransfer, useTotalAPY } from "@/hooks/useAnalytics";
 import { useBalances } from "@/hooks/useBalances";
 import { useDimension } from "@/hooks/useDimension";
@@ -15,12 +16,14 @@ import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
 import { formatNumber } from "@/lib/utils";
-import React from "react";
+import { Link } from "expo-router";
+import React, { useState } from "react";
 
 // const points = 50;
 
 export default function Wallet() {
   const { user } = useUser();
+  const [isDepositAddressModalOpen, setIsDepositAddressModalOpen] = useState(false);
   const { data: fuseVaultBalance } = useFuseVaultBalance(
     user?.safeAddress as Address
   );
@@ -57,7 +60,7 @@ export default function Wallet() {
               </View>
 
               <View className="flex-row items-center gap-2">
-                <DepositAddressModal />
+                <DepositAddressModal open={isDepositAddressModalOpen} setOpen={setIsDepositAddressModalOpen} />
                 <WithdrawToAddressModal />
               </View>
             </View>
@@ -81,7 +84,7 @@ export default function Wallet() {
                   </View>
 
                   <View className="flex-row justify-between items-end">
-                    <TouchableOpacity className="bg-button-dark px-6 py-3 rounded-xl">
+                    <TouchableOpacity className="bg-button-dark px-8 py-3 rounded-xl border border-[#4E4E4E]" onPress={() => setIsDepositAddressModalOpen(true)}>
                       <Text className="text-white font-medium">Add funds</Text>
                     </TouchableOpacity>
 
@@ -108,9 +111,9 @@ export default function Wallet() {
                   </View>
 
                   <View className="flex-row justify-between items-end">
-                    <TouchableOpacity className="bg-button-earning px-6 py-3 rounded-xl">
+                    <Link href={path.SAVINGS} className="bg-button-earning px-8 py-3 rounded-xl">
                       <Text className="text-white font-medium">Start earning</Text>
-                    </TouchableOpacity>
+                    </Link>
 
                     <Image
                       source={require('@/assets/images/deposit_image.png')}

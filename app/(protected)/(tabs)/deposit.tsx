@@ -3,7 +3,7 @@ import { Image } from "expo-image";
 import { Fuel } from "lucide-react-native";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ActivityIndicator, Linking, ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from 'react-native-toast-message';
 import { formatUnits } from "viem";
@@ -21,9 +21,11 @@ import { useTotalAPY } from "@/hooks/useAnalytics";
 import useDeposit from "@/hooks/useDeposit";
 import { useDimension } from "@/hooks/useDimension";
 import { Status } from "@/lib/types";
-import { compactNumberFormat } from "@/lib/utils";
+import { compactNumberFormat, formatNumber } from "@/lib/utils";
+import { useRouter } from "expo-router";
 
 export default function Deposit() {
+  const router = useRouter();
   const { balance, deposit, depositStatus } = useDeposit();
   const isLoading = depositStatus === Status.PENDING;
   const { data: totalAPY } = useTotalAPY();
@@ -37,12 +39,15 @@ export default function Deposit() {
 
     return z.object({
       amount: z
-        .number()
-        .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`)
+        .string()
+        .refine((val) => val !== "" && !isNaN(Number(val)), "Please enter a valid amount")
+        .refine((val) => Number(val) > 0, "Amount must be greater than 0")
+        .refine((val) => Number(val) <= balanceAmount, `Available balance is ${formatNumber(balanceAmount, 4)} USDC`)
+        .transform((val) => Number(val)),
     });
   }, [balance]);
 
-  type DepositFormData = z.infer<typeof depositSchema>;
+  type DepositFormData = { amount: string };
 
   const {
     control,
@@ -51,26 +56,17 @@ export default function Deposit() {
     watch,
     reset,
   } = useForm<DepositFormData>({
-    resolver: zodResolver(depositSchema),
+    resolver: zodResolver(depositSchema) as any,
     mode: "onChange",
     defaultValues: {
-      amount: 0,
+      amount: '',
     },
   });
 
   const watchedAmount = watch("amount");
 
-  // Additional validation for balance
-  const hasInsufficientBalance = () => {
-    if (!balance || !watchedAmount) return false;
-    const balanceAmount = Number(formatUnits(balance, 6));
-    const requestedAmount = watchedAmount;
-    return requestedAmount > balanceAmount;
-  };
-
   const getButtonText = () => {
     if (errors.amount) return errors.amount.message;
-    if (hasInsufficientBalance()) return "Insufficient balance";
     if (depositStatus === Status.PENDING) return "Depositing";
     if (depositStatus === Status.ERROR) return "Error while depositing";
     if (depositStatus === Status.SUCCESS) return "Successfully deposited";
@@ -79,25 +75,10 @@ export default function Deposit() {
   };
 
   const onSubmit = async (data: DepositFormData) => {
-    if (hasInsufficientBalance()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Insufficient balance',
-      });
-      return;
-    }
-
     try {
-      const transaction = await deposit(data.amount.toString());
+      await deposit(data.amount.toString());
       reset(); // Reset form after successful transaction
-      Toast.show({
-        type: 'success',
-        text1: 'Deposit transaction submitted',
-        text2: 'Click to view on LayerZero Scan',
-        onPress: () => {
-          Linking.openURL(`https://layerzeroscan.com/tx/${transaction.transactionHash}`);
-        },
-      });
+      router.back()
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -110,7 +91,6 @@ export default function Deposit() {
     return (
       isLoading ||
       !isValid ||
-      hasInsufficientBalance() ||
       !watchedAmount
     );
   };
@@ -139,7 +119,7 @@ export default function Deposit() {
                 render={({ field: { onChange, value } }) => (
                   <TokenCard
                     amount={value.toString()}
-                    onAmountChange={(val) => onChange(parseFloat(val) || 0)}
+                    onAmountChange={onChange}
                     balance={formattedBalance}
                     price={1}
                   />

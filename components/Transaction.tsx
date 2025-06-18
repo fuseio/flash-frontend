@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { View } from "react-native";
 
 import { LayerZeroTransactionStatus } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { Text } from "./ui/text";
 
 const Transaction = ({
@@ -24,8 +24,8 @@ const Transaction = ({
   const statusColor = isSuccess
     ? "bg-brand"
     : isPending
-    ? "bg-yellow-500"
-    : "bg-red-500";
+      ? "bg-yellow-500"
+      : "bg-red-500";
   const statusText = isSuccess ? "Success" : isPending ? "Pending" : "Failed";
 
   return (
@@ -50,7 +50,7 @@ const Transaction = ({
         </View>
       </View>
       <View className="flex-row items-center gap-2 md:gap-4">
-        <Text className="text-lg font-medium">${amount.toFixed(2)}</Text>
+        <Text className="text-lg font-medium">${formatNumber(amount, 5)}</Text>
         <View
           className={cn(
             "w-20 h-8 rounded-twice items-center justify-center",

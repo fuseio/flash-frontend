@@ -5,8 +5,8 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 
 import { X } from '@/lib/icons/X';
-import { cn } from '@/lib/utils';
 import { toastProps } from '@/lib/toast';
+import { cn } from '@/lib/utils';
 
 const Dialog = DialogPrimitive.Root;
 
@@ -82,7 +82,7 @@ const DialogContent = React.forwardRef<
           {children}
           <DialogPrimitive.Close
             className={
-              'absolute top-4 md:top-0 right-4 md:-right-12 h-6 w-6 md:h-10 md:w-10 flex items-center justify-center bg-background md:border border-border rounded-full web:group opacity-70 web:ring-offset-background web:transition-opacity web:hover:opacity-100 web:focus:outline-none web:focus:ring-none web:focus:ring-ring web:focus:ring-offset-2 web:disabled:pointer-events-none'
+              'absolute top-4 md:top-0 right-4 md:-right-12 h-6 w-6 md:h-10 md:w-10 flex items-center justify-center bg-modal-background md:border border-border rounded-full web:group opacity-70 web:ring-offset-background web:transition-opacity web:hover:opacity-100 web:focus:outline-none web:focus:ring-none web:focus:ring-ring web:focus:ring-offset-2 web:disabled:pointer-events-none'
             }
           >
             <X

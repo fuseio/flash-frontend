@@ -14,6 +14,8 @@ import { Skeleton } from "../ui/skeleton";
 
 import useWithdrawToAddress from "@/hooks/useWithdrawToAddress";
 import { ADDRESSES } from "@/lib/config";
+import { formatNumber } from "@/lib/utils";
+import { useRouter } from "expo-router";
 import { ArrowUpRight } from "lucide-react-native";
 import { useMemo } from "react";
 import { formatUnits, isAddress } from "viem";
@@ -21,6 +23,7 @@ import { mainnet } from "viem/chains";
 import { useReadContract } from "wagmi";
 
 const WithdrawToAddress = () => {
+  const router = useRouter();
   const { user } = useUser();
 
   const { data: balance, isPending } = useReadContract({
@@ -37,11 +40,13 @@ const WithdrawToAddress = () => {
   // Create dynamic schema based on balance
   const withdrawSchema = useMemo(() => {
     const balanceAmount = balance ? Number(formatUnits(balance, 6)) : 0;
-
     return z.object({
       amount: z
-        .number()
-        .max(balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`),
+        .string()
+        .refine((val) => val !== "" && !isNaN(Number(val)), "Please enter a valid amount")
+        .refine((val) => Number(val) > 0, "Amount must be greater than 0")
+        .refine((val) => Number(val) <= balanceAmount, `Available balance is ${formatNumber(balanceAmount, 4)} USDC`)
+        .transform((val) => Number(val)),
       address: z
         .string()
         .refine(isAddress, "Please enter a valid Ethereum address")
@@ -49,7 +54,7 @@ const WithdrawToAddress = () => {
     });
   }, [balance]);
 
-  type WithdrawFormData = z.infer<typeof withdrawSchema>;
+  type WithdrawFormData = { amount: string; address: string };
 
   const {
     control,
@@ -58,11 +63,11 @@ const WithdrawToAddress = () => {
     watch,
     reset,
   } = useForm<WithdrawFormData>({
-    resolver: zodResolver(withdrawSchema),
+    resolver: zodResolver(withdrawSchema) as any,
     mode: "onChange",
     defaultValues: {
-      amount: 0,
-      address: "0x",
+      amount: "",
+      address: "",
     },
   });
 
@@ -71,18 +76,9 @@ const WithdrawToAddress = () => {
   const { withdrawToAddress, withdrawStatus } = useWithdrawToAddress();
   const isWithdrawLoading = withdrawStatus === Status.PENDING;
 
-  // Additional validation for balance
-  const hasInsufficientBalance = () => {
-    if (!balance || !watchedAmount) return false;
-    const balanceAmount = Number(formatUnits(balance, 6));
-    const requestedAmount = watchedAmount;
-    return requestedAmount > balanceAmount;
-  };
-
   const getWithdrawText = () => {
     if (errors.amount) return errors.amount.message;
     if (errors.address) return errors.address.message;
-    if (hasInsufficientBalance()) return "Insufficient balance";
     if (withdrawStatus === Status.PENDING) return "Withdrawing";
     if (withdrawStatus === Status.ERROR) return "Error while Withdrawing";
     if (withdrawStatus === Status.SUCCESS) return "Withdrawal Successful";
@@ -91,14 +87,6 @@ const WithdrawToAddress = () => {
   };
 
   const onSubmit = async (data: WithdrawFormData) => {
-    if (hasInsufficientBalance()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Insufficient balance',
-      });
-      return;
-    }
-
     try {
       const transaction = await withdrawToAddress(data.amount.toString(), data.address as Address);
       reset(); // Reset form after successful transaction
@@ -121,8 +109,7 @@ const WithdrawToAddress = () => {
   const isFormDisabled = () => {
     return (
       isWithdrawLoading ||
-      !isValid ||
-      hasInsufficientBalance()
+      !isValid
     );
   };
 
@@ -141,7 +128,7 @@ const WithdrawToAddress = () => {
         }</Text>
       </View>
 
-      <View className={`bg-gray-800 rounded-2xl p-4 w-full ${errors.amount ? 'border border-red-500' : ''}`}>
+      <View className={`bg-primary/10 rounded-2xl p-4 w-full ${errors.amount ? 'border border-red-500' : ''}`}>
         <View className="flex-row items-center justify-between w-full">
           <View className="flex-1 min-w-0">
             <Controller
@@ -149,7 +136,7 @@ const WithdrawToAddress = () => {
               name="amount"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
-                  keyboardType="numeric"
+                  keyboardType="decimal-pad"
                   className="text-4xl text-white font-light web:focus:outline-none"
                   value={value.toString()}
                   placeholder="0.0"
@@ -185,7 +172,7 @@ const WithdrawToAddress = () => {
           name="address"
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              className={`bg-gray-800 rounded-2xl p-4 text-white web:focus:outline-none ${errors.address ? 'border border-red-500' : ''}`}
+              className={`bg-primary/10 rounded-2xl p-4 text-white web:focus:outline-none ${errors.address ? 'border border-red-500' : ''}`}
               value={value}
               placeholder="0x..."
               placeholderTextColor="#666"

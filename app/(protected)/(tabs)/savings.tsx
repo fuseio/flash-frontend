@@ -1,14 +1,9 @@
-import React, { useMemo } from "react";
-import { ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Address } from "viem";
-
 import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import FAQ from "@/components/FAQ";
 import NavbarMobile from "@/components/Navbar/NavbarMobile";
 import SavingCountUp from "@/components/SavingCountUp";
+import SavingsEmptyState from "@/components/Savings/EmptyState";
 import Transaction from "@/components/Transaction";
-import { Image } from "@/components/ui/Image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import faqs from "@/constants/faqs";
@@ -22,28 +17,73 @@ import { useDimension } from "@/hooks/useDimension";
 import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
+import { useQuery } from "@tanstack/react-query";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect } from "react";
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Address } from "viem";
+import { mainnet } from "viem/chains";
+import { useBlockNumber } from "wagmi";
 
 export default function Dashboard() {
   const { user } = useUser();
-  const { data: balance, isLoading: isBalanceLoading } = useFuseVaultBalance(
+  const {
+    data: balance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance
+  } = useFuseVaultBalance(
     user?.safeAddress as Address
   );
+
+  const {
+    data: blockNumber
+  } = useBlockNumber({ watch: true, chainId: mainnet.id })
+
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY();
   const { data: lastTimestamp } = useLatestTokenTransfer(
     user?.safeAddress ?? "",
     ADDRESSES.fuse.vault
   );
-  const { data: userTransactions, loading: isTransactionsLoading } =
-    useGetUserTransactionsQuery({
-      variables: {
-        address: user?.safeAddress?.toLowerCase() ?? "",
-      },
-    });
-  const transactions = useMemo(
-    () => formatTransactions(userTransactions),
-    [userTransactions]
-  );
+
+  const {
+    data: userDepositTransactions,
+    loading: isTransactionsLoading,
+    refetch: refetchTransactions
+  } = useGetUserTransactionsQuery({
+    variables: {
+      address: user?.safeAddress?.toLowerCase() ?? "",
+    },
+  });
+
+  const {
+    data: transactions,
+    isLoading: isFormattingTransactions,
+    refetch: refetchFormattedTransactions
+  } = useQuery({
+    queryKey: ['formatted-transactions', userDepositTransactions],
+    queryFn: () => formatTransactions(userDepositTransactions),
+    enabled: !!userDepositTransactions,
+  });
+
+  useEffect(() => {
+    refetchBalance()
+    refetchTransactions()
+  }, [blockNumber])
+
+  useEffect(() => {
+    if (userDepositTransactions) {
+      refetchFormattedTransactions()
+    }
+  }, [userDepositTransactions])
+
+
   const { isScreenMedium, isDesktop } = useDimension();
+
+  // If balance is 0, show a different ui
+  if (balance === 0) {
+    return <SavingsEmptyState />
+  }
 
   return (
     <>
@@ -63,86 +103,83 @@ export default function Dashboard() {
                 lastTimestamp={lastTimestamp ?? 0}
               />
             )}
-            <View className="web:md:grid web:md:grid-cols-4 border border-border rounded-xl md:rounded-twice overflow-hidden">
-              {isScreenMedium && (
-                <View className="web:md:col-span-3 web:md:row-span-3 justify-between gap-4 bg-card p-6 md:p-12 border-b border-border md:border-b-0 md:border-r">
-                  <Text className="text-3xl font-medium">USDC Savings</Text>
+            <LinearGradient
+              colors={['rgba(148, 242, 127, 0.25)', 'rgba(148, 242, 127, 0.175)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="web:md:flex web:md:flex-row border border-border rounded-xl md:rounded-twice overflow-hidden"
+            >
+              <View className="flex-1 bg-transparent p-6 md:p-12 justify-between gap-4 border-b border-border md:border-b-0 md:border-r">
+                <Text className="text-lg text-primary/50 font-medium">Balance</Text>
+                <View className="gap-4">
+                  <SavingCountUp
+                    balance={balance ?? 0}
+                    apy={totalAPY ?? 0}
+                    lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
+                  />
                   <View className="flex-row items-center gap-4">
-                    <Image
-                      source={require("@/assets/images/usdc-4x.png")}
-                      className="hidden md:block"
-                      style={{ width: 76, height: 76 }}
-                    />
-                    <Image
-                      source={require("@/assets/images/usdc.png")}
-                      className="block md:hidden"
-                      style={{ width: 36, height: 36 }}
-                    />
-                    <SavingCountUp
-                      balance={balance ?? 0}
-                      apy={totalAPY ?? 0}
-                      lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
-                    />
+                    <Text className="text-lg font-medium text-foreground">
+                      +$0.00
+                    </Text>
+                    <Text className="text-lg font-medium text-brand">
+                      0.00% Today
+                    </Text>
                   </View>
                 </View>
-              )}
-
-              <View className="gap-2.5 bg-card p-6 border-b border-border">
-                <Text className="text-lg text-primary/50 font-medium">APY</Text>
-                <Text className="text-2xl text-brand font-semibold">
-                  {isTotalAPYLoading ? (
-                    <Skeleton className="w-20 h-8 rounded-md" />
-                  ) : totalAPY ? (
-                    `${totalAPY.toFixed(2)}%`
-                  ) : (
-                    "0%"
-                  )}
-                </Text>
               </View>
 
-              <View className="gap-2.5 bg-card p-6 border-b border-border">
-                <Text className="text-lg text-primary/50 font-medium">
-                  1-year Projection
-                </Text>
-                <View className="flex-row items-center gap-1">
+              <View className="web:md:w-80 bg-transparent p-6 md:p-6 justify-center gap-8">
+                <View className="gap-2.5">
+                  <Text className="text-lg text-primary/50 font-medium">Current Yield</Text>
+                  <Text className="text-2xl text-brand font-semibold">
+                    {isTotalAPYLoading ? (
+                      <Skeleton className="w-20 h-8 rounded-md" />
+                    ) : totalAPY ? (
+                      `${totalAPY.toFixed(1)}%`
+                    ) : (
+                      "0%"
+                    )}
+                  </Text>
+                </View>
+
+                <View className="border-t border-border/50 -mx-6 md:-mx-6" />
+
+                <View className="gap-2.5">
+                  <Text className="text-lg text-primary/50 font-medium">
+                    Total deposited
+                  </Text>
+                  <Text className="text-2xl font-semibold">
+                    {isBalanceLoading ? (
+                      <Skeleton className="w-24 h-8 rounded-md" />
+                    ) : (
+                      `$${(balance ?? 0).toLocaleString()}`
+                    )}
+                  </Text>
+                </View>
+
+                <View className="border-t border-border/50 -mx-6 md:-mx-6" />
+
+                <View className="gap-2.5">
+                  <Text className="text-lg text-primary/50 font-medium">
+                    Total earned
+                  </Text>
                   <Text className="text-2xl font-semibold">
                     {isTotalAPYLoading || isBalanceLoading ? (
                       <Skeleton className="w-20 h-8 rounded-md" />
                     ) : totalAPY && balance ? (
-                      `+${(totalAPY * balance).toFixed(2)}`
+                      `$${((totalAPY / 100) * balance).toLocaleString()}`
                     ) : (
-                      "0"
+                      "$0"
                     )}
                   </Text>
-                  <Image
-                    source={require("@/assets/images/usdc.png")}
-                    style={{ width: 16, height: 16 }}
-                  />
                 </View>
               </View>
-
-              <View className="gap-2.5 bg-card p-6">
-                <Text className="text-lg text-primary/50 font-medium">
-                  Your soUSD Balance
-                </Text>
-                <View className="flex-row items-center gap-1">
-                  {isBalanceLoading ? (
-                    <Skeleton className="w-24 h-8 rounded-md" />
-                  ) : (
-                    <Text className="text-2xl font-semibold">{balance ?? 0}</Text>
-                  )}
-                  <Image
-                    source={require("@/assets/images/usdc.png")}
-                    style={{ width: 16, height: 16 }}
-                  />
-                </View>
-              </View>
-            </View>
+            </LinearGradient>
 
             <View className="gap-4">
               <Text className="text-2xl font-medium">Recent transactions</Text>
               <View className="gap-2">
-                {isTransactionsLoading ? (
+                {isTransactionsLoading || isFormattingTransactions ? (
                   <Skeleton className="w-full h-16 bg-card rounded-xl md:rounded-twice" />
                 ) : transactions?.length ? (
                   transactions.map((transaction) => (
