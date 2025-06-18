@@ -137,7 +137,7 @@ const useDeposit = (): DepositResult => {
         ],
       });
 
-      let transactions = [
+      const transactions = [
         {
           to: ADDRESSES.ethereum.usdc,
           data: encodeFunctionData({
