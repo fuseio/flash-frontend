@@ -1,15 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import React, { useEffect } from "react";
-import { ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Address } from "viem";
-
 import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import FAQ from "@/components/FAQ";
 import NavbarMobile from "@/components/Navbar/NavbarMobile";
 import SavingCountUp from "@/components/SavingCountUp";
+import SavingsEmptyState from "@/components/Savings/EmptyState";
 import Transaction from "@/components/Transaction";
-import { Image } from "@/components/ui/Image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import faqs from "@/constants/faqs";
@@ -23,6 +17,12 @@ import { useDimension } from "@/hooks/useDimension";
 import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
+import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
+import React, { useEffect } from "react";
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Address } from "viem";
 import { mainnet } from "viem/chains";
 import { useBlockNumber } from "wagmi";
 
@@ -79,6 +79,11 @@ export default function Dashboard() {
 
 
   const { isScreenMedium, isDesktop } = useDimension();
+
+  // If balance is 0, show a different ui
+  if (balance === 0) {
+    return <SavingsEmptyState />
+  }
 
   return (
     <>
