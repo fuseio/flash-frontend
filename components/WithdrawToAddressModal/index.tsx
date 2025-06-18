@@ -128,7 +128,7 @@ const WithdrawToAddress = () => {
         }</Text>
       </View>
 
-      <View className={`bg-gray-800 rounded-2xl p-4 w-full ${errors.amount ? 'border border-red-500' : ''}`}>
+      <View className={`bg-primary/10 rounded-2xl p-4 w-full ${errors.amount ? 'border border-red-500' : ''}`}>
         <View className="flex-row items-center justify-between w-full">
           <View className="flex-1 min-w-0">
             <Controller
@@ -172,7 +172,7 @@ const WithdrawToAddress = () => {
           name="address"
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              className={`bg-gray-800 rounded-2xl p-4 text-white web:focus:outline-none ${errors.address ? 'border border-red-500' : ''}`}
+              className={`bg-primary/10 rounded-2xl p-4 text-white web:focus:outline-none ${errors.address ? 'border border-red-500' : ''}`}
               value={value}
               placeholder="0x..."
               placeholderTextColor="#666"

@@ -5,7 +5,7 @@ import { ActivityIndicator, Image, Linking, TextInput, View } from "react-native
 import Toast from 'react-native-toast-message';
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import useBridgeToMainnet from "@/hooks/useBridgeToMainnet";
 import useUser from "@/hooks/useUser";
@@ -15,8 +15,8 @@ import { Status } from "@/lib/types";
 import { Address } from "abitype";
 import { Skeleton } from "../ui/skeleton";
 
-import WithdrawIcon from "@/assets/images/withdraw";
 import { formatNumber } from "@/lib/utils";
+import { ArrowUpRight } from "lucide-react-native";
 
 const Withdraw = () => {
   const { user } = useUser();
@@ -30,8 +30,6 @@ const Withdraw = () => {
   // Create dynamic schema for bridge form based on fuse balance
   const bridgeSchema = useMemo(() => {
     const balanceAmount = fuseBalance || 0;
-    console.log('fuseBalance: ', fuseBalance);
-
     return z.object({
       amount: z
         .string()
@@ -45,8 +43,6 @@ const Withdraw = () => {
   // Create dynamic schema for withdraw form based on ethereum balance
   const withdrawSchema = useMemo(() => {
     const balanceAmount = ethereumBalance || 0;
-    console.log('ethereumBalance: ', ethereumBalance);
-
     return z.object({
       amount: z
         .string()
@@ -282,11 +278,13 @@ const WithdrawTrigger = (props: any) => {
   return (
     <Button
       variant="outline"
-      className="flex-col items-center gap-3 w-28 h-20 rounded-xl md:rounded-twice"
+      className={buttonVariants({ variant: "secondary", className: "h-12 rounded-xl" })}
       {...props}
     >
-      <WithdrawIcon className="size-6" />
-      <Text className="font-semibold">Withdraw</Text>
+      <View className="flex-row items-center gap-2">
+        <ArrowUpRight color="white" />
+        <Text className="font-bold hidden md:block">Withdraw</Text>
+      </View>
     </Button>
   );
 };
