@@ -1,6 +1,6 @@
+import { infoClient } from "@/graphql/clients";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { formatUnits } from "viem";
-import { infoClient } from "@/graphql/clients";
 
 import {
   GetUserTransactionsDocument,
@@ -11,7 +11,7 @@ import {
   fetchTokenTransfer,
   fetchTotalAPY
 } from "@/lib/api";
-import { Transaction } from "@/lib/types";
+import { LayerZeroTransactionStatus, Transaction } from "@/lib/types";
 
 const ANALYTICS = "analytics";
 
@@ -39,24 +39,42 @@ export const useLatestTokenTransfer = (address: string, token: string) => {
   });
 };
 
-export const formatTransactions = (
+export const formatTransactions = async (
   transactions: GetUserTransactionsQuery | undefined
-) => {
-  const formattedTransactions: Transaction[] = [];
+): Promise<Transaction[]> => {
+  if (!transactions?.deposits?.length) {
+    return [];
+  }
 
-  transactions?.deposits.forEach(async (internalTransaction) => {
-    const lzTransactions = await fetchLayerZeroBridgeTransactions(
-      internalTransaction.transactionHash
-    );
-    formattedTransactions.push({
-      title: "Deposit USDC",
-      timestamp: internalTransaction.depositTimestamp,
-      amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
-      status: lzTransactions.data[0].status.name,
-    });
+  const transactionPromises = transactions.deposits.map(async (internalTransaction) => {
+    try {
+      const lzTransactions = await fetchLayerZeroBridgeTransactions(
+        internalTransaction.transactionHash
+      );
+
+      const status = lzTransactions?.data?.[0]?.status?.name || LayerZeroTransactionStatus.INFLIGHT;
+
+      return {
+        title: "Deposit USDC",
+        timestamp: internalTransaction.depositTimestamp,
+        amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
+        status,
+      };
+    } catch (error) {
+      console.error('Failed to fetch LZ transaction:', error);
+      return {
+        title: "Deposit USDC",
+        timestamp: internalTransaction.depositTimestamp,
+        amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
+        status: LayerZeroTransactionStatus.FAILED,
+      };
+    }
   });
 
-  return formattedTransactions;
+  const formattedTransactions = await Promise.all(transactionPromises);
+
+  // Sort by timestamp (newest first)
+  return formattedTransactions.sort((a, b) => b.timestamp - a.timestamp);
 };
 
 export const isDepositedQueryOptions = (safeAddress: string) => {

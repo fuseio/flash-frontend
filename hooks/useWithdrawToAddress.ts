@@ -7,7 +7,6 @@ import { useState } from "react";
 import { TransactionReceipt } from "viem";
 import { mainnet } from "viem/chains";
 import { encodeFunctionData, parseUnits } from "viem/utils";
-import { useReadContract } from "wagmi";
 import useUser from "./useUser";
 
 type WithdrawResult = {
@@ -21,17 +20,6 @@ const useWithdrawToAddress = (): WithdrawResult => {
   const [withdrawStatus, setWithdrawStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: balance } = useReadContract({
-    abi: ERC20_ABI,
-    address: ADDRESSES.ethereum.usdc,
-    functionName: "balanceOf",
-    args: [user?.safeAddress as Address],
-    chainId: mainnet.id,
-    query: {
-      enabled: !!user?.safeAddress,
-    },
-  });
-
   const withdrawToAddress = async (amount: string, to: Address) => {
     try {
       if (!user?.passkey) {
@@ -42,22 +30,19 @@ const useWithdrawToAddress = (): WithdrawResult => {
       setError(null);
 
       const amountWei = parseUnits(amount, 6);
-      if (balance && balance < amountWei) {
-        throw new Error("Insufficient USDC balance");
-      }
 
-      let transactions = [];
+      const transactions = [
+        {
+          to: ADDRESSES.ethereum.usdc,
+          data: encodeFunctionData({
+            abi: ERC20_ABI,
+            functionName: "transfer",
+            args: [to, amountWei],
+          }),
+          value: 0n,
+        }
+      ];
 
-      // Add deposit transaction
-      transactions.push({
-        to: ADDRESSES.ethereum.usdc,
-        data: encodeFunctionData({
-          abi: ERC20_ABI,
-          functionName: "transfer",
-          args: [to, amountWei],
-        }),
-        value: 0n,
-      });
 
       const smartAccountClient = await safeAA(user.passkey, mainnet);
 

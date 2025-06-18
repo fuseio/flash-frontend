@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import React, { useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Address } from "viem";
@@ -22,27 +23,61 @@ import { useDimension } from "@/hooks/useDimension";
 import useUser from "@/hooks/useUser";
 import { useFuseVaultBalance } from "@/hooks/useVault";
 import { ADDRESSES } from "@/lib/config";
+import { mainnet } from "viem/chains";
+import { useBlockNumber } from "wagmi";
 
 export default function Dashboard() {
   const { user } = useUser();
-  const { data: balance, isLoading: isBalanceLoading } = useFuseVaultBalance(
+  const {
+    data: balance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance
+  } = useFuseVaultBalance(
     user?.safeAddress as Address
   );
+
+  const {
+    data: blockNumber
+  } = useBlockNumber({ watch: true, chainId: mainnet.id })
+
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY();
   const { data: lastTimestamp } = useLatestTokenTransfer(
     user?.safeAddress ?? "",
     ADDRESSES.fuse.vault
   );
-  const { data: userTransactions, loading: isTransactionsLoading } =
-    useGetUserTransactionsQuery({
-      variables: {
-        address: user?.safeAddress?.toLowerCase() ?? "",
-      },
-    });
-  const transactions = useMemo(
-    () => formatTransactions(userTransactions),
-    [userTransactions]
-  );
+
+  const {
+    data: userDepositTransactions,
+    loading: isTransactionsLoading,
+    refetch: refetchTransactions
+  } = useGetUserTransactionsQuery({
+    variables: {
+      address: user?.safeAddress?.toLowerCase() ?? "",
+    },
+  });
+
+  const {
+    data: transactions,
+    isLoading: isFormattingTransactions,
+    refetch: refetchFormattedTransactions
+  } = useQuery({
+    queryKey: ['formatted-transactions', userDepositTransactions],
+    queryFn: () => formatTransactions(userDepositTransactions),
+    enabled: !!userDepositTransactions,
+  });
+
+  useEffect(() => {
+    refetchBalance()
+    refetchTransactions()
+  }, [blockNumber])
+
+  useEffect(() => {
+    if (userDepositTransactions) {
+      refetchFormattedTransactions()
+    }
+  }, [userDepositTransactions])
+
+
   const { isScreenMedium, isDesktop } = useDimension();
 
   return (
@@ -142,7 +177,7 @@ export default function Dashboard() {
             <View className="gap-4">
               <Text className="text-2xl font-medium">Recent transactions</Text>
               <View className="gap-2">
-                {isTransactionsLoading ? (
+                {isTransactionsLoading || isFormattingTransactions ? (
                   <Skeleton className="w-full h-16 bg-card rounded-xl md:rounded-twice" />
                 ) : transactions?.length ? (
                   transactions.map((transaction) => (

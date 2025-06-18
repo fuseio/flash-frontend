@@ -22,17 +22,6 @@ const useWithdraw = (): WithdrawResult => {
   const [withdrawStatus, setWithdrawStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: balance } = useReadContract({
-    abi: ERC20_ABI,
-    address: ADDRESSES.ethereum.vault,
-    functionName: "balanceOf",
-    args: [user?.safeAddress as Address],
-    chainId: mainnet.id,
-    query: {
-      enabled: !!user?.safeAddress,
-    },
-  });
-
   const { data: allowance } = useReadContract({
     abi: ERC20_ABI,
     address: ADDRESSES.ethereum.vault,
@@ -54,9 +43,6 @@ const useWithdraw = (): WithdrawResult => {
       setError(null);
 
       const amountWei = parseUnits(amount, 6);
-      if (balance && balance < amountWei) {
-        throw new Error("Insufficient soUSD balance");
-      }
 
       let transactions = [];
 
