@@ -14,6 +14,7 @@ import { Skeleton } from "../ui/skeleton";
 
 import useWithdrawToAddress from "@/hooks/useWithdrawToAddress";
 import { ADDRESSES } from "@/lib/config";
+import { formatNumber } from "@/lib/utils";
 import { useRouter } from "expo-router";
 import { ArrowUpRight } from "lucide-react-native";
 import { useMemo } from "react";
@@ -44,7 +45,7 @@ const WithdrawToAddress = () => {
         .string()
         .refine((val) => val !== "" && !isNaN(Number(val)), "Please enter a valid amount")
         .refine((val) => Number(val) > 0, "Amount must be greater than 0")
-        .refine((val) => Number(val) <= balanceAmount, `Available balance is ${balanceAmount.toFixed(6)} USDC`)
+        .refine((val) => Number(val) <= balanceAmount, `Available balance is ${formatNumber(balanceAmount, 4)} USDC`)
         .transform((val) => Number(val)),
       address: z
         .string()
