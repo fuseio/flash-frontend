@@ -111,7 +111,7 @@ export default function Wallet() {
                   </View>
 
                   <View className="flex-row justify-between items-end">
-                    <Link href={path.SAVINGS} className="bg-button-earning px-6 py-3 rounded-xl">
+                    <Link href={path.SAVINGS} className="bg-button-earning px-8 py-3 rounded-xl">
                       <Text className="text-white font-medium">Start earning</Text>
                     </Link>
 
