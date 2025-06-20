@@ -22,11 +22,11 @@ import { pimlicoClient } from '@/lib/pimlico';
 import { PasskeyArgType, Status, User } from "@/lib/types";
 import { bufferToBase64URLString, decodePublicKey, getNonce, setGlobalLogoutHandler, withRefreshToken } from "@/lib/utils";
 import { publicClient } from "@/lib/wagmi";
+import { useUserStore } from "@/store/useUserStore";
 import { Chain, http } from 'viem';
 import {
   entryPoint07Address
 } from "viem/account-abstraction";
-import { useUserStore } from "@/store/useUserStore";
 import { fetchIsDeposited } from "./useAnalytics";
 
 const useUser = () => {
@@ -69,18 +69,31 @@ const useUser = () => {
       setSignupInfo({ status: Status.PENDING });
 
       const optionsJSON = await generateRegistrationOptions(username);
+
       const authenticatorReponse = await passkeys.create(optionsJSON);
       if (!authenticatorReponse) {
         throw new Error("Error while creating passkey registration");
       }
 
-      const publicKey = bufferToBase64URLString(authenticatorReponse.response.getPublicKey())
+      const publicKeyData = authenticatorReponse.response.getPublicKey();
+      if (!publicKeyData) {
+        throw new Error("Failed to get public key from authenticator response");
+      }
+
+      // Handle platform differences - mobile returns base64 string, web returns ArrayBuffer
+      const publicKey = typeof publicKeyData === 'string' 
+        ? publicKeyData  // Already base64 encoded on mobile
+        : bufferToBase64URLString(publicKeyData);  // Convert ArrayBuffer to base64 on web
+
       const coordinates = await decodePublicKey(authenticatorReponse.response)
+      
       const smartAccountClient = await safeAA({
         rawId: authenticatorReponse.rawId,
         credentialId: authenticatorReponse.id,
         coordinates: coordinates,
       }, mainnet);
+
+      const sessionId = optionsJSON.sessionId;
 
       const user = await withRefreshToken(
         () => verifyRegistration({
@@ -89,7 +102,7 @@ const useUser = () => {
             ...authenticatorReponse.response,
             publicKey,
           },
-        }, smartAccountClient.account.address),
+        }, sessionId, smartAccountClient.account.address),
         { onError: handleLogin }
       );
 
@@ -123,7 +136,8 @@ const useUser = () => {
         throw new Error("Error while creating passkey authentication");
       }
 
-      const user = await verifyAuthentication(authenticatorReponse);
+      const sessionId = optionsJSON.sessionId;
+      const user = await verifyAuthentication(authenticatorReponse, sessionId);
 
       if (user) {
         const selectedUser = { ...user, selected: true };
