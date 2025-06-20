@@ -8,6 +8,7 @@ import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
 import { KycStatus } from "@/lib/types";
 import { useRouter } from "expo-router";
+import { createKycLink } from "@/lib/api";
 
 // Header Component
 function UserInfoHeader() {
@@ -128,11 +129,11 @@ function UserInfoFooter({
       </View>
 
       <Button
-        className="h-14 rounded-xl mt-8 bg-[#94F27F]"
+        className="h-14 rounded-xl mt-8"
         onPress={onContinue}
         disabled={!isFormValid || isLoading}
       >
-        <Text className="text-lg font-semibold text-black">
+        <Text className="text-lg font-bold text-black">
           {isLoading ? "Please wait..." : "Continue"}
         </Text>
       </Button>
@@ -194,21 +195,20 @@ export default function UserInfoMobile() {
 
     console.log("redirectUrl", redirectUrl);
 
-    // TODO: Implement KYC link creation and navigation
-    // const kycLink = await createKycLink(
-    //   fullName.trim(),
-    //   email.trim(),
-    //   redirectUrl
-    // );
+    const kycLink = await createKycLink(
+      fullName.trim(),
+      email.trim(),
+      redirectUrl
+    );
 
     setIsLoading(false);
 
-    const kycLink =
-      "https://bridge.withpersona.com/verify?fields%5Bdeveloper_id%5D=b1ea9873-da91-4d8a-a0e5-dc89bda66e70&fields%5Bemail_address%5D=jasonmendex%40gmail.com&fields%5Biqt_token%5D=46f7565fe2ba42843b957cec6d783e48f85dff6d6ea56cf5753634b09a3214e83bpmDX&inquiry-template-id=itmpl_NtHYpb9AbEYCPxGo5iRbc9d2&reference-id=e2822ef6-ef0e-45b4-9ca9-56be84770b27";
+    // const kycLink =
+    //   "https://bridge.withpersona.com/verify?fields%5Bdeveloper_id%5D=b1ea9873-da91-4d8a-a0e5-dc89bda66e70&fields%5Bemail_address%5D=jasonmendex%40gmail.com&fields%5Biqt_token%5D=46f7565fe2ba42843b957cec6d783e48f85dff6d6ea56cf5753634b09a3214e83bpmDX&inquiry-template-id=itmpl_NtHYpb9AbEYCPxGo5iRbc9d2&reference-id=e2822ef6-ef0e-45b4-9ca9-56be84770b27";
 
     console.log("kycLink", kycLink);
 
-    WebBrowser.openBrowserAsync(kycLink, {
+    WebBrowser.openBrowserAsync(kycLink.link, {
       presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
       controlsColor: "#94F27F",
       toolbarColor: "#94F27F",
