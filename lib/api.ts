@@ -1,9 +1,11 @@
-import axios from "axios";
+import axios, { AxiosRequestHeaders } from "axios";
+import { Platform } from "react-native";
 import {
 	AuthenticationResponseJSON,
 	RegistrationResponseJSON,
 } from "react-native-passkeys/src/ReactNativePasskeys.types";
 
+import { useUserStore } from "@/store/useUserStore";
 import {
 	EXPO_PUBLIC_COIN_GECKO_API_KEY,
 	EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL,
@@ -20,12 +22,77 @@ import {
 	User,
 } from "./types";
 
+// Helper function to get platform-specific headers
+const getPlatformHeaders = () => {
+	const headers: Record<string, string> = {};
+	if (Platform.OS === 'ios' || Platform.OS === 'android') {
+		headers['X-Platform'] = 'mobile';
+	}
+	return headers;
+};
+
+// Helper function to get JWT token for mobile
+const getJWTToken = (): string | null => {
+	if (Platform.OS === 'ios' || Platform.OS === 'android') {
+		const { users } = useUserStore.getState();
+		const currentUser = users.find((user: User) => user.selected);
+		console.log("currentUser", currentUser);
+		return currentUser?.tokens?.accessToken || null;
+	}
+	return null;
+};
+
+
+// Helper function to get refresh token
+const getRefreshToken = (): string | null => {
+	if (Platform.OS === 'ios' || Platform.OS === 'android') {
+		const { users } = useUserStore.getState();
+		const currentUser = users.find((user: User) => user.selected);
+		return currentUser?.tokens?.refreshToken || null;
+	}
+	return null;
+};
+
+// Set up axios interceptor to add headers to all axios requests
+axios.interceptors.request.use((config) => {
+	const platformHeaders = getPlatformHeaders();
+
+	config.headers = {
+		...config.headers,
+		...platformHeaders,
+	} as AxiosRequestHeaders;
+
+	if (Platform.OS === "ios" || Platform.OS === "android") {
+		const jwtToken = getJWTToken();
+
+		if (jwtToken) {
+			config.headers['Authorization'] = `Bearer ${jwtToken}`;
+		} else {
+			console.error("No JWT token found");
+		}
+	}
+
+	return config;
+});
+
 export const refreshToken = () => {
+	const refreshTokenValue = getRefreshToken();
+
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+		...getPlatformHeaders(),
+	};
+
+	if (refreshTokenValue) {
+		headers['Authorization'] = `Bearer ${refreshTokenValue}`;
+	}
+	
 	return fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/refresh-token`,
 		{
 			method: "POST",
 			credentials: "include",
+			headers,
 		},
 	);
 };
@@ -39,6 +106,7 @@ export const generateRegistrationOptions = async (username: string) => {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				...getPlatformHeaders(),
 			},
 			credentials: "include",
 			body: JSON.stringify({ username }),
@@ -50,6 +118,7 @@ export const generateRegistrationOptions = async (username: string) => {
 
 export const verifyRegistration = async (
 	registrationResponse: RegistrationResponseJSON,
+	sessionId: string,
 	address: string,
 ): Promise<User> => {
 	const response = await fetch(
@@ -58,10 +127,12 @@ export const verifyRegistration = async (
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				...getPlatformHeaders(),
 			},
 			credentials: "include",
 			body: JSON.stringify({
 				...registrationResponse,
+				sessionId,
 				address,
 			}),
 		},
@@ -75,6 +146,9 @@ export const generateAuthenticationOptions = async () => {
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/passkeys/authentication/generate-options`,
 		{
 			credentials: "include",
+			headers: {
+				...getPlatformHeaders(),
+			},
 		},
 	);
 	if (!response.ok) throw response;
@@ -83,6 +157,7 @@ export const generateAuthenticationOptions = async () => {
 
 export const verifyAuthentication = async (
 	authenticationResponse: AuthenticationResponseJSON,
+	sessionId: string,
 ): Promise<User> => {
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/passkeys/authentication/verify`,
@@ -90,9 +165,13 @@ export const verifyAuthentication = async (
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				...getPlatformHeaders(),
 			},
 			credentials: "include",
-			body: JSON.stringify(authenticationResponse),
+			body: JSON.stringify({
+				...authenticationResponse,
+				sessionId,
+			}),
 		},
 	);
 	if (!response.ok) throw response;
@@ -135,12 +214,16 @@ export const createKycLink = async (
 	email: string,
 	redirectUri: string,
 ): Promise<KycLink> => {
+	const jwt = getJWTToken();
+
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards/kyc/link`,
 		{
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				...getPlatformHeaders(),
+				...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
 			},
 			credentials: "include",
 			body: JSON.stringify({
@@ -157,10 +240,16 @@ export const createKycLink = async (
 };
 
 export const getKycLink = async (kycLinkId: string): Promise<KycLink> => {
+	const jwt = getJWTToken();
+
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards/kyc/link/${kycLinkId}`,
 		{
 			credentials: "include",
+			headers: {
+				...getPlatformHeaders(),
+				...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+			},
 		},
 	);
 
@@ -170,10 +259,16 @@ export const getKycLink = async (kycLinkId: string): Promise<KycLink> => {
 };
 
 export const getCustomer = async (): Promise<BridgeCustomerResponse | null> => {
+	const jwt = getJWTToken();
+
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/bridge-customer`,
 		{
 			credentials: "include",
+			headers: {
+				...getPlatformHeaders(),
+				...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+			},
 		},
 	);
 
@@ -185,12 +280,16 @@ export const getCustomer = async (): Promise<BridgeCustomerResponse | null> => {
 };
 
 export const createCard = async (): Promise<CardResponse> => {
+	const jwt = getJWTToken();
+
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards`,
 		{
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				...getPlatformHeaders(),
+				...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
 			},
 			credentials: "include",
 		},
@@ -202,10 +301,16 @@ export const createCard = async (): Promise<CardResponse> => {
 };
 
 export const getCardStatus = async (): Promise<CardStatusResponse> => {
+	const jwt = getJWTToken();
+
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards/status`,
 		{
 			credentials: "include",
+			headers: {
+				...getPlatformHeaders(),
+				...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+			},
 		},
 	);
 
@@ -215,10 +320,16 @@ export const getCardStatus = async (): Promise<CardStatusResponse> => {
 };
 
 export const getCardDetails = async (): Promise<CardResponse> => {
+	const jwt = getJWTToken();
+
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/cards/details`,
 		{
 			credentials: "include",
+			headers: {
+				...getPlatformHeaders(),
+				...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+			},
 		},
 	);
 
