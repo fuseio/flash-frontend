@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Pressable, View } from "react-native";
 
@@ -7,11 +7,16 @@ import { AnimatedStepContent } from "@/components/Card/AnimatedStepContent";
 import { StepIndicator } from "@/components/Card/StepIndicator";
 import { Text } from "@/components/ui/text";
 import { useCardSteps } from "@/hooks/useCardSteps";
-
-// Implement buttons. Start with KYC.
+import { KycStatus } from "@/lib/types";
 
 export default function ActivateMobile() {
-  const router = useRouter();
+  const { kycLink, kycStatus } = useLocalSearchParams<{
+    kycLink?: string;
+    kycStatus?: KycStatus;
+  }>();
+
+  console.log("kycStatus", kycStatus);
+  console.log("kycLink", kycLink);
 
   const { steps, activeStepId, isStepButtonEnabled, toggleStep } =
     useCardSteps();
