@@ -15,12 +15,6 @@ export default function Card() {
   useEffect(() => {
     if (isLoading) return;
 
-    // If there's a 404 error, card doesn't exist - go to activate page
-    if (error && (error as any)?.status === 404) {
-      router.replace(path.CARD_ACTIVATE);
-      return;
-    }
-
     // If card exists (regardless of status), go to card details
     if (cardStatus) {
       router.replace(path.CARD_DETAILS);
