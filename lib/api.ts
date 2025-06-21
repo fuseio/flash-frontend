@@ -36,7 +36,6 @@ const getJWTToken = (): string | null => {
 	if (Platform.OS === 'ios' || Platform.OS === 'android') {
 		const { users } = useUserStore.getState();
 		const currentUser = users.find((user: User) => user.selected);
-		console.log("currentUser", currentUser);
 		return currentUser?.tokens?.accessToken || null;
 	}
 	return null;
