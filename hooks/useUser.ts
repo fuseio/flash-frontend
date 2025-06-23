@@ -1,3 +1,8 @@
+import { createSmartAccountClient } from "@getclave/permissionless";
+import {
+  toSafeSmartAccount
+} from "@getclave/permissionless/accounts";
+import { erc7579Actions } from "@getclave/permissionless/actions/erc7579";
 import {
   getWebAuthnValidator,
   RHINESTONE_ATTESTER_ADDRESS
@@ -5,11 +10,6 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { PublicKey } from "ox";
-import { createSmartAccountClient } from "permissionless";
-import {
-  toSafeSmartAccount
-} from "permissionless/accounts";
-import { erc7579Actions } from "permissionless/actions/erc7579";
 import { useCallback, useEffect, useMemo } from "react";
 import * as passkeys from "react-native-passkeys";
 import { toAccount } from "viem/accounts";
@@ -127,7 +127,7 @@ const useUser = (): UseUserReturn => {
           ...user,
           isDeposited: true,
         });
-        router.replace(path.SAVINGS);
+        router.replace(path.HOME);
         return;
       }
     } catch (error) {

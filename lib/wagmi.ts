@@ -1,7 +1,7 @@
 import { createClient, createPublicClient } from 'viem';
-import { createConfig, http } from 'wagmi'
-import { Chain, fuse, mainnet } from 'wagmi/chains'
-
+import { createConfig, http } from 'wagmi';
+import { Chain, fuse, mainnet } from 'wagmi/chains';
+import { injected } from 'wagmi/connectors';
 import { EXPO_PUBLIC_ETHEREUM_API_KEY } from './config';
 
 const chains: readonly [Chain, ...Chain[]] = [
@@ -21,6 +21,9 @@ const transports: Record<number, ReturnType<typeof http>> = {
 
 export const config = createConfig({
   chains,
+  connectors: [
+    injected(),
+  ],
   multiInjectedProviderDiscovery: false,
   ssr: true,
   client({ chain }) {
