@@ -19,7 +19,7 @@ export default {
         "webcredentials:solid.xyz",
         "applinks:solid.xyz",
         `webcredentials:${
-          process.env.PASSKEY_CERTIFICATES_HOST
+          process.env.EXPO_PUBLIC_PASSKEY_CERTIFICATES_HOST
         }?mode=developer`,
       ],
       appleTeamId: "8WHFWN93P6",
@@ -43,7 +43,7 @@ export default {
             },
             {
               scheme: "https",
-              host: process.env.PASSKEY_CERTIFICATES_HOST,
+              host: process.env.EXPO_PUBLIC_PASSKEY_CERTIFICATES_HOST,
               pathPrefix: "/",
             },
           ],
