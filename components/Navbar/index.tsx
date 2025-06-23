@@ -4,7 +4,6 @@ import { Platform, SafeAreaView, View } from "react-native";
 
 import { path } from "@/constants/path";
 import AccountCenterModal from "../AccountCenter/AccountCenterModal";
-import { NavMenu } from "./NavMenu";
 
 const Navbar = () => {
   return (
@@ -25,7 +24,6 @@ const Navbar = () => {
             className="hidden md:block"
           />
         </Link>
-        <NavMenu />
         {Platform.OS === 'web' && (
           <View className="w-32">
             <AccountCenterModal />

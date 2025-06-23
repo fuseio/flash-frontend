@@ -1,32 +1,39 @@
+import { createSmartAccountClient } from "@getclave/permissionless";
+import { toSafeSmartAccount } from "@getclave/permissionless/accounts";
+import { erc7579Actions } from "@getclave/permissionless/actions/erc7579";
 import {
   getWebAuthnValidator,
-  RHINESTONE_ATTESTER_ADDRESS
+  RHINESTONE_ATTESTER_ADDRESS,
 } from "@rhinestone/module-sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { PublicKey } from "ox";
-import { createSmartAccountClient } from "permissionless";
-import {
-  toSafeSmartAccount
-} from "permissionless/accounts";
-import { erc7579Actions } from "permissionless/actions/erc7579";
 import { useCallback, useEffect, useMemo } from "react";
 import * as passkeys from "react-native-passkeys";
 import { toAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
 
 import { path } from "@/constants/path";
-import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api";
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthentication,
+  verifyRegistration,
+} from "@/lib/api";
 import { USER } from "@/lib/config";
-import { pimlicoClient } from '@/lib/pimlico';
+import { pimlicoClient } from "@/lib/pimlico";
 import { PasskeyArgType, Status, User } from "@/lib/types";
-import { bufferToBase64URLString, decodePublicKey, getNonce, setGlobalLogoutHandler, withRefreshToken } from "@/lib/utils";
+import {
+  bufferToBase64URLString,
+  decodePublicKey,
+  getNonce,
+  setGlobalLogoutHandler,
+  withRefreshToken,
+} from "@/lib/utils";
 import { publicClient } from "@/lib/wagmi";
 import { useUserStore } from "@/store/useUserStore";
-import { Chain, http } from 'viem';
-import {
-  entryPoint07Address
-} from "viem/account-abstraction";
+import { Chain, http } from "viem";
+import { entryPoint07Address } from "viem/account-abstraction";
 import { fetchIsDeposited } from "./useAnalytics";
 
 interface UseUserReturn {
@@ -53,11 +60,11 @@ const useUser = (): UseUserReturn => {
     unselectUser,
     removeUsers,
     setSignupInfo,
-    setLoginInfo
+    setLoginInfo,
   } = useUserStore();
 
   const user = useMemo(() => {
-    return users.find((user: User) => user.selected)
+    return users.find((user: User) => user.selected);
   }, [users]);
 
   async function checkBalance(user: User) {
@@ -94,28 +101,37 @@ const useUser = (): UseUserReturn => {
       }
 
       // Handle platform differences - mobile returns base64 string, web returns ArrayBuffer
-      const publicKey = typeof publicKeyData === 'string' 
-        ? publicKeyData  // Already base64 encoded on mobile
-        : bufferToBase64URLString(publicKeyData);  // Convert ArrayBuffer to base64 on web
+      const publicKey =
+        typeof publicKeyData === "string"
+          ? publicKeyData // Already base64 encoded on mobile
+          : bufferToBase64URLString(publicKeyData); // Convert ArrayBuffer to base64 on web
 
-      const coordinates = await decodePublicKey(authenticatorReponse.response)
-      
-      const smartAccountClient = await safeAA({
-        rawId: authenticatorReponse.rawId,
-        credentialId: authenticatorReponse.id,
-        coordinates: coordinates,
-      }, mainnet);
+      const coordinates = await decodePublicKey(authenticatorReponse.response);
+
+      const smartAccountClient = await safeAA(
+        {
+          rawId: authenticatorReponse.rawId,
+          credentialId: authenticatorReponse.id,
+          coordinates: coordinates,
+        },
+        mainnet
+      );
 
       const sessionId = optionsJSON.sessionId;
 
       const user = await withRefreshToken(
-        () => verifyRegistration({
-          ...authenticatorReponse,
-          response: {
-            ...authenticatorReponse.response,
-            publicKey,
-          },
-        }, sessionId, smartAccountClient.account.address),
+        () =>
+          verifyRegistration(
+            {
+              ...authenticatorReponse,
+              response: {
+                ...authenticatorReponse.response,
+                publicKey,
+              },
+            },
+            sessionId,
+            smartAccountClient.account.address
+          ),
         { onError: handleLogin }
       );
 
@@ -188,10 +204,13 @@ const useUser = (): UseUserReturn => {
     router.replace(path.WELCOME);
   }, [unselectUser, router]);
 
-  const handleSelectUser = useCallback((username: string) => {
-    selectUser(username);
-    router.replace(path.HOME);
-  }, [selectUser, router]);
+  const handleSelectUser = useCallback(
+    (username: string) => {
+      selectUser(username);
+      router.replace(path.HOME);
+    },
+    [selectUser, router]
+  );
 
   const handleRemoveUsers = useCallback(() => {
     removeUsers();
@@ -224,7 +243,7 @@ const useUser = (): UseUserReturn => {
 
     const safeAccount = await toSafeSmartAccount({
       saltNonce: await getNonce({
-        appId: 'solid',
+        appId: "solid",
       }),
       client: publicClient(chain.id),
       owners: [deadOwner],
@@ -235,9 +254,7 @@ const useUser = (): UseUserReturn => {
       },
       safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
       erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
-      attesters: [
-        RHINESTONE_ATTESTER_ADDRESS,
-      ],
+      attesters: [RHINESTONE_ATTESTER_ADDRESS],
       attestersThreshold: 1,
       validators: [
         {

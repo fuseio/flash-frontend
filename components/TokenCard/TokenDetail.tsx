@@ -1,5 +1,5 @@
-import { View } from 'react-native';
 import { ReactNode } from 'react';
+import { View } from 'react-native';
 
 import { cn } from '@/lib/utils';
 
@@ -10,7 +10,7 @@ interface TokenDetailProps {
 
 const TokenDetail = ({ children, className = '' }: TokenDetailProps) => {
   return (
-    <View className={cn("p-6 md:p-10", className)}>
+    <View className={cn("p-6 md:p-5", className)}>
       {children}
     </View>
   );
