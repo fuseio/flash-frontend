@@ -1,14 +1,32 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { Linking, Pressable, TextInput, View } from "react-native";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
-import { KycStatus } from "@/lib/types";
-import { useRouter } from "expo-router";
 import { createKycLink } from "@/lib/api";
+import { KycStatus } from "@/lib/types";
+
+// Zod schema for validation
+const userInfoSchema = z.object({
+  fullName: z
+    .string()
+    .min(1, "Please enter your full name")
+    .min(2, "Full name must be at least 2 characters"),
+  email: z
+    .string()
+    .min(1, "Please enter your email address")
+    .email("Please enter a valid email address"),
+  agreedToTerms: z
+    .boolean()
+    .refine((val) => val === true, "You must agree to the terms to continue"),
+});
+
+type UserInfoFormData = z.infer<typeof userInfoSchema>;
 
 // Header Component
 function UserInfoHeader() {
@@ -21,46 +39,61 @@ function UserInfoHeader() {
 
 // Form Component
 interface UserInfoFormProps {
-  fullName: string;
-  setFullName: (value: string) => void;
-  email: string;
-  setEmail: (value: string) => void;
+  control: any;
+  errors: any;
 }
 
-function UserInfoForm({
-  fullName,
-  setFullName,
-  email,
-  setEmail,
-}: UserInfoFormProps) {
+function UserInfoForm({ control, errors }: UserInfoFormProps) {
   return (
     <View className="space-y-6 mb-8">
       <View>
         <Text className="text-sm font-medium text-white/80 mb-2">
           Full Name
         </Text>
-        <TextInput
-          placeholder="Enter your full name"
-          value={fullName}
-          onChangeText={setFullName}
-          className="h-14 px-6 rounded-xl border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground bg-background"
-          autoCapitalize="words"
+        <Controller
+          control={control}
+          name="fullName"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              placeholder="Enter your full name"
+              value={value}
+              onChangeText={onChange}
+              className="h-14 px-6 rounded-xl border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground bg-background"
+              autoCapitalize="words"
+            />
+          )}
         />
+        {errors.fullName && (
+          <Text className="text-red-500 text-sm mt-1">
+            {errors.fullName.message}
+          </Text>
+        )}
       </View>
 
       <View>
         <Text className="text-sm font-medium text-white/80 mb-2 mt-6">
           Email Address
         </Text>
-        <TextInput
-          placeholder="Enter your email address"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          className="h-14 px-6 rounded-xl border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground bg-background"
-          autoCapitalize="none"
-          autoComplete="email"
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              placeholder="Enter your email address"
+              value={value}
+              onChangeText={onChange}
+              keyboardType="email-address"
+              className="h-14 px-6 rounded-xl border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground bg-background"
+              autoCapitalize="none"
+              autoComplete="email"
+            />
+          )}
         />
+        {errors.email && (
+          <Text className="text-red-500 text-sm mt-1">
+            {errors.email.message}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -68,39 +101,40 @@ function UserInfoForm({
 
 // Footer Component
 interface UserInfoFooterProps {
-  agreedToTerms: boolean;
-  setAgreedToTerms: (value: boolean) => void;
+  control: any;
+  errors: any;
   onContinue: () => void;
-  isFormValid: boolean;
+  isValid: boolean;
   isLoading: boolean;
 }
 
 function UserInfoFooter({
-  agreedToTerms,
-  setAgreedToTerms,
+  control,
+  errors,
   onContinue,
-  isFormValid,
+  isValid,
   isLoading,
 }: UserInfoFooterProps) {
   return (
     <View className="space-y-6">
       <View className="flex-row items-start justify-center">
-        <Pressable
-          onPress={() => setAgreedToTerms(!agreedToTerms)}
-          className="mr-3 mt-0.5"
-        >
-          <View
-            className={`w-6 h-6 rounded border-2 ${
-              agreedToTerms
-                ? "bg-[#94F27F] border-[#94F27F]"
-                : "border-white/50"
-            } items-center justify-center`}
-          >
-            {agreedToTerms && (
-              <Text className="text-xs text-black font-bold">✓</Text>
-            )}
-          </View>
-        </Pressable>
+        <Controller
+          control={control}
+          name="agreedToTerms"
+          render={({ field: { onChange, value } }) => (
+            <Pressable onPress={() => onChange(!value)} className="mr-3 mt-0.5">
+              <View
+                className={`w-6 h-6 rounded border-2 ${
+                  value ? "bg-[#94F27F] border-[#94F27F]" : "border-white/50"
+                } items-center justify-center`}
+              >
+                {value && (
+                  <Text className="text-xs text-black font-bold">✓</Text>
+                )}
+              </View>
+            </Pressable>
+          )}
+        />
 
         <View className="flex-1">
           <View className="text-xs text-white/50 leading-4 flex-row flex-wrap">
@@ -128,10 +162,16 @@ function UserInfoFooter({
         </View>
       </View>
 
+      {errors.agreedToTerms && (
+        <Text className="text-red-500 text-sm text-center">
+          {errors.agreedToTerms.message}
+        </Text>
+      )}
+
       <Button
         className="h-14 rounded-xl mt-8"
         onPress={onContinue}
-        disabled={!isFormValid || isLoading}
+        disabled={!isValid || isLoading}
       >
         <Text className="text-lg font-bold text-black">
           {isLoading ? "Please wait..." : "Continue"}
@@ -143,78 +183,52 @@ function UserInfoFooter({
 
 // Main Component
 export default function UserInfoMobile() {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const router = useRouter();
-
-  const emailSchema = z.string().email();
-
-  const validateEmail = (email: string) => {
-    return emailSchema.safeParse(email).success;
-  };
-
-  const isFormValid = () => {
-    const trimmedFullName = fullName.trim();
-    const trimmedEmail = email.trim();
-
-    return (
-      !!trimmedFullName &&
-      !!trimmedEmail &&
-      validateEmail(trimmedEmail) &&
-      agreedToTerms
-    );
-  };
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<UserInfoFormData>({
+    resolver: zodResolver(userInfoSchema),
+    mode: "onChange",
+    defaultValues: {
+      fullName: "",
+      email: "",
+      agreedToTerms: false,
+    },
+  });
 
   const getRedirectUrl = () => {
     const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
     return `${baseUrl}${path.CARD_ACTIVATE_MOBILE}?kycStatus=${KycStatus.UNDER_REVIEW}`;
   };
 
-  const handleContinue = async () => {
-    if (!fullName.trim()) {
-      alert("Please enter your full name");
-      return;
-    }
-
-    if (!email.trim()) {
-      alert("Please enter your email address");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      alert("Please enter a valid email address");
-      return;
-    }
-
+  const onSubmit = async (data: UserInfoFormData) => {
     setIsLoading(true);
 
     const redirectUrl = getRedirectUrl();
-
     console.log("redirectUrl", redirectUrl);
 
-    const kycLink = await createKycLink(
-      fullName.trim(),
-      email.trim(),
-      redirectUrl
-    );
+    try {
+      const kycLink = await createKycLink(
+        data.fullName.trim(),
+        data.email.trim(),
+        redirectUrl
+      );
 
-    setIsLoading(false);
-
-    // const kycLink =
-    //   "https://bridge.withpersona.com/verify?fields%5Bdeveloper_id%5D=b1ea9873-da91-4d8a-a0e5-dc89bda66e70&fields%5Bemail_address%5D=jasonmendex%40gmail.com&fields%5Biqt_token%5D=46f7565fe2ba42843b957cec6d783e48f85dff6d6ea56cf5753634b09a3214e83bpmDX&inquiry-template-id=itmpl_NtHYpb9AbEYCPxGo5iRbc9d2&reference-id=e2822ef6-ef0e-45b4-9ca9-56be84770b27";
-
-    console.log("kycLink", kycLink);
-
-    WebBrowser.openBrowserAsync(kycLink.link, {
-      presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-      controlsColor: "#94F27F",
-      toolbarColor: "#94F27F",
-      showTitle: true,
-      enableBarCollapsing: true,
-    });
+      WebBrowser.openBrowserAsync(kycLink.link, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+        controlsColor: "#94F27F",
+        toolbarColor: "#94F27F",
+        showTitle: true,
+        enableBarCollapsing: true,
+      });
+    } catch (error) {
+      console.error("KYC link creation failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -222,18 +236,13 @@ export default function UserInfoMobile() {
       <View className="flex-1 justify-evenly">
         <UserInfoHeader />
 
-        <UserInfoForm
-          fullName={fullName}
-          setFullName={setFullName}
-          email={email}
-          setEmail={setEmail}
-        />
+        <UserInfoForm control={control} errors={errors} />
 
         <UserInfoFooter
-          agreedToTerms={agreedToTerms}
-          setAgreedToTerms={setAgreedToTerms}
-          onContinue={handleContinue}
-          isFormValid={isFormValid()}
+          control={control}
+          errors={errors}
+          onContinue={handleSubmit(onSubmit)}
+          isValid={isValid}
           isLoading={isLoading}
         />
       </View>
