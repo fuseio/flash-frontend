@@ -20,6 +20,11 @@ export type PasskeyArgType = {
   credentialId: string;
 };
 
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface User {
   username: string
   safeAddress: Address
@@ -30,6 +35,7 @@ export interface User {
     credentialId: string,
   }
   isDeposited?: boolean;
+  tokens?: AuthTokens;
 }
 
 export interface BlockscoutTransaction {

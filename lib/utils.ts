@@ -1,10 +1,12 @@
-import { clsx, type ClassValue } from 'clsx';
+import { clsx, type ClassValue } from "clsx";
+import { Platform } from "react-native";
 import { twMerge } from 'tailwind-merge';
 import { Address, keccak256, toHex } from "viem";
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUserStore } from "@/store/useUserStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { refreshToken } from "./api";
-import { PasskeyCoordinates } from './types';
+import { AuthTokens, PasskeyCoordinates, User } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,8 +21,8 @@ export function eclipseUsername(username: string, start = 10) {
 }
 
 export function compactNumberFormat(number: number) {
-  return new Intl.NumberFormat('en-us', {
-    notation: 'compact',
+  return new Intl.NumberFormat("en-us", {
+    notation: "compact",
     maximumFractionDigits: 2,
   }).format(number);
 }
@@ -43,7 +45,7 @@ export const setGlobalLogoutHandler = (handler: () => void) => {
 
 export const withRefreshToken = async <T>(
   apiCall: () => Promise<T>,
-  { onError }: { onError?: () => void } = {},
+  { onError }: { onError?: () => void } = {}
 ): Promise<T | undefined> => {
   try {
     return await apiCall();
@@ -53,8 +55,19 @@ export const withRefreshToken = async <T>(
       throw error;
     }
     try {
-      await refreshToken();
-      return await apiCall();
+      const refreshResponse = await refreshToken();
+
+      if (refreshResponse.ok) {
+        // Only save new tokens on mobile platforms
+        // On web, we don't need to save new tokens
+        // because the browser will handle it
+        if (Platform.OS === "ios" || Platform.OS === "android") {
+          await saveNewTokens(refreshResponse);
+        }
+
+        // Retry original request with new access token
+        return await apiCall();
+      }
     } catch (refreshTokenError) {
       console.error(refreshTokenError);
       if (onError) {
@@ -66,10 +79,35 @@ export const withRefreshToken = async <T>(
   }
 };
 
+async function saveNewTokens(refreshResponse: Response) {
+  const refreshTokenResponse: { tokens: AuthTokens } =
+    await refreshResponse.json();
+
+  const newTokens = refreshTokenResponse.tokens;
+
+  // Update stored tokens
+  if (Platform.OS === "ios" || Platform.OS === "android") {
+    const { users, updateUser } = useUserStore.getState();
+    const currentUser = users.find((user: User) => user.selected);
+
+    if (!currentUser) throw new Error("No current user found");
+
+    if (newTokens.accessToken) {
+      updateUser({
+        ...currentUser,
+        tokens: {
+          accessToken: newTokens.accessToken,
+          refreshToken: newTokens.refreshToken,
+        },
+      });
+    }
+  }
+}
+
 // see: https://github.com/MasterKale/SimpleWebAuthn/blob/736ea0360953d7ce6a0b4390ce260d0bcab1e191/packages/browser/src/helpers/bufferToBase64URLString.ts
 export function bufferToBase64URLString(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  let str = '';
+  let str = "";
 
   for (const charCode of bytes) {
     str += String.fromCharCode(charCode);
@@ -77,7 +115,7 @@ export function bufferToBase64URLString(buffer: ArrayBuffer): string {
 
   const base64String = btoa(str);
 
-  return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return base64String.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
@@ -148,7 +186,7 @@ async function importLibs() {
 }
 
 export async function decodePublicKeyForReactNative(
-  publicKey: string,
+  publicKey: string
 ): Promise<PasskeyCoordinates> {
   const { p256, AsnParser, ECPublicKey } = await importLibs();
 
@@ -164,7 +202,7 @@ export async function decodePublicKeyForReactNative(
   if (isAsn1Encoded) {
     const asn1ParsedKey = AsnParser.parse(
       publicKeyBytes.buffer as ArrayBuffer,
-      ECPublicKey,
+      ECPublicKey
     );
 
     publicKeyBytes = new Uint8Array(asn1ParsedKey.publicKey);
@@ -188,7 +226,7 @@ export async function decodePublicKeyForReactNative(
 }
 
 export async function decodePublicKey(
-  response: AuthenticatorResponse,
+  response: AuthenticatorResponse
 ): Promise<PasskeyCoordinates> {
   const publicKeyAuthenticatorResponse =
     response as AuthenticatorAttestationResponse;
@@ -196,7 +234,7 @@ export async function decodePublicKey(
 
   if (!publicKey) {
     throw new Error(
-      "Failed to generate passkey coordinates. getPublicKey() failed",
+      "Failed to generate passkey coordinates. getPublicKey() failed"
     );
   }
 
@@ -216,7 +254,7 @@ export async function decodePublicKey(
 }
 
 export async function decodePublicKeyForWeb(
-  publicKey: string | ArrayBuffer,
+  publicKey: string | ArrayBuffer
 ): Promise<PasskeyCoordinates> {
   const algorithm = {
     name: "ECDSA",
@@ -232,7 +270,7 @@ export async function decodePublicKeyForWeb(
     keyBuffer,
     algorithm,
     true,
-    ["verify"],
+    ["verify"]
   );
 
   const { x, y } = await crypto.subtle.exportKey("jwk", key);
@@ -241,7 +279,7 @@ export async function decodePublicKeyForWeb(
 
   if (!isValidCoordinates) {
     throw new Error(
-      "Failed to generate passkey Coordinates. crypto.subtle.exportKey() failed",
+      "Failed to generate passkey Coordinates. crypto.subtle.exportKey() failed"
     );
   }
 
@@ -251,7 +289,11 @@ export async function decodePublicKeyForWeb(
   };
 }
 
-export const getNonce = async ({ appId }: { appId: string }): Promise<bigint> => {
+export const getNonce = async ({
+  appId,
+}: {
+  appId: string;
+}): Promise<bigint> => {
   const accountNonce = await AsyncStorage.getItem("accountNonce");
   const nonce = parseInt(accountNonce || "0");
   const encodedNonce = keccak256(toHex(appId + nonce.toString()));
