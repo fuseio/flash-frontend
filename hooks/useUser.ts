@@ -75,7 +75,7 @@ const useUser = (): UseUserReturn => {
           ...user,
           isDeposited: true,
         });
-        router.replace(path.DASHBOARD);
+        router.replace(path.HOME);
         return;
       }
     } catch (error) {
