@@ -59,6 +59,7 @@ export const formatTransactions = async (
         timestamp: internalTransaction.depositTimestamp,
         amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
         status,
+        hash: internalTransaction.transactionHash,
       };
     } catch (error) {
       console.error('Failed to fetch LZ transaction:', error);

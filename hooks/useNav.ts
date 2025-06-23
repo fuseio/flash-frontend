@@ -39,7 +39,7 @@ const useNav = () => {
   const hasDeposited = user?.isDeposited;
 
   const menuItems = useMemo<MenuItem[]>(() => {
-    const coreMenuItems = [home, savings];
+    const coreMenuItems = [savings]; // [home, savings];
     return [...coreMenuItems, ...defaultMenuItems];
   }, [hasDeposited]);
 

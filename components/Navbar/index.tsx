@@ -1,10 +1,9 @@
-import { Image } from "expo-image"
-import { Link } from "expo-router"
-import { SafeAreaView, View } from "react-native"
+import { Image } from "expo-image";
+import { Link } from "expo-router";
+import { SafeAreaView, View } from "react-native";
 
-import AccountCenterModal from "../AccountCenter/AccountCenterModal";
 import { path } from "@/constants/path";
-import { NavMenu } from "./NavMenu";
+import AccountCenterModal from "../AccountCenter/AccountCenterModal";
 
 const Navbar = () => {
   return (
@@ -25,7 +24,7 @@ const Navbar = () => {
             className="hidden md:block"
           />
         </Link>
-        <NavMenu />
+        {/* <NavMenu /> */}
         <View className="w-32">
           <AccountCenterModal />
         </View>

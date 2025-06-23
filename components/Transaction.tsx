@@ -1,8 +1,7 @@
-import { Image } from "expo-image";
-import { View } from "react-native";
-
 import { LayerZeroTransactionStatus } from "@/lib/types";
 import { cn, formatNumber } from "@/lib/utils";
+import { Image } from "expo-image";
+import { Linking, View } from "react-native";
 import { Text } from "./ui/text";
 
 const Transaction = ({
@@ -10,11 +9,13 @@ const Transaction = ({
   timestamp,
   amount,
   status,
+  hash,
 }: {
   title: string;
   timestamp: string;
   amount: number;
   status: LayerZeroTransactionStatus;
+  hash: string;
 }) => {
   const isSuccess = status === LayerZeroTransactionStatus.DELIVERED;
   const isPending =
@@ -57,7 +58,12 @@ const Transaction = ({
             statusColor
           )}
         >
-          <Text className="text-sm text-primary-foreground font-medium">
+          <Text
+            className="text-sm text-primary-foreground font-medium"
+            onPress={() => {
+              Linking.openURL(`https://layerzeroscan.com/tx/${hash}`);
+            }}
+          >
             {statusText}
           </Text>
         </View>

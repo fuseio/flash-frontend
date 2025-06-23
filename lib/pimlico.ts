@@ -1,5 +1,5 @@
 import ERC20_ABI from "@/lib/abis/ERC20";
-import { createPimlicoClient } from "permissionless/clients/pimlico";
+import { createPimlicoClient } from "@getclave/permissionless/clients/pimlico";
 import { Address, encodeFunctionData, getAddress } from "viem";
 import { entryPoint06Address } from "viem/account-abstraction";
 import { mainnet } from "viem/chains";
@@ -62,7 +62,7 @@ export const estimateGas = async () => {
 
   const userOperationGasPrice = await getUserOperationGasPrice();
 
-  const userOperationMaxGas = 1260233n;
+  const userOperationMaxGas = BigInt(1260233);
 
   const userOperationMaxCost =
     userOperationMaxGas * userOperationGasPrice.standard.maxFeePerGas;
