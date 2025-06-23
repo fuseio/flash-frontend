@@ -6,11 +6,12 @@ import Head from "expo-router/head";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { WagmiProvider } from "wagmi";
+import { ApolloProvider } from "@apollo/client";
+import { AppKit } from "@reown/appkit-wagmi-react-native";
 
 import { infoClient } from "@/graphql/clients";
 import { toastProps } from "@/lib/toast";
-import { config } from "@/lib/wagmi";
-import { ApolloProvider } from "@apollo/client";
+import { wagmiConfig } from "@/lib/wagmi";
 
 // see: https://solana.stackexchange.com/a/6244
 global.Buffer = require("buffer").Buffer;
@@ -24,7 +25,7 @@ const queryClient = new QueryClient();
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <WagmiProvider config={config}>
+      <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
           <ApolloProvider client={infoClient}>
             <Head>
@@ -53,6 +54,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
+            <AppKit />
           </ApolloProvider>
         </QueryClientProvider>
       </WagmiProvider>

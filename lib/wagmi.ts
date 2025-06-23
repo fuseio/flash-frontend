@@ -1,8 +1,12 @@
 import { createClient, createPublicClient } from 'viem';
 import { createConfig, http } from 'wagmi';
 import { Chain, fuse, mainnet } from 'wagmi/chains';
-import { injected } from 'wagmi/connectors';
-import { EXPO_PUBLIC_ETHEREUM_API_KEY } from './config';
+import {
+  createAppKit,
+  defaultWagmiConfig
+} from "@reown/appkit-wagmi-react-native";
+
+import { EXPO_PUBLIC_ETHEREUM_API_KEY, EXPO_PUBLIC_REOWN_PROJECT_ID } from './config';
 
 const chains: readonly [Chain, ...Chain[]] = [
   fuse,
@@ -21,9 +25,6 @@ const transports: Record<number, ReturnType<typeof http>> = {
 
 export const config = createConfig({
   chains,
-  connectors: [
-    injected(),
-  ],
   multiInjectedProviderDiscovery: false,
   ssr: true,
   client({ chain }) {
@@ -57,3 +58,22 @@ export const evmNetworks = chains.map(chain => ({
   ...network,
   blockExplorerUrls: network.blockExplorerUrls.filter((url): url is string => !!url)
 }));
+
+const metadata = {
+  name: "Solid",
+  description: "Your crypto savings app",
+  url: __DEV__ ? "http://localhost:8081" : "https://solid.xyz",
+  icons: ["https://avatars.githubusercontent.com/u/179229932"],
+  redirect: {
+    native: "solid://",
+    universal: "solid.xyz",
+  },
+};
+
+export const wagmiConfig = defaultWagmiConfig({ chains, projectId: EXPO_PUBLIC_REOWN_PROJECT_ID, metadata });
+
+createAppKit({
+  projectId: EXPO_PUBLIC_REOWN_PROJECT_ID,
+  wagmiConfig,
+  defaultChain: mainnet
+});

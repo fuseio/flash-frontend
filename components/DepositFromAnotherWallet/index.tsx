@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useAppKit } from "@reown/appkit-wagmi-react-native"
 import { Image } from "expo-image"
 import { ChevronRight, Fuel, Plus, Wallet } from "lucide-react-native"
 import { useEffect, useMemo } from "react"
@@ -7,10 +8,8 @@ import { ActivityIndicator, Pressable, TextInput, View } from "react-native"
 import { formatUnits } from "viem"
 import { useWaitForTransactionReceipt } from "wagmi"
 import { z } from "zod"
-
 import {
   useAccount,
-  useConnect
 } from "wagmi"
 
 import { Button } from "@/components/ui/button"
@@ -224,12 +223,10 @@ function DepositToVaultForm({ setOpen }: { setOpen: (open: boolean) => void }) {
 }
 
 const DepositOptions = () => {
-  const { connectors, connect } = useConnect()
+  const { open } = useAppKit();
 
-  const handleConnectWallet = () => {
-    if (connectors.length > 0) {
-      connect({ connector: connectors[0] })
-    }
+  const handleConnectWallet = async () => {
+    await open({ view: 'Connect' })
   }
 
   const handleDebitCreditCard = () => {
@@ -239,21 +236,16 @@ const DepositOptions = () => {
 
   return (
     <View className="gap-y-4">
-      {
-        connectors.length > 0 && connectors.map((connector) => (
-          <Pressable
-            key={connector.id}
-            className="flex-row items-center justify-between rounded-2xl p-4 bg-[#2F2F2F]"
-            onPress={() => connect({ connector })}
-          >
-            <View className="flex-row items-center gap-x-3">
-              <Wallet color="#fff" size={24} />
-              <Text className="text-base font-semibold">Connect Wallet</Text>
-            </View>
-            <ChevronRight color="#A1A1AA" size={20} />
-          </Pressable>
-        ))
-      }
+      <Pressable
+        className="flex-row items-center justify-between rounded-2xl p-4 bg-[#2F2F2F]"
+        onPress={handleConnectWallet}
+      >
+        <View className="flex-row items-center gap-x-3">
+          <Wallet color="#fff" size={24} />
+          <Text className="text-base font-semibold">Connect Wallet</Text>
+        </View>
+        <ChevronRight color="#A1A1AA" size={20} />
+      </Pressable>
       {/* <Pressable
         disabled
         className="disabled:opacity-50 disabled:cursor-not-allowed flex-row items-center justify-between rounded-2xl p-4 bg-[#2F2F2F]"
