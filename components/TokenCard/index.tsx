@@ -14,7 +14,7 @@ interface TokenCardProps {
 
 const TokenCard = ({ amount, onAmountChange, balance, price }: TokenCardProps) => {
   return (
-    <View className="flex flex-col gap-2 bg-card border border-border rounded-xl md:rounded-twice p-6 md:p-10">
+    <View className="flex flex-col gap-2 bg-card rounded-xl md:rounded-twice p-6 md:p-10">
       <Text className="text-lg font-medium opacity-40">
         Amount to deposit
       </Text>
@@ -22,7 +22,7 @@ const TokenCard = ({ amount, onAmountChange, balance, price }: TokenCardProps) =
         <TokenSelectorModal />
         <View className="flex flex-col flex-1 items-end">
           <TextInput
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             className="w-full text-right text-primary text-2xl md:text-5xl font-semibold web:focus:outline-none"
             value={amount}
             placeholder="0"

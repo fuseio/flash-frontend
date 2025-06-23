@@ -5,14 +5,14 @@ import { executeTransactions } from "@/lib/execute";
 import { Status } from "@/lib/types";
 import { Address } from "abitype";
 import { useState } from "react";
-import { maxUint256 } from "viem";
+import { maxUint256, TransactionReceipt } from "viem";
 import { mainnet } from "viem/chains";
 import { encodeFunctionData, parseUnits } from "viem/utils";
 import { useReadContract } from "wagmi";
 import useUser from "./useUser";
 
 type WithdrawResult = {
-  withdraw: (amount: string) => Promise<void>;
+  withdraw: (amount: string) => Promise<TransactionReceipt>;
   withdrawStatus: Status;
   error: string | null;
 };
@@ -21,17 +21,6 @@ const useWithdraw = (): WithdrawResult => {
   const { user, safeAA } = useUser();
   const [withdrawStatus, setWithdrawStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string | null>(null);
-
-  const { data: balance } = useReadContract({
-    abi: ERC20_ABI,
-    address: ADDRESSES.ethereum.vault,
-    functionName: "balanceOf",
-    args: [user?.safeAddress as Address],
-    chainId: mainnet.id,
-    query: {
-      enabled: !!user?.safeAddress,
-    },
-  });
 
   const { data: allowance } = useReadContract({
     abi: ERC20_ABI,
@@ -54,9 +43,6 @@ const useWithdraw = (): WithdrawResult => {
       setError(null);
 
       const amountWei = parseUnits(amount, 6);
-      if (balance && balance < amountWei) {
-        throw new Error("Insufficient soUSD balance");
-      }
 
       let transactions = [];
 
@@ -85,7 +71,7 @@ const useWithdraw = (): WithdrawResult => {
 
       const smartAccountClient = await safeAA(user.passkey, mainnet);
 
-      await executeTransactions(
+      const transaction = await executeTransactions(
         smartAccountClient,
         user.passkey,
         transactions,
@@ -94,10 +80,12 @@ const useWithdraw = (): WithdrawResult => {
       );
 
       setWithdrawStatus(Status.SUCCESS);
+      return transaction;
     } catch (error) {
       console.error(error);
       setWithdrawStatus(Status.ERROR);
       setError(error instanceof Error ? error.message : "Unknown error");
+      throw error;
     }
   };
 

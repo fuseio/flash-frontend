@@ -29,9 +29,22 @@ import {
 } from "viem/account-abstraction";
 import { fetchIsDeposited } from "./useAnalytics";
 
-const useUser = () => {
+interface UseUserReturn {
+  user: User | undefined;
+  handleSignup: (username: string) => Promise<void>;
+  handleLogin: () => Promise<void>;
+  handleDummyLogin: () => Promise<void>;
+  handleSelectUser: (username: string) => void;
+  handleLogout: () => void;
+  handleRemoveUsers: () => void;
+  safeAA: (passkey: PasskeyArgType, chain: Chain) => Promise<any>;
+  checkBalance: (user: User) => Promise<void>;
+}
+
+const useUser = (): UseUserReturn => {
   const router = useRouter();
   const queryClient = useQueryClient();
+
   const {
     users,
     storeUser,
@@ -223,7 +236,7 @@ const useUser = () => {
       safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
       erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
       attesters: [
-        RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
+        RHINESTONE_ATTESTER_ADDRESS,
       ],
       attestersThreshold: 1,
       validators: [
@@ -233,7 +246,8 @@ const useUser = () => {
         },
       ],
     });
-    const _smartAccountClient = createSmartAccountClient({
+
+    return createSmartAccountClient({
       account: safeAccount,
       chain: chain,
       paymaster: pimlicoClient(chain.id),
@@ -243,9 +257,7 @@ const useUser = () => {
       },
       bundlerTransport: http(USER.pimlicoUrl(chain.id)),
     }).extend(erc7579Actions());
-
-    return _smartAccountClient
-  }, [])
+  }, []);
 
   useEffect(() => {
     setGlobalLogoutHandler(handleLogout);
@@ -259,7 +271,8 @@ const useUser = () => {
     handleSelectUser,
     handleLogout,
     handleRemoveUsers,
-    safeAA
+    safeAA,
+    checkBalance,
   };
 };
 

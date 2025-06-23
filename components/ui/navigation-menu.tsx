@@ -1,5 +1,5 @@
-import { Pressable, View, type PressableProps } from 'react-native';
 import * as React from 'react';
+import { Pressable, View, type PressableProps } from 'react-native';
 
 import { TextClassContext } from '@/components/ui/text';
 import { cn } from '@/lib/utils';
@@ -57,20 +57,20 @@ const NavigationMenuItem = React.forwardRef<View, NavigationMenuItemProps>(
 NavigationMenuItem.displayName = 'NavigationMenuItem';
 
 const navigationMenuLinkClassNames = {
-  pressable: 'group inline-flex h-8 w-max items-center justify-center rounded-full px-4 py-2 transition-colors hover:bg-primary focus:bg-primary focus:outline-none disabled:pointer-events-none disabled:opacity-50',
-  text: "text-lg font-semibold text-foreground group-hover:text-primary-foreground group-focus:text-primary-foreground",
+  pressable: 'group inline-flex h-8 w-max items-center justify-center rounded-full px-5 py-5 transition-colors hover:bg-button-secondary focus:bg-button-secondary focus:outline-none disabled:pointer-events-none disabled:opacity-50',
+  text: "text-lg font-semibold",
 }
 
 const NavigationMenuLink = React.forwardRef<React.ElementRef<typeof Pressable>, NavigationMenuLinkProps>(
   ({ onPress, className, active, children }, ref) => {
     const pressableClass = cn(
       navigationMenuLinkClassNames.pressable,
-      active && "bg-primary"
+      active && "bg-button-secondary"
     )
 
     const textClass = cn(
       navigationMenuLinkClassNames.text,
-      active && "text-primary-foreground"
+      // active && "text-primary-foreground"
     )
 
     return (

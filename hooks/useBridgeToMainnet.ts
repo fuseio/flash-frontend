@@ -6,18 +6,19 @@ import { executeTransactions } from "@/lib/execute";
 import { Status } from "@/lib/types";
 import { Address } from "abitype";
 import { useState } from "react";
+import { TransactionReceipt } from "viem";
 import { fuse } from "viem/chains";
 import {
-    encodeAbiParameters,
-    encodeFunctionData,
-    parseAbiParameters,
-    parseUnits,
+  encodeAbiParameters,
+  encodeFunctionData,
+  parseAbiParameters,
+  parseUnits,
 } from "viem/utils";
 import { useReadContract } from "wagmi";
 import useUser from "./useUser";
 
 type BridgeResult = {
-  bridge: (amount: string) => Promise<void>;
+  bridge: (amount: string) => Promise<TransactionReceipt>;
   bridgeStatus: Status;
   error: string | null;
 };
@@ -61,21 +62,6 @@ const useBridgeToMainnet = (): BridgeResult => {
       setError(null);
 
       const amountWei = parseUnits(amount, 6);
-      if (balance && balance < amountWei) {
-        throw new Error("Insufficient soUSD balance");
-      }
-
-      let transactions = [];
-
-      transactions.push({
-        to: ADDRESSES.fuse.vault,
-        data: encodeFunctionData({
-          abi: ERC20_ABI,
-          functionName: "transfer",
-          args: [ADDRESSES.fuse.bridgePaymasterAddress, amountWei],
-        }),
-        value: 0n,
-      });
 
       const callData = encodeFunctionData({
         abi: ETHEREUM_TELLER_ABI,
@@ -89,20 +75,30 @@ const useBridgeToMainnet = (): BridgeResult => {
         ],
       });
 
-      // Add deposit transaction
-      transactions.push({
-        to: ADDRESSES.fuse.bridgePaymasterAddress,
-        data: encodeFunctionData({
-          abi: BridgePayamster_ABI,
-          functionName: "callWithValue",
-          args: [ADDRESSES.fuse.teller, callData, fee ? fee : 0n],
-        }),
-        value: 0n,
-      });
+      const transactions = [
+        {
+          to: ADDRESSES.fuse.vault,
+          data: encodeFunctionData({
+            abi: ERC20_ABI,
+            functionName: "transfer",
+            args: [ADDRESSES.fuse.bridgePaymasterAddress, amountWei],
+          }),
+          value: 0n,
+        },
+        {
+          to: ADDRESSES.fuse.bridgePaymasterAddress,
+          data: encodeFunctionData({
+            abi: BridgePayamster_ABI,
+            functionName: "callWithValue",
+            args: [ADDRESSES.fuse.teller, callData, fee ? fee : 0n],
+          }),
+          value: 0n,
+        },
+      ];
 
       const smartAccountClient = await safeAA(user.passkey, fuse);
 
-      await executeTransactions(
+      const transaction = await executeTransactions(
         smartAccountClient,
         user.passkey,
         transactions,
@@ -111,10 +107,12 @@ const useBridgeToMainnet = (): BridgeResult => {
       );
 
       setBridgeStatus(Status.SUCCESS);
+      return transaction;
     } catch (error) {
       console.error(error);
       setBridgeStatus(Status.ERROR);
       setError(error instanceof Error ? error.message : "Unknown error");
+      throw error;
     }
   };
 

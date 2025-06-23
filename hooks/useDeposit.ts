@@ -4,6 +4,7 @@ import {
   encodeFunctionData,
   parseAbiParameters,
   parseUnits,
+  TransactionReceipt,
   type Address
 } from "viem";
 import { mainnet } from "viem/chains";
@@ -22,7 +23,7 @@ type DepositResult = {
   allowance: bigint | undefined;
   balance: bigint | undefined;
   approve: (amount: string) => Promise<void>;
-  deposit: (amount: string) => Promise<void>;
+  deposit: (amount: string) => Promise<TransactionReceipt>;
   approveStatus: Status;
   depositStatus: Status;
   error: string | null;
@@ -81,9 +82,6 @@ const useDeposit = (): DepositResult => {
       setError(null);
 
       const amountWei = parseUnits(amount, 6);
-      if (balance && balance < amountWei) {
-        throw new Error("Insufficient USDC balance");
-      }
 
       const approveTransaction = {
         to: ADDRESSES.ethereum.usdc,
@@ -124,21 +122,6 @@ const useDeposit = (): DepositResult => {
       setError(null);
 
       const amountWei = parseUnits(amount, 6);
-      if (balance && balance < amountWei) {
-        throw new Error("Insufficient USDC balance");
-      }
-
-      let transactions = [];
-
-      transactions.push({
-        to: ADDRESSES.ethereum.usdc,
-        data: encodeFunctionData({
-          abi: ERC20_ABI,
-          functionName: "transfer",
-          args: [ADDRESSES.ethereum.bridgePaymasterAddress, amountWei],
-        }),
-        value: 0n,
-      });
 
       const callData = encodeFunctionData({
         abi: ETHEREUM_TELLER_ABI,
@@ -154,20 +137,30 @@ const useDeposit = (): DepositResult => {
         ],
       });
 
-      // Add deposit transaction
-      transactions.push({
-        to: ADDRESSES.ethereum.bridgePaymasterAddress,
-        data: encodeFunctionData({
-          abi: BridgePayamster_ABI,
-          functionName: "callWithValue",
-          args: [ADDRESSES.ethereum.teller, callData, fee ? fee : 0n],
-        }),
-        value: 0n,
-      });
+      const transactions = [
+        {
+          to: ADDRESSES.ethereum.usdc,
+          data: encodeFunctionData({
+            abi: ERC20_ABI,
+            functionName: "transfer",
+            args: [ADDRESSES.ethereum.bridgePaymasterAddress, amountWei],
+          }),
+          value: 0n,
+        },
+        {
+          to: ADDRESSES.ethereum.bridgePaymasterAddress,
+          data: encodeFunctionData({
+            abi: BridgePayamster_ABI,
+            functionName: "callWithValue",
+            args: [ADDRESSES.ethereum.teller, callData, fee ? fee : 0n],
+          }),
+          value: 0n,
+        }
+      ];
 
       const smartAccountClient = await safeAA(user.passkey, mainnet);
 
-      await executeTransactions(
+      const transaction = await executeTransactions(
         smartAccountClient,
         user.passkey,
         transactions,
@@ -180,10 +173,12 @@ const useDeposit = (): DepositResult => {
         isDeposited: true,
       });
       setDepositStatus(Status.SUCCESS);
+      return transaction;
     } catch (error) {
       console.error(error);
       setDepositStatus(Status.ERROR);
       setError(error instanceof Error ? error.message : "Unknown error");
+      throw error;
     }
   };
 

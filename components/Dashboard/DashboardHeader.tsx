@@ -1,11 +1,12 @@
-import { Link } from "expo-router";
 import { View } from "react-native";
 
-import { Text } from "../ui/text";
-import { path } from "@/constants/path";
 import { buttonVariants } from "../ui/button";
-import Deposit from "@/assets/images/deposit";
+import { Text } from "../ui/text";
 import WithdrawModal from "../Withdraw/WithdrawModal";
+
+import { path } from "@/constants/path";
+import { Link } from "expo-router";
+import { Plus } from "lucide-react-native";
 
 const DashboardHeader = () => {
   return (
@@ -19,9 +20,11 @@ const DashboardHeader = () => {
         </Text>
       </View>
       <View className="flex-row items-center gap-5 h-20">
-        <Link href={path.DEPOSIT} className={buttonVariants({ className: "flex-col items-center gap-3 w-28 h-full rounded-xl md:rounded-twice" })}>
-          <Deposit className="size-6" />
-          <Text className="text-primary-foreground font-semibold">Deposit</Text>
+        <Link href={path.DEPOSIT} className={buttonVariants({ variant: "brand", className: "h-12 rounded-xl" })}>
+          <View className="flex-row items-center gap-2">
+            <Plus color="black" />
+            <Text className="text-primary-foreground font-bold hidden md:block">Add funds</Text>
+          </View>
         </Link>
         <WithdrawModal />
       </View>

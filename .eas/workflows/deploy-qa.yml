@@ -1,0 +1,13 @@
+name: Deploy QA
+
+on:
+  push:
+    branches: ['qa']
+
+jobs:
+  deploy:
+    type: deploy
+    name: Deploy QA
+    environment: preview
+    params:
+      alias: qa

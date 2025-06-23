@@ -24,15 +24,15 @@ const TokenSelectorModal = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="text-primary-foreground h-12 gap-1 rounded-full">
+        <Button className="bg-[#404040] h-12 gap-1 rounded-full text-white">
           <Image source={TOKEN_IMAGES[selectedToken.imageId]} alt={selectedToken.symbol} style={{ width: 32, height: 32 }} />
-          <Text className="text-lg font-bold">
+          <Text className="text-lg font-bold text-white">
             {selectedToken.symbol}
           </Text>
           <ChevronDown />
         </Button>
       </DialogTrigger>
-      <DialogContent className="md:gap-8 md:max-w-sm">
+      <DialogContent className="md:gap-8 md:max-w-sm bg-modal-background">
         <View className="gap-2 md:gap-4">
           <DialogTitle>Select token</DialogTitle>
           <TokenSelector tokens={TOKEN_MAP[1]} setSelectedToken={setSelectedToken} setOpen={setOpen} />

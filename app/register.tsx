@@ -1,23 +1,76 @@
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Image } from 'expo-image'
 import { Link } from 'expo-router'
-import { useState } from 'react'
+import { useEffect } from 'react'
+import { Controller, useForm } from "react-hook-form"
 import { ActivityIndicator, Platform, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { z } from "zod"
 
 import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
 import useUser from '@/hooks/useUser'
 import { Status } from '@/lib/types'
+import { cn } from "@/lib/utils"
 import { useUserStore } from '@/store/useUserStore'
 
+const registerSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must be less than 20 characters")
+    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores")
+    .refine(value => !value.includes(" "), "Username cannot contain spaces")
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
 export default function Register() {
-  const [username, setUsername] = useState('')
   const { handleSignup, handleLogin, handleDummyLogin } = useUser()
   const { signupInfo, loginInfo } = useUserStore()
 
-  const handleSignupForm = () => {
-    handleSignup(username)
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+    watch,
+    reset,
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onChange",
+    defaultValues: {
+      username: "",
+    },
+  });
+
+  const watchedUsername = watch("username");
+
+  // Reset form after successful signup
+  useEffect(() => {
+    if (signupInfo.status === Status.SUCCESS) {
+      reset();
+    }
+  }, [signupInfo.status, reset]);
+
+  const handleSignupForm = (data: RegisterFormData) => {
+    handleSignup(data.username)
   }
+
+  const getSignupButtonText = () => {
+    if (errors.username) return errors.username.message;
+    if (signupInfo.status === Status.ERROR) return signupInfo.message || 'Error creating account';
+    if (signupInfo.status === Status.PENDING) return 'Creating';
+    if (!isValid || !watchedUsername) return 'Enter a username';
+    return 'Create Account';
+  };
+
+  const isSignupDisabled = () => {
+    return (
+      signupInfo.status === Status.PENDING ||
+      !isValid ||
+      !watchedUsername
+    );
+  };
 
   return (
     <SafeAreaView className="bg-background text-foreground flex-1">
@@ -40,26 +93,28 @@ export default function Register() {
 
           <View className='w-full flex-col gap-8'>
             <View className='flex-col gap-5'>
-              <TextInput
-                id="username"
-                value={username}
-                onChangeText={setUsername}
-                placeholder='Choose a username'
-                className="h-14 px-6 rounded-xl border border-border text-lg text-foreground font-semibold placeholder:text-muted-foreground"
+              <Controller
+                control={control}
+                name="username"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    id="username"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder='Choose a username'
+                    className={cn('h-14 px-6 rounded-xl border text-lg font-semibold placeholder:text-muted-foreground', errors.username ? 'border-red-500' : 'border-border')}
+                  />
+                )}
               />
               <Button
                 variant="brand"
-                onPress={handleSignupForm}
-                disabled={signupInfo.status === Status.PENDING || !username}
+                onPress={handleSubmit(handleSignupForm)}
+                disabled={isSignupDisabled()}
                 className="rounded-xl h-14"
               >
                 <Text className="text-lg font-semibold">
-                  {signupInfo.status === Status.ERROR ?
-                    signupInfo.message || 'Error creating account' :
-                    signupInfo.status === Status.PENDING ?
-                      'Creating' :
-                      'Create Account'
-                  }
+                  {getSignupButtonText()}
                 </Text>
                 {signupInfo.status === Status.PENDING && (
                   <ActivityIndicator color="gray" />
@@ -107,7 +162,7 @@ export default function Register() {
           </View>
           <Text className="text-sm text-muted-foreground">
             Your Solid Account is secured with a passkey - a safer replacement for passwords.{' '}
-            <Link href="/" className='underline hover:opacity-70'>Learn more</Link>
+            <Link href="https://solid-3.gitbook.io/solid.xyz-docs" target="_blank" className='underline hover:opacity-70'>Learn more</Link>
           </Text>
         </View>
       </View>

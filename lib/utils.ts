@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { Platform } from "react-native";
-import { twMerge } from "tailwind-merge";
+import { twMerge } from 'tailwind-merge';
 import { Address, keccak256, toHex } from "viem";
 
 import { useUserStore } from "@/store/useUserStore";
@@ -27,9 +27,9 @@ export function compactNumberFormat(number: number) {
   }).format(number);
 }
 
-export function formatNumber(number: number) {
-  return new Intl.NumberFormat("en-us", {
-    maximumFractionDigits: 2,
+export function formatNumber(number: number, maximumFractionDigits = 2) {
+  return new Intl.NumberFormat('en-us', {
+    maximumFractionDigits,
   }).format(number);
 }
 

@@ -1,4 +1,4 @@
-import { platformSelect } from "nativewind/theme"
+import { platformSelect } from "nativewind/theme";
 
 const { hairlineWidth } = require('nativewind/theme');
 
@@ -58,6 +58,28 @@ module.exports = {
         brand: {
           DEFAULT: 'hsl(var(--brand))',
           foreground: 'hsl(var(--brand-foreground))',
+        },
+        points: {
+          DEFAULT: 'hsl(var(--points))',
+        },
+        'qr-background': {
+          DEFAULT: 'hsl(var(--qr-background))',
+          foreground: 'hsl(var(--qr-foreground))',
+        },
+        'modal-background': {
+          DEFAULT: 'hsl(var(--modal-background))',
+        },
+        'button-secondary': {
+          DEFAULT: 'hsl(var(--button-secondary))',
+          foreground: 'hsl(var(--button-secondary-foreground))',
+        },
+        'button-earning': {
+          DEFAULT: 'hsl(var(--button-earning))',
+          foreground: 'hsl(var(--button-earning-foreground))',
+        },
+        'button-dark': {
+          DEFAULT: 'hsl(var(--button-dark))',
+          foreground: 'hsl(var(--button-dark-foreground))',
         },
       },
       borderWidth: {

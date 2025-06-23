@@ -1,5 +1,3 @@
-import { getAccountNonce } from "permissionless/actions";
-import { Chain } from "viem";
 import { PasskeyArgType } from "@/lib/types";
 import { publicClient } from "@/lib/wagmi";
 import {
@@ -10,6 +8,8 @@ import {
   WEBAUTHN_VALIDATOR_ADDRESS,
 } from "@rhinestone/module-sdk";
 import { sign } from "ox/WebAuthnP256";
+import { getAccountNonce } from "permissionless/actions";
+import { Chain } from "viem";
 import {
   entryPoint07Address,
   getUserOperationHash,
@@ -64,6 +64,7 @@ export const executeTransactions = async (
   const { metadata: webauthn, signature } = await sign({
     credentialId: passkey.credentialId,
     challenge: userOpHashToSign,
+    rpId: __DEV__ ? "localhost" : 'solid.xyz',
   });
 
   const encodedSignature = getWebauthnValidatorSignature({

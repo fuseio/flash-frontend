@@ -1,22 +1,20 @@
 import { Tabs } from 'expo-router';
-import { CreditCard, House, LayoutDashboard, Leaf, Wallet } from 'lucide-react-native';
+import { CreditCard, House, LayoutDashboard, Leaf, Plus } from 'lucide-react-native';
 import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useDimension } from '@/hooks/useDimension';
 import Navbar from '@/components/Navbar';
+import TabBarBackground from '@/components/ui/TabBarBackground';
 import { path } from '@/constants/path';
-import useNav from '@/hooks/useNav';
+import { useDimension } from '@/hooks/useDimension';
 
 export default function TabLayout() {
-  const { isDashboard } = useNav();
   const { isDesktop } = useDimension();
 
   return (
     <>
-      {isDesktop ? <Navbar /> : null}
+      {isDesktop && <Navbar />}
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "white",
@@ -43,24 +41,25 @@ export default function TabLayout() {
             title: 'Home',
             headerShown: false,
             tabBarIcon: ({ color }) => <House size={28} color={color} />,
-            href: isDashboard ? null : path.HOME,
+            href: path.HOME,
           }}
         />
         <Tabs.Screen
-          name="dashboard"
+          name="savings"
           options={{
-            title: 'Dashboard',
+            title: 'Savings',
             headerShown: false,
             tabBarIcon: ({ color }) => <LayoutDashboard size={28} color={color} />,
-            href: isDashboard ? path.DASHBOARD : null,
+            href: path.SAVINGS,
           }}
         />
+        
         <Tabs.Screen
           name="deposit"
           options={{
             title: 'Deposit',
             headerShown: false,
-            tabBarIcon: ({ color }) => <Wallet size={28} color={color} />,
+            tabBarIcon: ({ color }) => <Plus size={28} color={color} />,
           }}
         />
         <Tabs.Screen

@@ -1,90 +1,103 @@
-import { QueryClient, useQuery } from "@tanstack/react-query"
-import { formatUnits } from "viem"
+import { infoClient } from "@/graphql/clients";
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import { formatUnits } from "viem";
 
-import { fetchInternalTransactions, fetchLayerZeroBridgeTransactions, fetchTokenTransfer, fetchTotalAPY, fetchTransactionTokenTransfers } from "@/lib/api"
-import { ADDRESSES } from "@/lib/config"
-import { Transaction } from "@/lib/types"
+import {
+  GetUserTransactionsDocument,
+  GetUserTransactionsQuery
+} from "@/graphql/generated/user-info";
+import {
+  fetchLayerZeroBridgeTransactions,
+  fetchTokenTransfer,
+  fetchTotalAPY
+} from "@/lib/api";
+import { LayerZeroTransactionStatus, Transaction } from "@/lib/types";
 
-const ANALYTICS = "analytics"
+const ANALYTICS = "analytics";
 
 export const useTotalAPY = () => {
   return useQuery({
     queryKey: [ANALYTICS, "totalAPY"],
     queryFn: fetchTotalAPY,
-    refetchOnWindowFocus: false
-  })
-}
+    refetchOnWindowFocus: false,
+  });
+};
 
 export const useLatestTokenTransfer = (address: string, token: string) => {
   return useQuery({
     queryKey: [ANALYTICS, "latestTokenTransfer", address, token],
     queryFn: async () => {
-      if (!address) return 0
-      const response = await fetchTokenTransfer(address, token)
+      if (!address) return 0;
+      const response = await fetchTokenTransfer(address, token);
       const latest = response.items.reduce((prev, curr) =>
         new Date(curr.timestamp) > new Date(prev.timestamp) ? curr : prev
-      )
-      return new Date(latest.timestamp).getTime()
+      );
+      return new Date(latest.timestamp).getTime();
     },
     enabled: !!address,
-    refetchOnWindowFocus: false
-  })
-}
+    refetchOnWindowFocus: false,
+  });
+};
 
-export const useTransactions = (
-  safeAddress: string,
-) => {
-  return useQuery({
-    queryKey: [ANALYTICS, "transactions", safeAddress],
-    queryFn: async () => {
-      const internalTransactions = await fetchInternalTransactions(safeAddress)
-      const transactions: Transaction[] = []
+export const formatTransactions = async (
+  transactions: GetUserTransactionsQuery | undefined
+): Promise<Transaction[]> => {
+  if (!transactions?.deposits?.length) {
+    return [];
+  }
 
-      internalTransactions.items.forEach(async (internalTransaction) => {
-        if (internalTransaction.to.hash !== ADDRESSES.ethereum.teller) return;
+  const transactionPromises = transactions.deposits.map(async (internalTransaction) => {
+    try {
+      const lzTransactions = await fetchLayerZeroBridgeTransactions(
+        internalTransaction.transactionHash
+      );
 
-        const transactionTokenTransfers = await fetchTransactionTokenTransfers(internalTransaction.transaction_hash)
-        const lzTransactions = await fetchLayerZeroBridgeTransactions(internalTransaction.transaction_hash)
+      const status = lzTransactions?.data?.[0]?.status?.name || LayerZeroTransactionStatus.INFLIGHT;
 
-        transactionTokenTransfers.items.forEach((transactionTokenTransfer) => {
-          if (transactionTokenTransfer.token.address !== ADDRESSES.ethereum.usdc) return;
+      return {
+        title: "Deposit USDC",
+        timestamp: internalTransaction.depositTimestamp,
+        amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
+        status,
+      };
+    } catch (error) {
+      console.error('Failed to fetch LZ transaction:', error);
+      return {
+        title: "Deposit USDC",
+        timestamp: internalTransaction.depositTimestamp,
+        amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
+        status: LayerZeroTransactionStatus.FAILED,
+      };
+    }
+  });
 
-          transactions.push({
-            title: "Deposit USDC",
-            timestamp: internalTransaction.timestamp,
-            amount: Number(formatUnits(BigInt(transactionTokenTransfer.total.value), Number(transactionTokenTransfer.total.decimals))),
-            status: lzTransactions.data[0].status.name,
-          })
-        })
-      })
+  const formattedTransactions = await Promise.all(transactionPromises);
 
-      return transactions
-    },
-    enabled: !!safeAddress,
-    refetchOnWindowFocus: false
-  })
-}
+  // Sort by timestamp (newest first)
+  return formattedTransactions.sort((a, b) => b.timestamp - a.timestamp);
+};
 
 export const isDepositedQueryOptions = (safeAddress: string) => {
   return {
     queryKey: [ANALYTICS, "isDeposited", safeAddress],
     queryFn: async () => {
-      const internalTransactions = await fetchInternalTransactions(safeAddress)
-      let deposited = false
+      const { data } = await infoClient.query({
+        query: GetUserTransactionsDocument,
+        variables: {
+          address: safeAddress,
+        },
+      });
 
-      internalTransactions.items.forEach(async (internalTransaction) => {
-        if (internalTransaction.to.hash !== ADDRESSES.ethereum.teller) return;
-
-        deposited = true
-      })
-
-      return deposited
+      return data?.deposits?.length;
     },
     enabled: !!safeAddress,
-    refetchOnWindowFocus: false
-  }
-}
+    refetchOnWindowFocus: false,
+  };
+};
 
-export const fetchIsDeposited = (queryClient: QueryClient, safeAddress: string) => {
-  return queryClient.fetchQuery(isDepositedQueryOptions(safeAddress))
-}
+export const fetchIsDeposited = (
+  queryClient: QueryClient,
+  safeAddress: string
+) => {
+  return queryClient.fetchQuery(isDepositedQueryOptions(safeAddress));
+};

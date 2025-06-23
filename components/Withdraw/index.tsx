@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { ActivityIndicator, Image, TextInput, View } from "react-native";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { ActivityIndicator, Image, Linking, TextInput, View } from "react-native";
+import Toast from 'react-native-toast-message';
+import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-
-import WithdrawIcon from "@/assets/images/withdraw";
 import useBridgeToMainnet from "@/hooks/useBridgeToMainnet";
 import useUser from "@/hooks/useUser";
 import { useEthereumVaultBalance, useFuseVaultBalance } from "@/hooks/useVault";
@@ -13,9 +15,10 @@ import { Status } from "@/lib/types";
 import { Address } from "abitype";
 import { Skeleton } from "../ui/skeleton";
 
+import { formatNumber } from "@/lib/utils";
+import { ArrowUpRight } from "lucide-react-native";
+
 const Withdraw = () => {
-  const [fuseAmount, setFuseAmount] = useState("");
-  const [ethereumAmount, setEthereumAmount] = useState("");
   const { user } = useUser();
 
   const { data: fuseBalance, isLoading: isFuseBalanceLoading } =
@@ -24,6 +27,68 @@ const Withdraw = () => {
   const { data: ethereumBalance, isLoading: isEthereumBalanceLoading } =
     useEthereumVaultBalance(user?.safeAddress as Address);
 
+  // Create dynamic schema for bridge form based on fuse balance
+  const bridgeSchema = useMemo(() => {
+    const balanceAmount = fuseBalance || 0;
+    return z.object({
+      amount: z
+        .string()
+        .refine((val) => val !== "" && !isNaN(Number(val)), "Please enter a valid amount")
+        .refine((val) => Number(val) > 0, "Amount must be greater than 0")
+        .refine((val) => Number(val) <= balanceAmount, `Available balance is ${formatNumber(balanceAmount, 4)} soUSD`)
+        .transform((val) => Number(val)),
+    });
+  }, [fuseBalance]);
+
+  // Create dynamic schema for withdraw form based on ethereum balance
+  const withdrawSchema = useMemo(() => {
+    const balanceAmount = ethereumBalance || 0;
+    return z.object({
+      amount: z
+        .string()
+        .refine((val) => val !== "" && !isNaN(Number(val)), "Please enter a valid amount")
+        .refine((val) => Number(val) > 0, "Amount must be greater than 0")
+        .refine((val) => Number(val) <= balanceAmount, `Available balance is ${formatNumber(balanceAmount, 4)} soUSD`)
+        .transform((val) => Number(val)),
+    });
+  }, [ethereumBalance]);
+
+  type BridgeFormData = { amount: string; };
+  type WithdrawFormData = { amount: string; };
+
+  // Bridge form setup
+  const {
+    control: bridgeControl,
+    handleSubmit: handleBridgeSubmit,
+    formState: { errors: bridgeErrors, isValid: isBridgeValid },
+    watch: watchBridge,
+    reset: resetBridge,
+  } = useForm<BridgeFormData>({
+    resolver: zodResolver(bridgeSchema) as any,
+    mode: "onChange",
+    defaultValues: {
+      amount: '',
+    },
+  });
+
+  // Withdraw form setup
+  const {
+    control: withdrawControl,
+    handleSubmit: handleWithdrawSubmit,
+    formState: { errors: withdrawErrors, isValid: isWithdrawValid },
+    watch: watchWithdraw,
+    reset: resetWithdraw,
+  } = useForm<WithdrawFormData>({
+    resolver: zodResolver(withdrawSchema) as any,
+    mode: "onChange",
+    defaultValues: {
+      amount: '',
+    },
+  });
+
+  const watchedBridgeAmount = watchBridge("amount");
+  const watchedWithdrawAmount = watchWithdraw("amount");
+
   const { bridge, bridgeStatus } = useBridgeToMainnet();
   const isBridgeLoading = bridgeStatus === Status.PENDING;
 
@@ -31,31 +96,73 @@ const Withdraw = () => {
   const isWithdrawLoading = withdrawStatus === Status.PENDING;
 
   const getBridgeText = () => {
-    if (!fuseAmount) return "Enter an amount";
-    if (!fuseBalance || fuseBalance < parseFloat(fuseAmount))
-      return "Insufficient balance";
+    if (bridgeErrors.amount) return bridgeErrors.amount.message;
     if (bridgeStatus === Status.PENDING) return "Bridging";
     if (bridgeStatus === Status.ERROR) return "Error while bridging";
     if (bridgeStatus === Status.SUCCESS) return "Successfully Bridged";
+    if (!isBridgeValid || !watchedBridgeAmount) return "Enter an amount";
     return "Bridge to Ethereum";
   };
 
   const getWithdrawText = () => {
-    if (!ethereumAmount) return "Enter an amount";
-    if (!ethereumBalance || ethereumBalance < parseFloat(ethereumAmount))
-      return "Insufficient balance";
+    if (withdrawErrors.amount) return withdrawErrors.amount.message;
     if (withdrawStatus === Status.PENDING) return "Withdrawing";
     if (withdrawStatus === Status.ERROR) return "Error while Withdrawing";
     if (withdrawStatus === Status.SUCCESS) return "Withdrawal Successful";
+    if (!isWithdrawValid || !watchedWithdrawAmount) return "Enter an amount";
     return "Withdraw";
   };
 
-  const handleBridge = async () => {
-    await bridge(fuseAmount);
+  const onBridgeSubmit = async (data: BridgeFormData) => {
+    try {
+      const transaction = await bridge(data.amount.toString());
+      resetBridge(); // Reset form after successful transaction
+      Toast.show({
+        type: 'success',
+        text1: 'Bridge transaction submitted',
+        text2: 'Click to view on LayerZero Scan',
+        onPress: () => {
+          Linking.openURL(`https://layerzeroscan.com/tx/${transaction.transactionHash}`);
+        },
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error while bridging',
+      });
+    }
   };
 
-  const handleWithdraw = async () => {
-    await withdraw(ethereumAmount);
+  const onWithdrawSubmit = async (data: WithdrawFormData) => {
+    try {
+      await withdraw(data.amount.toString());
+      resetWithdraw(); // Reset form after successful transaction
+      Toast.show({
+        type: 'success',
+        text1: 'Withdrawal transaction completed',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error while withdrawing',
+      });
+    }
+  };
+
+  const isBridgeFormDisabled = () => {
+    return (
+      isBridgeLoading ||
+      !isBridgeValid ||
+      !watchedBridgeAmount
+    );
+  };
+
+  const isWithdrawFormDisabled = () => {
+    return (
+      isWithdrawLoading ||
+      !isWithdrawValid ||
+      !watchedWithdrawAmount
+    );
   };
 
   return (
@@ -67,20 +174,27 @@ const Withdraw = () => {
           {isFuseBalanceLoading ? (
             <Skeleton className="w-20 h-8 rounded-md" />
           ) : fuseBalance ? (
-            `${fuseBalance.toFixed(2)}`
+            `${formatNumber(fuseBalance, 4)}`
           ) : (
             "0"
           )}
         </Text>
       </View>
-      <View className="bg-primary/10 rounded-2xl p-4">
+      <View className={`bg-primary/10 rounded-2xl p-4 ${bridgeErrors.amount ? 'border border-red-500' : ''}`}>
         <View className="flex-row justify-between items-center gap-2">
-          <TextInput
-            keyboardType="numeric"
-            className="w-full text-2xl md:text-3xl text-primary font-semibold web:focus:outline-none"
-            value={fuseAmount}
-            placeholder="0.0"
-            onChangeText={setFuseAmount}
+          <Controller
+            control={bridgeControl}
+            name="amount"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                keyboardType="decimal-pad"
+                className="w-full text-2xl md:text-3xl text-primary font-semibold web:focus:outline-none"
+                value={value.toString()}
+                placeholder="0.0"
+                onChangeText={onChange}
+                onBlur={onBlur}
+              />
+            )}
           />
           <View className="flex-row items-center gap-2">
             <Image
@@ -97,13 +211,8 @@ const Withdraw = () => {
         <Button
           variant="brand"
           className="w-full rounded-xl mt-4"
-          onPress={handleBridge}
-          disabled={
-            isBridgeLoading ||
-            !fuseAmount ||
-            fuseAmount === "0" ||
-            parseFloat(fuseAmount) > (fuseBalance || 0)
-          }
+          onPress={handleBridgeSubmit(onBridgeSubmit)}
+          disabled={isBridgeFormDisabled()}
         >
           <Text className="font-bold">{getBridgeText()}</Text>
           {isBridgeLoading && <ActivityIndicator color="gray" />}
@@ -117,20 +226,27 @@ const Withdraw = () => {
           {isEthereumBalanceLoading ? (
             <Skeleton className="w-20 h-8 rounded-md" />
           ) : ethereumBalance ? (
-            `${ethereumBalance.toFixed(2)}`
+            `${formatNumber(ethereumBalance, 4)}`
           ) : (
             "0"
           )}
         </Text>
       </View>
-      <View className="bg-primary/10 rounded-2xl p-4">
+      <View className={`bg-primary/10 rounded-2xl p-4 ${withdrawErrors.amount ? 'border border-red-500' : ''}`}>
         <View className="flex-row justify-between items-center gap-2">
-          <TextInput
-            keyboardType="numeric"
-            className="w-full text-2xl md:text-3xl text-primary font-semibold web:focus:outline-none"
-            value={ethereumAmount}
-            placeholder="0.0"
-            onChangeText={setEthereumAmount}
+          <Controller
+            control={withdrawControl}
+            name="amount"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                keyboardType="decimal-pad"
+                className="w-full text-2xl md:text-3xl text-primary font-semibold web:focus:outline-none"
+                value={value.toString()}
+                placeholder="0.0"
+                onChangeText={onChange}
+                onBlur={onBlur}
+              />
+            )}
           />
           <View className="flex-row items-center gap-2">
             <Image
@@ -147,13 +263,8 @@ const Withdraw = () => {
         <Button
           variant="brand"
           className="w-full rounded-xl mt-4"
-          onPress={handleWithdraw}
-          disabled={
-            isWithdrawLoading ||
-            !ethereumAmount ||
-            ethereumAmount === "0" ||
-            parseFloat(ethereumAmount) > (ethereumBalance || 0)
-          }
+          onPress={handleWithdrawSubmit(onWithdrawSubmit)}
+          disabled={isWithdrawFormDisabled()}
         >
           <Text className="font-bold">{getWithdrawText()}</Text>
           {isWithdrawLoading && <ActivityIndicator color="gray" />}
@@ -167,11 +278,13 @@ const WithdrawTrigger = (props: any) => {
   return (
     <Button
       variant="outline"
-      className="flex-col items-center gap-3 w-28 h-20 rounded-xl md:rounded-twice"
+      className={buttonVariants({ variant: "secondary", className: "h-12 rounded-xl" })}
       {...props}
     >
-      <WithdrawIcon className="size-6" />
-      <Text className="font-semibold">Withdraw</Text>
+      <View className="flex-row items-center gap-2">
+        <ArrowUpRight color="white" />
+        <Text className="font-bold hidden md:block">Withdraw</Text>
+      </View>
     </Button>
   );
 };

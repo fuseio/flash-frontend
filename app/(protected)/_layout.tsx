@@ -17,11 +17,35 @@ export default function ProtectedLayout() {
   }
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#000',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontSize: 20,
+          fontWeight: 'bold',
+        }
+      }}
+    >
       <Stack.Screen
         name="(tabs)"
         options={{
           headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="settings/index"
+        options={{
+          headerTitle: 'Settings',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="settings/account"
+        options={{
+          headerTitle: 'Account details',
         }}
       />
     </Stack>
