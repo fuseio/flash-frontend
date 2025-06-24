@@ -92,7 +92,7 @@ export default function Dashboard() {
         edges={["right", "left", "bottom"]}
       >
         <ScrollView className="flex-1">
-          <View className="gap-16 px-4 py-8 md:py-16 w-full max-w-7xl mx-auto">
+          <View className="gap-16 px-4 py-8 w-full max-w-7xl mx-auto">
             {isScreenMedium ? (
               <DashboardHeader />
             ) : (
@@ -106,17 +106,20 @@ export default function Dashboard() {
               colors={['rgba(148, 242, 127, 0.25)', 'rgba(148, 242, 127, 0.175)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              className="web:md:flex web:md:flex-row border border-border rounded-xl md:rounded-twice overflow-hidden"
+              className="web:md:flex web:md:flex-row rounded-xl md:rounded-twice overflow-hidden"
             >
-              <View className="flex-1 bg-transparent p-6 md:p-12 justify-between gap-4 border-b border-border md:border-b-0 md:border-r">
+              <View className="flex-1 bg-transparent p-6 md:px-10 md:py-8 justify-between gap-4 border-b border-border md:border-b-0 md:border-r">
                 <Text className="text-lg text-primary/50 font-medium">Balance</Text>
                 <View className="gap-4">
-                  <SavingCountUp
-                    balance={balance ?? 0}
-                    apy={totalAPY ?? 0}
-                    lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
-                  />
-                  <View className="flex-row items-center gap-4">
+                  <View className="flex-row items-center gap-2">
+                    <Text className="text-5xl md:text-8xl font-medium text-foreground">$</Text>
+                    <SavingCountUp
+                      balance={balance ?? 0}
+                      apy={totalAPY ?? 0}
+                      lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
+                    />
+                  </View>
+                  <View className="flex-row items-center gap-6">
                     <Text className="text-lg font-medium text-foreground">
                       +$0.00
                     </Text>
@@ -128,7 +131,7 @@ export default function Dashboard() {
               </View>
 
               <View className="web:md:w-80 bg-transparent p-6 md:p-6 justify-center gap-8">
-                <View className="gap-2.5">
+                <View>
                   <Text className="text-lg text-primary/50 font-medium">Current Yield</Text>
                   <Text className="text-2xl text-brand font-semibold">
                     {isTotalAPYLoading ? (
@@ -143,7 +146,7 @@ export default function Dashboard() {
 
                 <View className="border-t border-border/50 -mx-6 md:-mx-6" />
 
-                <View className="gap-2.5">
+                <View>
                   <Text className="text-lg text-primary/50 font-medium">
                     Total deposited
                   </Text>
@@ -158,7 +161,7 @@ export default function Dashboard() {
 
                 <View className="border-t border-border/50 -mx-6 md:-mx-6" />
 
-                <View className="gap-2.5">
+                <View>
                   <Text className="text-lg text-primary/50 font-medium">
                     Total earned
                   </Text>
@@ -192,8 +195,8 @@ export default function Dashboard() {
               </View>
             </View>
 
-            <View className="flex-col items-center gap-16 w-full max-w-screen-md mx-auto md:mt-20">
-              <Text className="text-4.5xl font-semibold max-w-80 text-center">
+            <View className="flex-col gap-5 md:mt-20">
+              <Text className="text-3xl font-semibold">
                 Frequently asked questions
               </Text>
               <FAQ faqs={faqs} />

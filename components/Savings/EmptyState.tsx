@@ -25,14 +25,14 @@ export default function SavingsEmptyState() {
         edges={['right', 'left', 'bottom']}
       >
         <ScrollView className="flex-1">
-          <View className="w-full max-w-7xl mx-auto gap-16 px-4 py-8 md:py-16">
+          <View className="w-full max-w-7xl mx-auto gap-16 px-4 py-8">
             <View className="md:flex-row justify-between md:items-center gap-y-4">
-              <View className="gap-4">
-                <Text className="text-4.5xl font-semibold">
+              <View className="gap-3">
+                <Text className="text-3xl font-semibold">
                   Your saving account
                 </Text>
                 <Text className="max-w-lg">
-                  <Text className="font-medium opacity-70">
+                  <Text className="opacity-70">
                     Our Solid vault will automatically manage your funds to maximize your yield without exposing you to unnecessary risk.
                   </Text>{" "}
                   <Link href="https://solid-3.gitbook.io/solid.xyz-docs" target="_blank" className='text-primary font-medium underline hover:opacity-70'>How it works</Link>
