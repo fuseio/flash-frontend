@@ -22,4 +22,10 @@ config.resolver.sourceExts = [
   'web.tsx',
 ];
 
+// Add Node.js crypto polyfill for MetaMask SDK
+config.resolver.alias = {
+  ...config.resolver.alias,
+  "node:crypto": require.resolve("react-native-crypto"),
+};
+
 module.exports = withNativeWind(config, { input: './global.css' })
