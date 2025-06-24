@@ -22,7 +22,7 @@ export default {
           process.env.EXPO_PUBLIC_PASSKEY_CERTIFICATES_HOST
         }?mode=developer`,
       ],
-      appleTeamId: "8WHFWN93P6",
+      appleTeamId: "QC9255BHMY",
     },
     android: {
       adaptiveIcon: {
