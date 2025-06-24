@@ -215,7 +215,7 @@ export type Transaction = {
 
 export type Faq = {
   question: string;
-  answer: string;
+  answer: React.ReactNode;
 }
 
 export type StatusInfo = {
