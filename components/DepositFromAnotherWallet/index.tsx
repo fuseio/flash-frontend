@@ -275,10 +275,10 @@ const DepositFromAnotherWallet = ({ open, setOpen }: { open: boolean, setOpen: (
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <View className={buttonVariants({ variant: "brand", className: "h-12 rounded-xl" })}>
-          <View className="flex-row items-center gap-2">
+        <View className={buttonVariants({ variant: "brand", className: "h-12 pr-6 rounded-xl" })}>
+          <View className="flex-row items-center gap-4">
             <Plus color="black" />
-            <Text className="text-primary-foreground font-bold hidden md:block">Add funds</Text>
+            <Text className="text-primary-foreground font-bold hidden md:block">Deposit</Text>
           </View>
         </View>
       </DialogTrigger>

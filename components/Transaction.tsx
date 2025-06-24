@@ -22,11 +22,16 @@ const Transaction = ({
     status === LayerZeroTransactionStatus.INFLIGHT ||
     status === LayerZeroTransactionStatus.CONFIRMING;
 
-  const statusColor = isSuccess
+  const statusBgColor = isSuccess
     ? "bg-brand"
     : isPending
-      ? "bg-yellow-500"
-      : "bg-red-500";
+      ? "bg-yellow-200"
+      : "bg-red-200";
+  const statusTextColor = isSuccess
+    ? "text-brand-foreground"
+    : isPending
+      ? "text-yellow-700"
+      : "text-red-700";
   const statusText = isSuccess ? "Success" : isPending ? "Pending" : "Failed";
 
   return (
@@ -55,11 +60,11 @@ const Transaction = ({
         <View
           className={cn(
             "w-20 h-8 rounded-twice items-center justify-center",
-            statusColor
+            statusBgColor
           )}
         >
           <Text
-            className="text-sm text-primary-foreground font-medium"
+            className={cn("text-sm font-bold", statusTextColor)}
             onPress={() => {
               Linking.openURL(`https://layerzeroscan.com/tx/${hash}`);
             }}
