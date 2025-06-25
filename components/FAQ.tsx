@@ -13,10 +13,10 @@ const FAQ = ({ faqs }: { faqs: Faq[] }) => {
       type='multiple'
       collapsible
       defaultValue={['item-1']}
-      className='w-full'
+      className='w-full bg-card rounded-twice'
     >
       {faqs.map((faq, index) => (
-        <AccordionItem key={index} value={`item-${index + 1}`}>
+        <AccordionItem key={index} value={`item-${index + 1}`} className={index === 0 ? "border-t-0" : ""}>
           <AccordionTrigger>
             <Text className="text-lg font-medium">{faq.question}</Text>
           </AccordionTrigger>
