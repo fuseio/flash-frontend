@@ -10,12 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { useTotalAPY } from "@/hooks/useAnalytics";
 import { useDimension } from "@/hooks/useDimension";
-import DepositFromAnotherWallet from "../DepositFromAnotherWallet";
+import { DepositOptionModal } from "../DepositOption";
 
 export default function SavingsEmptyState() {
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
   const { isScreenMedium, isDesktop } = useDimension();
-  const [isDepositAddressModalOpen, setIsDepositAddressModalOpen] = useState(false);
 
   return (
     <>
@@ -39,7 +38,7 @@ export default function SavingsEmptyState() {
                 </Text>
               </View>
               <View className="flex-row items-center gap-5 h-20">
-                <DepositFromAnotherWallet open={isDepositAddressModalOpen} setOpen={setIsDepositAddressModalOpen} />
+                <DepositOptionModal />
                 {/* <Link href={path.DEPOSIT} className={buttonVariants({ variant: "brand", className: "h-12 rounded-xl" })}>
                   <View className="flex-row items-center gap-2">
                     <Plus />

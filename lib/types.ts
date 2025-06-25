@@ -222,3 +222,9 @@ export type StatusInfo = {
   status: Status;
   message?: string;
 }
+
+export enum DepositModal {
+  OPEN_OPTIONS = "open_options",
+  OPEN_FORM = "open_form",
+  CLOSE = "close",
+}
