@@ -20,7 +20,7 @@ function addReactImportRecursively(dirPath) {
       totalFiles++;
       const content = fs.readFileSync(filePath, 'utf-8');
 
-      if (!content.includes('import React from "react"')) {
+      if (!content.includes('import React')) {
         const newContent = `import React from 'react';\n${content}`;
         fs.writeFileSync(filePath, newContent, 'utf-8');
         updatedFiles++;

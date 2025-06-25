@@ -13,6 +13,10 @@ const modules = {
   'bignumber': path.resolve(__dirname, 'node_modules/bignumber.js/bignumber.js'),
   'big.js': path.resolve(__dirname, 'node_modules/big.js/big.js'),
   'big': path.resolve(__dirname, 'node_modules/big.js/big.js'),
+  'bn.js': path.resolve(__dirname, 'node_modules/bn.js/lib/bn.js'),
+  'bn': path.resolve(__dirname, 'node_modules/bn.js/lib/bn.js'),
+  'sha.js': path.resolve(__dirname, 'node_modules/sha.js/sha.js'),
+  'sha': path.resolve(__dirname, 'node_modules/sha.js/sha.js'),
 };
 
 // Add resolver aliases

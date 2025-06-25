@@ -8,10 +8,11 @@ import Toast from "react-native-toast-message";
 import { WagmiProvider } from "wagmi";
 import { ApolloProvider } from "@apollo/client";
 import { AppKit } from "@reown/appkit-wagmi-react-native";
+import { Platform } from "react-native";
 
 import { infoClient } from "@/graphql/clients";
 import { toastProps } from "@/lib/toast";
-import { wagmiConfig } from "@/lib/wagmi";
+import { wagmi } from "@/lib/wagmi";
 
 // see: https://solana.stackexchange.com/a/6244
 global.Buffer = require("buffer").Buffer;
@@ -25,7 +26,7 @@ const queryClient = new QueryClient();
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <WagmiProvider config={wagmiConfig}>
+      <WagmiProvider config={wagmi.config}>
         <QueryClientProvider client={queryClient}>
           <ApolloProvider client={infoClient}>
             <Head>
@@ -54,7 +55,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
-            <AppKit />
+            {Platform.OS !== 'web' && <AppKit />}
           </ApolloProvider>
         </QueryClientProvider>
       </WagmiProvider>

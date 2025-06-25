@@ -1,18 +1,18 @@
-import { View } from "react-native"
-import { useConnect } from "wagmi"
 import { CreditCard, Landmark, Wallet } from "lucide-react-native"
+import { View } from "react-native"
 
+import { useAppKit } from "@/lib/reown"
 import DepositOption from "./DepositOption"
 
 const DepositOptions = () => {
-  const { connectors, connect, isPending } = useConnect()
+  const { open } = useAppKit()
 
   const DEPOSIT_OPTIONS = [
     {
       text: "Connect Wallet",
       icon: <Wallet color="white" size={26} />,
-      onPress: () => { connect({ connector: connectors[0] }) },
-      isLoading: isPending
+      onPress: () => { open() },
+      isLoading: false
     },
     {
       text: "Debit/Credit Card",
