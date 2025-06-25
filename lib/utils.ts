@@ -8,6 +8,34 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { refreshToken } from "./api";
 import { AuthTokens, PasskeyCoordinates, User } from "./types";
 
+// Import optional dependencies statically
+let p256: any;
+let AsnParser: any;
+let AsnProp: any;
+let AsnPropTypes: any;
+let AsnType: any;
+let AsnTypeTypes: any;
+
+try {
+  const curvesModule = require("@noble/curves/p256");
+  p256 = curvesModule.p256;
+} catch (error) {
+  console.warn('@noble/curves/p256 not available:', error);
+}
+
+try {
+  const asn1Module = require("@peculiar/asn1-schema");
+  AsnParser = asn1Module.AsnParser;
+  AsnProp = asn1Module.AsnProp;
+  AsnPropTypes = asn1Module.AsnPropTypes;
+  AsnType = asn1Module.AsnType;
+  AsnTypeTypes = asn1Module.AsnTypeTypes;
+} catch (error) {
+  console.warn('@peculiar/asn1-schema not available:', error);
+}
+
+export const IS_SERVER = typeof window === 'undefined';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -154,11 +182,10 @@ function base64ToUint8Array(base64: string): Uint8Array {
   return new Uint8Array(binaryBuffer);
 }
 
-async function importLibs() {
-  const { p256 } = await import("@noble/curves/p256");
-
-  const { AsnParser, AsnProp, AsnPropTypes, AsnType, AsnTypeTypes } =
-    await import("@peculiar/asn1-schema");
+function importLibs() {
+  if (!p256 || !AsnParser || !AsnProp || !AsnPropTypes || !AsnType || !AsnTypeTypes) {
+    throw new Error('Required cryptographic libraries are not available. Please ensure @noble/curves and @peculiar/asn1-schema are installed.');
+  }
 
   @AsnType({ type: AsnTypeTypes.Sequence })
   class AlgorithmIdentifier {
@@ -188,7 +215,7 @@ async function importLibs() {
 export async function decodePublicKeyForReactNative(
   publicKey: string
 ): Promise<PasskeyCoordinates> {
-  const { p256, AsnParser, ECPublicKey } = await importLibs();
+  const { p256, AsnParser, ECPublicKey } = importLibs();
 
   let publicKeyBytes = base64ToUint8Array(publicKey);
 

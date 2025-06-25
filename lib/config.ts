@@ -7,6 +7,7 @@ export const EXPO_PUBLIC_PIMLICO_API_KEY = process.env.EXPO_PUBLIC_PIMLICO_API_K
 export const EXPO_PUBLIC_FLASH_API_BASE_URL = process.env.EXPO_PUBLIC_FLASH_API_BASE_URL ?? ""
 export const EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL = process.env.EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL ?? ""
 export const EXPO_PUBLIC_ENVIRONMENT = process.env.EXPO_PUBLIC_ENVIRONMENT ?? ""
+export const EXPO_PUBLIC_REOWN_PROJECT_ID = process.env.EXPO_PUBLIC_REOWN_PROJECT_ID ?? ""
 
 export const isProduction = EXPO_PUBLIC_ENVIRONMENT === "production"
 
@@ -58,4 +59,5 @@ export const USER = {
   storageKey: 'flash_user',
   passkeyStorageKey: 'flash_passkey_list',
   pimlicoUrl: (chainId: number = mainnet.id) => `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${EXPO_PUBLIC_PIMLICO_API_KEY}`,
+  depositStorageKey: 'flash_deposit',
 }

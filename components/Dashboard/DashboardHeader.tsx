@@ -1,13 +1,11 @@
 import { View } from "react-native";
 import { Link } from "expo-router";
-import { useState } from "react";
 
 import { Text } from "../ui/text";
 import WithdrawModal from "../Withdraw/WithdrawModal";
-import DepositFromAnotherWallet from "../DepositFromAnotherWallet";
+import { DepositOptionModal } from "../DepositOption";
 
 const DashboardHeader = () => {
-  const [isDepositAddressModalOpen, setIsDepositAddressModalOpen] = useState(false);
   return (
     <View className="md:flex-row justify-between md:items-center gap-y-4">
       <View className="gap-3">
@@ -22,7 +20,7 @@ const DashboardHeader = () => {
         </Text>
       </View>
       <View className="flex-row items-center gap-5 h-20">
-        <DepositFromAnotherWallet open={isDepositAddressModalOpen} setOpen={setIsDepositAddressModalOpen} />
+        <DepositOptionModal />
         <WithdrawModal />
       </View>
     </View>

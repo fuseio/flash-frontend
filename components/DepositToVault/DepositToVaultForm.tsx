@@ -14,17 +14,19 @@ import { useTotalAPY } from "@/hooks/useAnalytics"
 import useDepositFromEOA from "@/hooks/useDepositFromEOA"
 import { useDimension } from "@/hooks/useDimension"
 import { useEstimateDepositGas } from "@/hooks/useEstimateDepositGas"
-import { Status } from "@/lib/types"
+import { DepositModal, Status } from "@/lib/types"
 import { cn, compactNumberFormat, formatNumber } from "@/lib/utils"
 import { CheckConnectionWrapper } from "../CheckConnectionWrapper"
 import TokenDetails from "../TokenCard/TokenDetails"
 import { Skeleton } from "../ui/skeleton"
 import { Text } from "../ui/text"
+import { useDepositStore } from "@/store/useDepositStore"
 
-function DepositToVaultForm({ setOpen }: { setOpen: (open: boolean) => void }) {
+function DepositToVaultForm() {
   const router = useRouter();
   const { balance, deposit, depositStatus, error, hash } = useDepositFromEOA();
   const { data: receipt, isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { setDepositModal } = useDepositStore();
 
   const isLoading = depositStatus === Status.PENDING || isPending;
   const { data: totalAPY } = useTotalAPY();
@@ -86,9 +88,9 @@ function DepositToVaultForm({ setOpen }: { setOpen: (open: boolean) => void }) {
   useEffect(() => {
     if (isSuccess) {
       reset(); // Reset form after successful transaction
-      setTimeout(() => setOpen(false), 2000);
+      setTimeout(() => setDepositModal(DepositModal.CLOSE), 2000);
     }
-  }, [isSuccess, reset, setOpen]);
+  }, [isSuccess, reset, setDepositModal]);
 
   const isFormDisabled = () => {
     return (
