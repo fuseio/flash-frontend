@@ -41,6 +41,12 @@ export default function CardLayout() {
           title: "Personal Information",
         }} 
       />
+      <Stack.Screen 
+        name="details_mobile" 
+        options={{ 
+          title: "Card",
+        }} 
+      />
     </Stack>
   );
 }
