@@ -201,7 +201,7 @@ function DepositToVaultForm() {
           disabled={isFormDisabled()}
         >
           <Text className="text-lg font-semibold">
-            {getButtonText()}
+            {getButtonText()?.slice(0, 30)}
           </Text>
           {isLoading && (
             <ActivityIndicator color="gray" />
