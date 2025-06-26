@@ -21,6 +21,7 @@ import TokenDetails from "../TokenCard/TokenDetails"
 import { Skeleton } from "../ui/skeleton"
 import { Text } from "../ui/text"
 import { useDepositStore } from "@/store/useDepositStore"
+import ConnectedWalletDropdown from "../ConnectedWalletDropdown"
 
 function DepositToVaultForm() {
   const router = useRouter();
@@ -103,16 +104,17 @@ function DepositToVaultForm() {
   return (
     <View className="gap-4">
       <View className="gap-2">
-        <Text className="text-muted-foreground mt-5">You're depositing</Text>
-        <View className="px-2 py-4 bg-qr-background rounded-2xl flex-row items-center justify-between w-full">
-          <View className="flex-1 min-w-0">
+        <Text className="text-muted-foreground">From wallet</Text>
+        <View className="gap-2">
+          <ConnectedWalletDropdown />
+          <View className="px-5 py-4 bg-accent rounded-2xl flex-row items-center justify-between gap-2 w-full">
             <Controller
               control={control}
               name="amount"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   keyboardType="decimal-pad"
-                  className="text-2xl text-white font-semibold web:focus:outline-none"
+                  className="w-full text-2xl text-white font-semibold web:focus:outline-none"
                   value={value.toString()}
                   placeholder="0.0"
                   placeholderTextColor="#666"
@@ -121,55 +123,55 @@ function DepositToVaultForm() {
                 />
               )}
             />
-          </View>
-          <View className="items-end flex-shrink-0">
             <View className="flex-row items-center gap-2">
               <Image
                 source={require("@/assets/images/usdc.png")}
                 alt="USDC"
-                style={{ width: 24, height: 24 }}
+                style={{ width: 32, height: 32 }}
               />
               <Text className="font-semibold text-white text-lg">USDC</Text>
             </View>
           </View>
         </View>
         <Text
-          className="flex items-center gap-2 text-muted-foreground text-left"
+          className="flex items-center gap-1.5 text-muted-foreground text-left"
         >
           <Wallet size={16} /> {formatNumber(Number(formattedBalance), 6)} USDC
         </Text>
       </View>
-      <View className="gap-1">
-        <TokenDetails>
-          <View className={cn("p-6 md:p-5", "md:flex-row md:items-center gap-4 md:gap-10")}>
-            <Text className="text-lg opacity-40 md:w-40">
-              You will receive
+      <TokenDetails>
+        <View className={cn("p-6 md:p-5", "md:flex-row md:items-center gap-4 md:gap-10")}>
+          <Text className="text-lg opacity-40 md:w-40">
+            You will receive
+          </Text>
+          <View className="flex-row items-center gap-2">
+            <Image
+              source={require("@/assets/images/usdc.png")}
+              style={{ width: 34, height: 34 }}
+              contentFit="contain"
+            />
+            <Text className="text-2xl font-semibold">
+              {compactNumberFormat(Number(watchedAmount))}
             </Text>
-            <View className="flex-row items-center gap-3">
-              <Image
-                source={require("@/assets/images/usdc.png")}
-                style={{ width: 34, height: 34 }}
-                contentFit="contain"
-              />
-              <Text className="text-2xl font-semibold">
-                {compactNumberFormat(Number(watchedAmount))} soUSD
-              </Text>
-              {/* <Text className="text-lg opacity-40 text-right">
+            <Text>
+              soUSD
+            </Text>
+            {/* <Text className="text-lg opacity-40 text-right">
                       {`(${compactNumberFormat(costInUsd)} USDC in fee)`}
                     </Text> */}
-            </View>
           </View>
-          <View className={cn("p-6 md:p-5", "md:flex-row md:items-center gap-4 md:gap-10")}>
-            <Text className="text-lg opacity-40 md:w-40">APY</Text>
-            <View className="flex-row items-baseline gap-2">
-              <Text className="text-2xl font-semibold text-[#94F27F]">
-                {totalAPY ? (
-                  `${totalAPY.toFixed(2)}%`
-                ) : (
-                  <Skeleton className="w-20 h-8" />
-                )}
-              </Text>
-              {/* <Text className="text-base opacity-40">
+        </View>
+        <View className={cn("p-6 md:p-5", "md:flex-row md:items-center gap-4 md:gap-10")}>
+          <Text className="text-lg opacity-40 md:w-40">APY</Text>
+          <View className="flex-row items-baseline gap-2">
+            <Text className="text-2xl font-semibold text-[#94F27F]">
+              {totalAPY ? (
+                `${totalAPY.toFixed(2)}%`
+              ) : (
+                <Skeleton className="w-20 h-8" />
+              )}
+            </Text>
+            {/* <Text className="text-base opacity-40">
                   {totalAPY ? (
                     `Earn ~${compactNumberFormat(
                       Number(watchedAmount) * (totalAPY / 100)
@@ -178,37 +180,34 @@ function DepositToVaultForm() {
                     <Skeleton className="w-20 h-6" />
                   )}
                 </Text> */}
-            </View>
           </View>
-        </TokenDetails>
-      </View>
-      <View className="gap-2">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-1 pb-5 pt-2">
-            <Fuel color="white" size={18} />
-            <Text className="text-base text-white">Fee</Text>
-          </View>
-          <Text className="text-base text-muted-foreground">
-            {`~ $${loading ? "..." : formatNumber(costInUsd, 2)
-              } USDC in fee`}
-          </Text>
         </View>
-        <CheckConnectionWrapper props={{ size: "xl" }}>
-          <Button
-            variant="brand"
-            className="rounded-2xl h-12"
-            onPress={handleSubmit(onSubmit)}
-            disabled={isFormDisabled()}
-          >
-            <Text className="text-lg font-semibold">
-              {getButtonText()}
-            </Text>
-            {isLoading && (
-              <ActivityIndicator color="gray" />
-            )}
-          </Button>
-        </CheckConnectionWrapper>
+      </TokenDetails>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-1">
+          <Fuel color="gray" size={18} />
+          <Text className="text-base text-muted-foreground">Fee</Text>
+        </View>
+        <Text className="text-base text-muted-foreground">
+          {`~ $${loading ? "..." : formatNumber(costInUsd, 2)
+            } USDC in fee`}
+        </Text>
       </View>
+      <CheckConnectionWrapper props={{ size: "xl" }}>
+        <Button
+          variant="brand"
+          className="rounded-2xl h-12"
+          onPress={handleSubmit(onSubmit)}
+          disabled={isFormDisabled()}
+        >
+          <Text className="text-lg font-semibold">
+            {getButtonText()}
+          </Text>
+          {isLoading && (
+            <ActivityIndicator color="gray" />
+          )}
+        </Button>
+      </CheckConnectionWrapper>
     </View>
   )
 }

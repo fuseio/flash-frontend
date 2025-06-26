@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react"
 import { CreditCard, Landmark, Wallet } from "lucide-react-native"
 import { View } from "react-native"
 import { useAccount } from "wagmi"
@@ -11,18 +12,29 @@ const DepositOptions = () => {
   const { address } = useAccount();
   const { open } = useAppKit()
   const { setDepositModal } = useDepositStore();
+  const [isWalletOpening, setIsWalletOpening] = useState(false);
+
+  const openWallet = useCallback(async () => {
+    try {
+      if (isWalletOpening) return;
+      if (address) return;
+
+      setIsWalletOpening(true);
+      await open();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsWalletOpening(false);
+      setDepositModal(DepositModal.OPEN_FORM);
+    }
+  }, [isWalletOpening, open]);
 
   const DEPOSIT_OPTIONS = [
     {
       text: "Connect Wallet",
       icon: <Wallet color="white" size={26} />,
-      onPress: () => {
-        setDepositModal(DepositModal.OPEN_FORM);
-        if (!address) {
-          open();
-        }
-      },
-      isLoading: false
+      onPress: openWallet,
+      isLoading: isWalletOpening
     },
     {
       text: "Debit/Credit Card",
