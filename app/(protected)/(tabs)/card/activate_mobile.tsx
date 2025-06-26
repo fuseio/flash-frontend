@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import { useLocalSearchParams } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import React, { useEffect } from "react";
 import { Pressable, View } from "react-native";
 
 import { AnimatedStepContent } from "@/components/Card/AnimatedStepContent";
@@ -18,8 +19,19 @@ export default function ActivateMobile() {
   console.log("kycStatus", kycStatus);
   console.log("kycLink", kycLink);
 
-  const { steps, activeStepId, isStepButtonEnabled, toggleStep } =
-    useCardSteps();
+  const { steps, activeStepId, isStepButtonEnabled, toggleStep, refetchCustomer } =
+    useCardSteps(kycStatus as KycStatus);
+
+  // The user is redirected to this screen after the KYC process is complete
+  // When this happens, we need to dismiss the browser
+  useEffect(() => {
+    if (kycStatus) {
+      console.log("KYC status detected, dismissing browser");
+      WebBrowser.dismissBrowser();
+      // Optionally refetch customer data in the background
+      refetchCustomer();
+    }
+  }, [kycStatus, refetchCustomer]);
 
   return (
     <View className="flex-1 bg-background">
