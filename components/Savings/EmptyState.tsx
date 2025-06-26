@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,6 +11,8 @@ import { Text } from "@/components/ui/text";
 import { useTotalAPY } from "@/hooks/useAnalytics";
 import { useDimension } from "@/hooks/useDimension";
 import { DepositOptionModal } from "../DepositOption";
+import FAQ from "../FAQ";
+import faqs from "@/constants/faqs";
 
 export default function SavingsEmptyState() {
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
@@ -97,6 +99,12 @@ export default function SavingsEmptyState() {
                 </View>
               </View>
             </LinearGradient>
+            <View className="flex-col gap-5">
+              <Text className="text-3xl font-semibold">
+                Frequently asked questions
+              </Text>
+              <FAQ faqs={faqs} />
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>

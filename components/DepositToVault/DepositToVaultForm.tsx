@@ -105,37 +105,36 @@ function DepositToVaultForm() {
     <View className="gap-4">
       <View className="gap-2">
         <Text className="text-muted-foreground">From wallet</Text>
-        <View className="gap-2">
-          <ConnectedWalletDropdown />
-          <View className="px-5 py-4 bg-accent rounded-2xl flex-row items-center justify-between gap-2 w-full">
-            <Controller
-              control={control}
-              name="amount"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  keyboardType="decimal-pad"
-                  className="w-full text-2xl text-white font-semibold web:focus:outline-none"
-                  value={value.toString()}
-                  placeholder="0.0"
-                  placeholderTextColor="#666"
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                />
-              )}
-            />
-            <View className="flex-row items-center gap-2">
-              <Image
-                source={require("@/assets/images/usdc.png")}
-                alt="USDC"
-                style={{ width: 32, height: 32 }}
+        <ConnectedWalletDropdown />
+      </View>
+      <View className="gap-2">
+        <Text className="text-muted-foreground">Deposit amount</Text>
+        <View className="px-5 py-4 bg-accent rounded-2xl flex-row items-center justify-between gap-2 w-full">
+          <Controller
+            control={control}
+            name="amount"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                keyboardType="decimal-pad"
+                className="w-full text-2xl text-white font-semibold web:focus:outline-none"
+                value={value.toString()}
+                placeholder="0.0"
+                placeholderTextColor="#666"
+                onChangeText={onChange}
+                onBlur={onBlur}
               />
-              <Text className="font-semibold text-white text-lg">USDC</Text>
-            </View>
+            )}
+          />
+          <View className="flex-row items-center gap-2">
+            <Image
+              source={require("@/assets/images/usdc.png")}
+              alt="USDC"
+              style={{ width: 32, height: 32 }}
+            />
+            <Text className="font-semibold text-white text-lg">USDC</Text>
           </View>
         </View>
-        <Text
-          className="flex items-center gap-1.5 text-muted-foreground text-left"
-        >
+        <Text className="flex items-center gap-1.5 text-muted-foreground text-left">
           <Wallet size={16} /> {formatNumber(Number(formattedBalance), 6)} USDC
         </Text>
       </View>
