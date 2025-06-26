@@ -7,14 +7,20 @@ import { DepositModal } from '@/lib/types';
 
 interface DepositState {
   depositModal: DepositModal;
+  previousDepositModal: DepositModal;
   setDepositModal: (modal: DepositModal) => void;
 }
 
 export const useDepositStore = create<DepositState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       depositModal: DepositModal.CLOSE,
-      setDepositModal: (modal) => set({ depositModal: modal }),
+      previousDepositModal: DepositModal.CLOSE,
+
+      setDepositModal: (modal) => set({
+        previousDepositModal: get().depositModal,
+        depositModal: modal
+      }),
     }),
     {
       name: USER.depositStorageKey,
