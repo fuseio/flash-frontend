@@ -299,7 +299,7 @@ export const createCard = async (): Promise<CardResponse> => {
 	return response.json();
 };
 
-export const getCardStatus = async (): Promise<CardStatusResponse> => {
+export const getCardStatus = async (): Promise<CardStatusResponse | null> => {
 	const jwt = getJWTToken();
 
 	const response = await fetch(
@@ -312,6 +312,8 @@ export const getCardStatus = async (): Promise<CardStatusResponse> => {
 			},
 		},
 	);
+
+	if (response.status === 404) return null;
 
 	if (!response.ok) throw response;
 
