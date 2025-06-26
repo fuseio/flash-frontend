@@ -1,11 +1,11 @@
 export default {
   expo: {
-    name: "flash-frontend",
+    name: "Solid",
     slug: "flash-frontend",
-    version: "1.0.0",
+    version: "1.0.1",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "flashfrontend",
+    scheme: "solid",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     owner: "fuseio",
