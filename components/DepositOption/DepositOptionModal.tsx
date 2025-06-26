@@ -1,6 +1,7 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { Plus } from "lucide-react-native"
 import { View } from "react-native"
+import { useAccount } from "wagmi"
 
 import {
   Dialog,
@@ -17,6 +18,13 @@ import { DepositToVaultModal } from "../DepositToVault"
 
 const DepositOptionModal = () => {
   const { depositModal, setDepositModal } = useDepositStore();
+  const { status } = useAccount()
+
+  useEffect(() => {
+    if (status === "disconnected" && depositModal !== DepositModal.CLOSE) {
+      setDepositModal(DepositModal.OPEN_OPTIONS);
+    }
+  }, [status, setDepositModal]);
 
   return (
     <>
