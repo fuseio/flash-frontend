@@ -1,5 +1,6 @@
 import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import FAQ from "@/components/FAQ";
+import Loading from "@/components/Loading";
 import NavbarMobile from "@/components/Navbar/NavbarMobile";
 import SavingCountUp from "@/components/SavingCountUp";
 import SavingsEmptyState from "@/components/Savings/EmptyState";
@@ -32,7 +33,8 @@ export default function Dashboard() {
   const {
     data: balance,
     isLoading: isBalanceLoading,
-    refetch: refetchBalance
+    refetch: refetchBalance,
+    isRefetching: isBalanceRefetching
   } = useFuseVaultBalance(
     user?.safeAddress as Address
   );
@@ -78,9 +80,11 @@ export default function Dashboard() {
     }
   }, [userDepositTransactions])
 
+  if (isBalanceLoading || isTransactionsLoading) {
+    return <Loading />
+  }
 
-
-  if (balance === 0 && userDepositTransactions?.deposits?.length === 0) {
+  if (!balance && !userDepositTransactions?.deposits?.length) {
     return <SavingsEmptyState />
   }
 
@@ -151,8 +155,8 @@ export default function Dashboard() {
                     Total deposited
                   </Text>
                   <Text className="text-2xl font-semibold">
-                    {isBalanceLoading ? (
-                      <Skeleton className="w-24 h-8 rounded-md" />
+                    {(isBalanceLoading && !isBalanceRefetching) ? (
+                      <Skeleton className="w-24 h-8 bg-primary/10 rounded-twice" />
                     ) : (
                       `$${(balance ?? 0).toLocaleString()}`
                     )}
@@ -166,8 +170,8 @@ export default function Dashboard() {
                     Total earned
                   </Text>
                   <Text className="text-2xl font-semibold">
-                    {isTotalAPYLoading || isBalanceLoading ? (
-                      <Skeleton className="w-20 h-8 rounded-md" />
+                    {((isTotalAPYLoading || isBalanceLoading) && !isBalanceRefetching) ? (
+                      <Skeleton className="w-20 h-8 bg-primary/10 rounded-twice" />
                     ) : totalAPY && balance ? (
                       `$${((totalAPY / 100) * balance).toLocaleString()}`
                     ) : (
