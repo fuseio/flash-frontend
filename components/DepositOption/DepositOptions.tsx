@@ -7,12 +7,15 @@ import { useAppKit } from "@/lib/reown"
 import DepositOption from "./DepositOption"
 import { DepositModal } from "@/lib/types"
 import { useDepositStore } from "@/store/useDepositStore"
+import { useRouter } from "expo-router"
+import { path } from "@/constants/path"
 
 const DepositOptions = () => {
   const { address } = useAccount();
   const { open } = useAppKit()
   const { setDepositModal } = useDepositStore();
   const [isWalletOpening, setIsWalletOpening] = useState(false);
+  const router = useRouter();
 
   const openWallet = useCallback(async () => {
     try {
@@ -39,7 +42,10 @@ const DepositOptions = () => {
     {
       text: "Debit/Credit Card",
       icon: <CreditCard color="white" size={26} />,
-      onPress: () => { },
+      onPress: () => {
+        setDepositModal(DepositModal.CLOSE);
+        router.push(path.BUY_CRYPTO);
+      },
       isLoading: false
     },
     {

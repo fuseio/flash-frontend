@@ -4,7 +4,7 @@ import { getClientIp } from "@/lib/api";
 import * as Crypto from "expo-crypto";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 interface MercuryoIframeWidgetProps {
   onClose?: () => void;
@@ -54,7 +54,7 @@ export async function buildMercuryoWidgetUrl({
       merchantTransactionId,
     });
 
-    let url = `https://sandbox-exchange.mrcr.io/?widget_id=${widgetId}`;
+    let url = `https://exchange.mercuryo.io/?widget_id=${widgetId}`;
     url += `&address=${address}`;
     url += `&merchant_transaction_id=${merchantTransactionId}`;
     url += `&signature=${encodeURIComponent(signature)}`;
@@ -178,11 +178,15 @@ export default function MercuryoIframeWidget({
   return (
     <View style={styles.container}>
       {loading && (
-        <Text style={styles.loadingText}>Loading Mercuryo widget...</Text>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#000" />
+        </View>
       )}
 
       {error ? (
-        <Text style={styles.errorText}>{error}</Text>
+        <View className="flex-1 items-center justify-center">
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
       ) : finalUrl ? (
         <iframe
           src={finalUrl}
