@@ -1,43 +1,43 @@
-import { useCallback, useState } from "react"
 import { CreditCard, Landmark, Wallet } from "lucide-react-native"
+import { useCallback, useState } from "react"
 import { View } from "react-native"
 import { useAccount } from "wagmi"
 
+import { path } from "@/constants/path"
 import { useAppKit } from "@/lib/reown"
-import DepositOption from "./DepositOption"
 import { DepositModal } from "@/lib/types"
 import { useDepositStore } from "@/store/useDepositStore"
 import { useRouter } from "expo-router"
-import { path } from "@/constants/path"
+import DepositOption from "./DepositOption"
 
 const DepositOptions = () => {
   const { address } = useAccount();
   const { open } = useAppKit()
   const { setDepositModal } = useDepositStore();
-  const [isWalletOpening, setIsWalletOpening] = useState(false);
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
   const router = useRouter();
 
   const openWallet = useCallback(async () => {
     try {
-      if (isWalletOpening) return;
+      if (isWalletOpen) return;
       if (address) return;
 
-      setIsWalletOpening(true);
+      setIsWalletOpen(true);
       await open();
     } catch (error) {
       console.error(error);
     } finally {
-      setIsWalletOpening(false);
+      setIsWalletOpen(false);
       setDepositModal(DepositModal.OPEN_FORM);
     }
-  }, [isWalletOpening, open]);
+  }, [isWalletOpen, open]);
 
   const DEPOSIT_OPTIONS = [
     {
       text: "Connect Wallet",
       icon: <Wallet color="white" size={26} />,
       onPress: openWallet,
-      isLoading: isWalletOpening
+      isLoading: isWalletOpen
     },
     {
       text: "Debit/Credit Card",
