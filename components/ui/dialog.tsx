@@ -70,7 +70,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'max-w-lg gap-4 border border-border web:cursor-default bg-background p-6 shadow-lg web:duration-200 rounded-xl md:rounded-twice w-screen mx-auto max-w-[95%]',
+        'max-w-lg gap-4 web:cursor-default bg-card p-6 shadow-lg web:duration-200 rounded-xl md:rounded-twice w-screen mx-auto max-w-[95%]',
         open
           ? 'web:animate-in web:fade-in-0 web:zoom-in-95'
           : 'web:animate-out web:fade-out-0 web:zoom-out-95',
@@ -81,7 +81,7 @@ const DialogContent = React.forwardRef<
       {children}
       <DialogPrimitive.Close
         className={
-          'absolute top-4 md:top-0 right-4 md:-right-12 h-6 w-6 md:h-10 md:w-10 flex items-center justify-center bg-modal-background md:border border-border rounded-full web:group opacity-70 web:ring-offset-background web:transition-opacity web:hover:opacity-100 web:focus:outline-none web:focus:ring-none web:focus:ring-ring web:focus:ring-offset-2 web:disabled:pointer-events-none'
+          'absolute top-4 md:top-0 right-4 md:-right-12 h-6 w-6 md:h-10 md:w-10 flex items-center justify-center bg-card md:border border-border rounded-full web:group web:ring-offset-background web:transition-opacity web:hover:opacity-70 web:focus:outline-none web:focus:ring-none web:focus:ring-ring web:focus:ring-offset-2 web:disabled:pointer-events-none'
         }
       >
         <X

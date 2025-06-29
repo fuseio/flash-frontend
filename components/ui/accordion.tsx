@@ -44,7 +44,7 @@ function AccordionItem({
   return (
     <Animated.View className={'overflow-hidden'} layout={LinearTransition.duration(200)}>
       <AccordionPrimitive.Item
-        className={cn('border-t border-border', className)}
+        className={cn('border-t border-border/50', className)}
         value={value}
         {...props}
       />
@@ -80,7 +80,7 @@ function AccordionTrigger({
         <AccordionPrimitive.Trigger {...props} asChild>
           <Trigger
             className={cn(
-              'flex flex-row web:flex-1 items-center gap-6 px-2 py-4 web:transition-all group web:focus-visible:outline-none web:focus-visible:ring-1 web:focus-visible:ring-muted-foreground',
+              'flex flex-row web:flex-1 items-center gap-6 p-4 web:transition-all group web:focus-visible:outline-none web:focus-visible:ring-1 web:focus-visible:ring-muted-foreground',
               className
             )}
           >
@@ -118,7 +118,7 @@ function AccordionContent({
         )}
         {...props}
       >
-        <InnerContent className={cn('pb-4 md:pl-12', className)}>{children}</InnerContent>
+        <InnerContent className={cn('px-4 pb-4 md:pl-14', className)}>{children}</InnerContent>
       </AccordionPrimitive.Content>
     </TextClassContext.Provider>
   );

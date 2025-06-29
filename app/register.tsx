@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Image } from 'expo-image'
 import { Link } from 'expo-router'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Controller, useForm } from "react-hook-form"
 import { ActivityIndicator, Platform, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -14,12 +14,14 @@ import { Status } from '@/lib/types'
 import { cn } from "@/lib/utils"
 import { useUserStore } from '@/store/useUserStore'
 
+import InfoError from "@/assets/images/info-error"
+
 const registerSchema = z.object({
   username: z
     .string()
     .min(3, "Username must be at least 3 characters")
     .max(20, "Username must be less than 20 characters")
-    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores")
+    .regex(/^[a-zA-Z0-9_]+$/, "Only use letters, numbers, underscores_, or hyphens-.")
     .refine(value => !value.includes(" "), "Username cannot contain spaces")
 });
 
@@ -57,12 +59,16 @@ export default function Register() {
   }
 
   const getSignupButtonText = () => {
-    if (errors.username) return errors.username.message;
-    if (signupInfo.status === Status.ERROR) return signupInfo.message || 'Error creating account';
     if (signupInfo.status === Status.PENDING) return 'Creating';
     if (!isValid || !watchedUsername) return 'Enter a username';
     return 'Create Account';
   };
+
+  const getSignupErrorText = useMemo(() => {
+    if (errors.username) return errors.username.message;
+    if (signupInfo.status === Status.ERROR) return signupInfo.message || 'Error creating account';
+    return '';
+  }, [errors.username, signupInfo.status]);
 
   const isSignupDisabled = () => {
     return (
@@ -92,7 +98,7 @@ export default function Register() {
           </View>
 
           <View className='w-full flex-col gap-8'>
-            <View className='flex-col gap-5'>
+            <View className={cn('flex-col gap-5', getSignupErrorText && 'gap-2')}>
               <Controller
                 control={control}
                 name="username"
@@ -107,6 +113,14 @@ export default function Register() {
                   />
                 )}
               />
+              {getSignupErrorText ? (
+                <View className="flex-row items-center gap-2">
+                  <InfoError />
+                  <Text className="text-sm text-red-400">
+                    {getSignupErrorText}
+                  </Text>
+                </View>
+              ) : null}
               <Button
                 variant="brand"
                 onPress={handleSubmit(handleSignupForm)}

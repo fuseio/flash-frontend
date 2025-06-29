@@ -1,5 +1,7 @@
-import { getPaymasterQuote, getUserOperationGasPrice } from "@/lib/pimlico";
+import { fetchTokenPriceUsd } from "@/lib/api";
+import { publicClient } from "@/lib/wagmi";
 import { useEffect, useState } from "react";
+import { mainnet } from "viem/chains";
 
 export const useEstimateDepositGas = () => {
   const [costInUsd, setCostInUsd] = useState<number>(0);
@@ -7,27 +9,12 @@ export const useEstimateDepositGas = () => {
 
   useEffect(() => {
     const estimateGas = async () => {
-      const { postOpGas, exchangeRate } = await getPaymasterQuote();
-
-      const userOperationGasPrice = await getUserOperationGasPrice();
-
-      const userOperationMaxGas = 1260233n;
-      const userOperationMaxCost =
-        userOperationMaxGas * userOperationGasPrice.standard.maxFeePerGas;
-
-      // represents the userOperation's max cost in demoniation of wei
-      const maxCostInWei =
-        userOperationMaxCost +
-        postOpGas * userOperationGasPrice.standard.maxFeePerGas;
-
-      // represents the userOperation's max cost in usd (with 6 decimals of precision)
-      const rawCostInUsd =
-        (maxCostInWei * exchangeRate) / 10n ** 18n;
-
-      // represents the userOperation's max cost in usd
-      // (human readable format after dividing by 6 decimal places)
-      const costInUsd = Number(rawCostInUsd) / 10 ** 6;
-      setCostInUsd(costInUsd);
+      setLoading(true);
+      const gasPrice = await publicClient(mainnet.id).getGasPrice();
+      const tokenPriceUsd = await fetchTokenPriceUsd("ethereum");
+      const gasEstimate = 700000n;
+      const costInUsd = gasEstimate * gasPrice;
+      setCostInUsd((Number(costInUsd) * tokenPriceUsd) / 10 ** 18);
       setLoading(false);
     };
     estimateGas();

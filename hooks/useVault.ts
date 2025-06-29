@@ -5,7 +5,7 @@ import { readContractQueryOptions } from "wagmi/query";
 
 import FuseVault from "@/lib/abis/FuseVault";
 import { ADDRESSES } from "@/lib/config";
-import { config } from "@/lib/wagmi";
+import { wagmi } from "@/lib/wagmi";
 
 const VAULT = "vault";
 
@@ -17,7 +17,7 @@ export const fetchVaultBalance = async (
   decimals = 6,
 ) => {
   const balance = await queryClient.fetchQuery(
-    readContractQueryOptions(config, {
+    readContractQueryOptions(wagmi.config, {
       abi: FuseVault,
       address: vaultAddress,
       functionName: "balanceOf",

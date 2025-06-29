@@ -13,6 +13,7 @@ interface SavingCountUpProps {
 
 const SECONDS_PER_YEAR = 31_557_600;
 const DURATION = 500;
+const DECIMAL_PLACES = 2;
 
 const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
   const [liveYield, setLiveYield] = useState<number>(0);
@@ -38,7 +39,7 @@ const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
   }, [balance, apy, lastTimestamp, calculateLiveYield]);
 
   const wholeNumber = Math.floor(liveYield);
-  const decimalPart = Number((liveYield - wholeNumber).toFixed(7).slice(2));
+  const decimalPart = Number((liveYield - wholeNumber).toFixed(DECIMAL_PLACES).slice(2));
 
   return (
     <View className="flex-row items-baseline text-foreground">
@@ -50,7 +51,7 @@ const SavingCountUp = ({ balance, apy, lastTimestamp }: SavingCountUpProps) => {
       <Text className="text-2xl md:text-4.5xl font-medium">.</Text>
       <AnimatedRollingNumber
         value={decimalPart}
-        formattedText={decimalPart.toString().padStart(7, '0')}
+        formattedText={decimalPart.toString().padStart(DECIMAL_PLACES, '0')}
         textStyle={{ fontSize: isDesktop ? 40 : 24, fontWeight: isDesktop ? "medium" : "semibold", ...styles.digit }}
         spinningAnimationConfig={{ duration: DURATION }}
       />

@@ -8,10 +8,8 @@ import Navbar from '@/components/Navbar';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { path } from '@/constants/path';
 import { useDimension } from '@/hooks/useDimension';
-import useNav from '@/hooks/useNav';
 
 export default function TabLayout() {
-  const { hasDeposited } = useNav();
   const { isDesktop } = useDimension();
 
   return (
@@ -69,7 +67,6 @@ export default function TabLayout() {
           options={{
             title: 'Card',
             tabBarIcon: ({ color }) => <CreditCard size={28} color={color} />,
-            href: null,
           }}
         />
         <Tabs.Screen
