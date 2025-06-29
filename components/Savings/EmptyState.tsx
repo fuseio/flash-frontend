@@ -51,51 +51,62 @@ export default function SavingsEmptyState() {
             </View>
 
             <LinearGradient
-              colors={['rgba(148, 242, 127, 0.3)', 'rgba(148, 242, 127, 0.2)']}
+              colors={['rgba(126, 126, 126, 0.3)', 'rgba(126, 126, 126, 0.2)']}
               style={{
                 borderRadius: isScreenMedium ? 20 : 12,
                 padding: isScreenMedium ? 40 : 24,
                 gap: isScreenMedium ? 96 : 40,
               }}
             >
-              <Text className="text-4.5xl font-semibold max-w-lg">
-                Deposit your stablecoins and earn {isTotalAPYLoading ?
-                  <Skeleton className="w-24 h-10 bg-brand/20" /> :
-                  <Text className="text-4.5xl text-brand font-bold underline">
-                    {totalAPY?.toFixed(2)}%
+              <View className="flex-row justify-between">
+                <View className="justify-between w-full max-w-2xl">
+                  <Text className="text-4.5xl font-semibold max-w-lg">
+                    Deposit your stablecoins and earn {isTotalAPYLoading ?
+                      <Skeleton className="w-24 h-10 bg-brand/20" /> :
+                      <Text className="text-4.5xl text-brand font-bold underline">
+                        {totalAPY?.toFixed(2)}%
+                      </Text>
+                    } per year
                   </Text>
-                } per year
-              </Text>
-              <View className="flex-col md:flex-row justify-between md:items-center gap-x-4 gap-y-10">
-                <View className="gap-4">
-                  <Image
-                    source={require("@/assets/images/deposit.png")}
-                    contentFit="contain"
-                    style={{ width: 64, height: 64 }}
-                  />
-                  <Text className="text-3xl text-brand">
-                    Deposit as little as $1
-                  </Text>
+                  <View className="flex-col md:flex-row justify-between md:items-center gap-x-4 gap-y-10">
+                    <View className="gap-4">
+                      <Image
+                        source={require("@/assets/images/deposit.png")}
+                        contentFit="contain"
+                        style={{ width: 64, height: 64 }}
+                      />
+                      <Text className="text-3xl max-w-48">
+                        Deposit as little as $1
+                      </Text>
+                    </View>
+                    <View className="gap-4">
+                      <Image
+                        source={require("@/assets/images/withdraw.png")}
+                        contentFit="contain"
+                        style={{ width: 64, height: 64 }}
+                      />
+                      <Text className="text-3xl max-w-48">
+                        Withdraw anytime
+                      </Text>
+                    </View>
+                    <View className="gap-4">
+                      <Image
+                        source={require("@/assets/images/earn.png")}
+                        contentFit="contain"
+                        style={{ width: 64, height: 64 }}
+                      />
+                      <Text className="text-3xl max-w-48">
+                        Earn every second
+                      </Text>
+                    </View>
+                  </View>
                 </View>
-                <View className="gap-4">
+                <View>
                   <Image
-                    source={require("@/assets/images/withdraw.png")}
+                    source={require("@/assets/images/solid-purple-large.png")}
                     contentFit="contain"
-                    style={{ width: 64, height: 64 }}
+                    style={{ width: 349, height: 378 }}
                   />
-                  <Text className="text-3xl text-brand">
-                    Withdraw anytime
-                  </Text>
-                </View>
-                <View className="gap-4">
-                  <Image
-                    source={require("@/assets/images/earn.png")}
-                    contentFit="contain"
-                    style={{ width: 64, height: 64 }}
-                  />
-                  <Text className="text-3xl text-brand">
-                    Earn every second
-                  </Text>
                 </View>
               </View>
             </LinearGradient>
