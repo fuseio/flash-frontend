@@ -7,7 +7,7 @@ import { readContractQueryOptions } from "wagmi/query";
 import ERC20_ABI from "@/lib/abis/ERC20";
 import { fetchTokenPriceUsd } from "@/lib/api";
 import { Status, Token, TokenWithBalance } from "@/lib/types";
-import { config } from "@/lib/wagmi";
+import { wagmi } from "@/lib/wagmi";
 
 type TokenSelectorProps = {
   tokens: Token[];
@@ -48,7 +48,7 @@ export const fetchBalance = async (
     }
 
     const balance = await queryClient.fetchQuery(
-      readContractQueryOptions(config, {
+      readContractQueryOptions(wagmi.config, {
         abi: ERC20_ABI,
         address: token.address,
         functionName: "balanceOf",
@@ -58,7 +58,7 @@ export const fetchBalance = async (
     );
 
     const price = await queryClient.fetchQuery(
-      tokenPriceUsdQueryOptions(token.coingeckoId)
+      tokenPriceUsdQueryOptions(token.symbol)
     );
 
     const formattedBalance = balance ? Number(formatUnits(balance, token.decimals)) : 0;

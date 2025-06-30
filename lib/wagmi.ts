@@ -1,10 +1,18 @@
-import { createClient, createPublicClient } from 'viem';
-import { createConfig, http } from 'wagmi';
-import { Chain, fuse, mainnet } from 'wagmi/chains';
-import { injected } from 'wagmi/connectors';
-import { EXPO_PUBLIC_ETHEREUM_API_KEY } from './config';
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import {
+  createAppKit as createAppKitNative,
+  defaultWagmiConfig
+} from "@reown/appkit-wagmi-react-native";
+import { createAppKit } from '@reown/appkit/react';
+import { Platform } from 'react-native';
+import { Chain, createPublicClient } from 'viem';
+import { http } from 'wagmi';
+import { fuse, mainnet } from 'wagmi/chains';
 
-const chains: readonly [Chain, ...Chain[]] = [
+import { EXPO_PUBLIC_ETHEREUM_API_KEY, EXPO_PUBLIC_REOWN_PROJECT_ID } from './config';
+import { IS_SERVER } from './utils';
+
+const chains: [Chain, ...Chain[]] = [
   fuse,
   mainnet,
 ]
@@ -14,46 +22,50 @@ export const rpcUrls: Record<number, string> = {
   [mainnet.id]: `https://eth-mainnet.g.alchemy.com/v2/${EXPO_PUBLIC_ETHEREUM_API_KEY}`,
 }
 
-const transports: Record<number, ReturnType<typeof http>> = {
-  [fuse.id]: http(rpcUrls[fuse.id]),
-  [mainnet.id]: http(rpcUrls[mainnet.id]),
-}
-
-export const config = createConfig({
-  chains,
-  connectors: [
-    injected(),
-  ],
-  multiInjectedProviderDiscovery: false,
-  ssr: true,
-  client({ chain }) {
-    return createClient({
-      chain,
-      transport: transports[chain.id],
-    });
-  },
-});
-
 export const publicClient = (chainId: number) => createPublicClient({
   chain: chains.find(chain => chain.id === chainId),
   transport: http(rpcUrls[chainId])
 })
 
-export const evmNetworks = chains.map(chain => ({
-  blockExplorerUrls: [chain.blockExplorers?.default?.apiUrl],
-  chainId: chain.id,
-  chainName: chain.name,
-  iconUrls: ['@/assets/images/fuse.png'],
-  name: chain.name,
-  nativeCurrency: {
-    decimals: chain.nativeCurrency.decimals,
-    name: chain.nativeCurrency.name,
-    symbol: chain.nativeCurrency.symbol,
+const metadata = {
+  name: "Solid",
+  description: "Your crypto savings app",
+  url: Platform.OS === 'web' && !IS_SERVER ? window.location.origin : "https://solid.xyz",
+  icons: ["https://avatars.githubusercontent.com/u/179229932"],
+  redirect: {
+    native: "solid://",
+    universal: "solid.xyz",
   },
-  networkId: chain.id,
-  rpcUrls: [...chain.rpcUrls.default.http],
-  vanityName: chain.name,
-})).map(network => ({
-  ...network,
-  blockExplorerUrls: network.blockExplorerUrls.filter((url): url is string => !!url)
-}));
+};
+
+const createWagmi = () => {
+  if (Platform.OS === 'web') {
+    const wagmiAdapter = new WagmiAdapter({
+      networks: chains,
+      projectId: EXPO_PUBLIC_REOWN_PROJECT_ID,
+    })
+
+    return {
+      config: wagmiAdapter.wagmiConfig,
+      appKit: createAppKit({
+        adapters: [wagmiAdapter],
+        networks: chains,
+        projectId: EXPO_PUBLIC_REOWN_PROJECT_ID,
+        metadata,
+      })
+    }
+  } else {
+    const wagmiConfig = defaultWagmiConfig({ chains, projectId: EXPO_PUBLIC_REOWN_PROJECT_ID, metadata });
+
+    return {
+      config: wagmiConfig,
+      appKit: createAppKitNative({
+        projectId: EXPO_PUBLIC_REOWN_PROJECT_ID,
+        wagmiConfig,
+        defaultChain: mainnet
+      })
+    }
+  }
+}
+
+export const wagmi = createWagmi();

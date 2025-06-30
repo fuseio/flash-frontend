@@ -69,6 +69,7 @@ const useDepositFromEOA = (): DepositResult => {
     address: ADDRESSES.ethereum.usdc,
     functionName: 'nonces',
     args: [eoaAddress as Address],
+    chainId: mainnet.id,
     query: {
       enabled: !!eoaAddress,
     },

@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { Link } from "expo-router";
-import { SafeAreaView, View } from "react-native";
+import { Platform, SafeAreaView, View } from "react-native";
 
 import { path } from "@/constants/path";
 import AccountCenterModal from "../AccountCenter/AccountCenterModal";
@@ -14,20 +14,21 @@ const Navbar = () => {
             source={require("@/assets/images/solid-logo.png")}
             alt="Solid logo"
             contentFit="contain"
-            style={{ width: 32, height: 32 }}
+            style={{ width: 20, height: 20 }}
           />
           <Image
-            source={require("@/assets/images/solid.png")}
+            source={require("@/assets/images/solid-4x.png")}
             alt="Solid"
             contentFit="contain"
-            style={{ width: 72, height: 37 }}
+            style={{ width: 68, height: 23 }}
             className="hidden md:block"
           />
         </Link>
-        {/* <NavMenu /> */}
-        <View className="w-32">
-          <AccountCenterModal />
-        </View>
+        {Platform.OS === 'web' && (
+          <View className="w-32">
+            <AccountCenterModal />
+          </View>
+        )}
       </View>
     </SafeAreaView>
   )

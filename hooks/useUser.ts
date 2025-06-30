@@ -1,32 +1,41 @@
-import { createSmartAccountClient } from "@getclave/permissionless";
-import {
-  toSafeSmartAccount
-} from "@getclave/permissionless/accounts";
-import { erc7579Actions } from "@getclave/permissionless/actions/erc7579";
 import {
   getWebAuthnValidator,
-  RHINESTONE_ATTESTER_ADDRESS
+  RHINESTONE_ATTESTER_ADDRESS,
 } from "@rhinestone/module-sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { PublicKey } from "ox";
+import { createSmartAccountClient } from "permissionless";
+import {
+  toSafeSmartAccount
+} from "permissionless/accounts";
+import { erc7579Actions } from "permissionless/actions/erc7579";
 import { useCallback, useEffect, useMemo } from "react";
 import * as passkeys from "react-native-passkeys";
 import { toAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
 
 import { path } from "@/constants/path";
-import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthentication, verifyRegistration } from "@/lib/api";
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthentication,
+  verifyRegistration,
+} from "@/lib/api";
 import { USER } from "@/lib/config";
-import { pimlicoClient } from '@/lib/pimlico';
+import { pimlicoClient } from "@/lib/pimlico";
 import { PasskeyArgType, Status, User } from "@/lib/types";
-import { bufferToBase64URLString, decodePublicKey, getNonce, setGlobalLogoutHandler, withRefreshToken } from "@/lib/utils";
+import {
+  bufferToBase64URLString,
+  decodePublicKey,
+  getNonce,
+  setGlobalLogoutHandler,
+  withRefreshToken,
+} from "@/lib/utils";
 import { publicClient } from "@/lib/wagmi";
 import { useUserStore } from "@/store/useUserStore";
-import { Chain, http } from 'viem';
-import {
-  entryPoint07Address
-} from "viem/account-abstraction";
+import { Chain, http } from "viem";
+import { entryPoint07Address } from "viem/account-abstraction";
 import { fetchIsDeposited } from "./useAnalytics";
 
 interface UseUserReturn {
@@ -34,7 +43,7 @@ interface UseUserReturn {
   handleSignup: (username: string) => Promise<void>;
   handleLogin: () => Promise<void>;
   handleDummyLogin: () => Promise<void>;
-  handleSelectUser: (username: string) => Promise<void>;
+  handleSelectUser: (username: string) => void;
   handleLogout: () => void;
   handleRemoveUsers: () => void;
   safeAA: (passkey: PasskeyArgType, chain: Chain) => Promise<any>;
@@ -53,7 +62,7 @@ const useUser = (): UseUserReturn => {
     unselectUser,
     removeUsers,
     setSignupInfo,
-    setLoginInfo
+    setLoginInfo,
   } = useUserStore();
 
   const user = useMemo(() => users.find((user: User) => user.selected), [users]);
@@ -141,27 +150,49 @@ const useUser = (): UseUserReturn => {
       setSignupInfo({ status: Status.PENDING });
 
       const optionsJSON = await generateRegistrationOptions(username);
+
       const authenticatorResponse = await passkeys.create(optionsJSON);
       if (!authenticatorResponse) {
         throw new Error("Error while creating passkey registration");
       }
 
-      const publicKey = bufferToBase64URLString(authenticatorResponse.response.getPublicKey());
+      const publicKeyData = authenticatorResponse.response.getPublicKey();
+      if (!publicKeyData) {
+        throw new Error("Failed to get public key from authenticator response");
+      }
+
+      // Handle platform differences - mobile returns base64 string, web returns ArrayBuffer
+      const publicKey =
+        typeof publicKeyData === "string"
+          ? publicKeyData // Already base64 encoded on mobile
+          : bufferToBase64URLString(publicKeyData); // Convert ArrayBuffer to base64 on web
+
       const coordinates = await decodePublicKey(authenticatorResponse.response);
-      const smartAccountClient = await safeAA({
-        rawId: authenticatorResponse.rawId,
-        credentialId: authenticatorResponse.id,
-        coordinates,
-      }, mainnet);
+
+      const smartAccountClient = await safeAA(
+        {
+          rawId: authenticatorResponse.rawId,
+          credentialId: authenticatorResponse.id,
+          coordinates: coordinates,
+        },
+        mainnet
+      );
+
+      const sessionId = optionsJSON.sessionId;
 
       const user = await withRefreshToken(
-        () => verifyRegistration({
-          ...authenticatorResponse,
-          response: {
-            ...authenticatorResponse.response,
-            publicKey,
-          },
-        }, smartAccountClient.account.address),
+        () =>
+          verifyRegistration(
+            {
+              ...authenticatorResponse,
+              response: {
+                ...authenticatorResponse.response,
+                publicKey,
+              },
+            },
+            sessionId,
+            smartAccountClient.account.address
+          ),
         { onError: handleLogin }
       );
 
@@ -195,7 +226,8 @@ const useUser = (): UseUserReturn => {
         throw new Error("Error while creating passkey authentication");
       }
 
-      const user = await verifyAuthentication(authenticatorResponse);
+      const sessionId = optionsJSON.sessionId;
+      const user = await verifyAuthentication(authenticatorResponse, sessionId);
 
       if (user) {
         const selectedUser = { ...user, selected: true };
@@ -236,13 +268,13 @@ const useUser = (): UseUserReturn => {
     router.replace(path.WELCOME);
   }, [unselectUser, router]);
 
-  const handleSelectUser = useCallback(async (username: string) => {
-    try {
+  const handleSelectUser = useCallback(
+    (username: string) => {
       selectUser(username);
       router.replace(path.HOME);
-    } catch (error) {
-    }
-  }, [checkBalance, router, selectUser, user]);
+    },
+    [selectUser, router]
+  );
 
   const handleRemoveUsers = useCallback(() => {
     removeUsers();

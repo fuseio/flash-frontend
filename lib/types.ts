@@ -20,6 +20,11 @@ export type PasskeyArgType = {
   credentialId: string;
 };
 
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface User {
   username: string
   safeAddress: Address
@@ -30,6 +35,7 @@ export interface User {
     credentialId: string,
   }
   isDeposited?: boolean;
+  tokens?: AuthTokens;
 }
 
 export interface BlockscoutTransaction {
@@ -55,7 +61,6 @@ export type Token = {
   symbol: string;
   decimals: number;
   imageId: string;
-  coingeckoId: string;
   isComingSoon?: boolean;
 }
 
@@ -69,9 +74,14 @@ export type TokenMap = {
 }
 
 export type TokenPriceUsd = {
-  [key: string]: {
-    usd: number;
-  };
+  data: {
+    symbol: string;
+    prices: {
+      currency: string;
+      value: string;
+      lastUpdatedAt: string;
+    }[];
+  }[];
 };
 
 export type KycLink = {
@@ -209,10 +219,16 @@ export type Transaction = {
 
 export type Faq = {
   question: string;
-  answer: string;
+  answer: React.ReactNode;
 }
 
 export type StatusInfo = {
   status: Status;
   message?: string;
+}
+
+export enum DepositModal {
+  OPEN_OPTIONS = "open_options",
+  OPEN_FORM = "open_form",
+  CLOSE = "close",
 }

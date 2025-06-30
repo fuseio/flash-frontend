@@ -12,7 +12,6 @@ export const TOKEN_MAP: TokenMap = {
       symbol: "USDC",
       decimals: 6,
       imageId: "usdc",
-      coingeckoId: "usd-coin",
     }
   ],
 }

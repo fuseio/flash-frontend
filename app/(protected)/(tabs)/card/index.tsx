@@ -1,12 +1,12 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { path } from "@/constants/path";
 import { useCardStatus } from "@/hooks/useCardStatus";
+import CardWithBottomShadow from "@/assets/images/card_with_bottom_shadow";
 
 export default function Card() {
   const router = useRouter();
@@ -14,12 +14,6 @@ export default function Card() {
 
   useEffect(() => {
     if (isLoading) return;
-
-    // If there's a 404 error, card doesn't exist - go to activate page
-    if (error && (error as any)?.status === 404) {
-      router.replace(path.CARD_ACTIVATE);
-      return;
-    }
 
     // If card exists (regardless of status), go to card details
     if (cardStatus) {
@@ -29,7 +23,11 @@ export default function Card() {
   }, [cardStatus, isLoading, error, router]);
 
   const activateCard = async () => {
-    router.push(path.CARD_ACTIVATE);
+    if (Platform.OS === "ios" || Platform.OS === "android") {
+      router.push(path.CARD_ACTIVATE_MOBILE);
+    } else {
+      router.push(path.CARD_ACTIVATE);
+    }
   };
 
   // Show loading state while checking card status
@@ -54,24 +52,17 @@ export default function Card() {
   }
 
   return (
-    <View className="flex-1 justify-between items-center p-6 bg-background">
-      <View className="mt-4">
-        <Text className="text-4xl font-bold text-center">
-          Introducing the Flash card
+    <View className="flex-1 justify-evenly items-center p-6 bg-background">
+      <View>
+        <Text className="text-4xl font-extrabold text-center">
+          Introducing the{"\n"}Solid card
         </Text>
         <Text className="text-lg mt-2 font-medium text-center text-white/70 leading-[20px]">
           The world&apos;s first self-custodial{"\n"}Mastercard by Flash
         </Text>
       </View>
 
-      <View className="flex-1 justify-center items-center w-full">
-        <Image
-          source={require("@/assets/images/card_with_bottom_shadow.png")}
-          alt="Flash Card"
-          style={{ width: "100%", height: "90%" }}
-          contentFit="contain"
-        />
-      </View>
+      <CardWithBottomShadow />
 
       <View className="w-full space-y-4">
         <Button className="rounded-xl h-14 w-full" onPress={activateCard}>
