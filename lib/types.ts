@@ -61,7 +61,6 @@ export type Token = {
   symbol: string;
   decimals: number;
   imageId: string;
-  coingeckoId: string;
   isComingSoon?: boolean;
 }
 
@@ -75,9 +74,14 @@ export type TokenMap = {
 }
 
 export type TokenPriceUsd = {
-  [key: string]: {
-    usd: number;
-  };
+  data: {
+    symbol: string;
+    prices: {
+      currency: string;
+      value: string;
+      lastUpdatedAt: string;
+    }[];
+  }[];
 };
 
 export type KycLink = {

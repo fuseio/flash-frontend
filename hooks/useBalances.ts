@@ -18,7 +18,6 @@ interface TokenBalance {
   contractDecimals: number;
   type: string;
   verified?: boolean;
-  coinGeckoId?: string;
   chainId: number;
 }
 

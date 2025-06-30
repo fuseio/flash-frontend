@@ -7,7 +7,7 @@ import {
 
 import { useUserStore } from "@/store/useUserStore";
 import {
-	EXPO_PUBLIC_COIN_GECKO_API_KEY,
+	EXPO_PUBLIC_ALCHEMY_API_KEY,
 	EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL,
 	EXPO_PUBLIC_FLASH_API_BASE_URL,
 } from "./config";
@@ -198,14 +198,9 @@ export const fetchTokenTransfer = async (
 
 export const fetchTokenPriceUsd = async (token: string) => {
 	const response = await axios.get<TokenPriceUsd>(
-		`https://pro-api.coingecko.com/api/v3/simple/price?ids=${token}&vs_currencies=usd`,
-		{
-			headers: {
-				"x-cg-pro-api-key": EXPO_PUBLIC_COIN_GECKO_API_KEY,
-			},
-		},
+		`https://api.g.alchemy.com/prices/v1/${EXPO_PUBLIC_ALCHEMY_API_KEY}/tokens/by-symbol?symbols=${token}`
 	);
-	return response.data[token].usd;
+	return response?.data?.data[0]?.prices[0]?.value;
 };
 
 export const createKycLink = async (
