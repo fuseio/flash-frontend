@@ -58,7 +58,7 @@ export const fetchBalance = async (
     );
 
     const price = await queryClient.fetchQuery(
-      tokenPriceUsdQueryOptions(token.coingeckoId)
+      tokenPriceUsdQueryOptions(token.symbol)
     );
 
     const formattedBalance = balance ? Number(formatUnits(balance, token.decimals)) : 0;

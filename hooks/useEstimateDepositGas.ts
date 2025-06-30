@@ -11,7 +11,7 @@ export const useEstimateDepositGas = () => {
     const estimateGas = async () => {
       setLoading(true);
       const gasPrice = await publicClient(mainnet.id).getGasPrice();
-      const tokenPriceUsd = await fetchTokenPriceUsd("ethereum");
+      const tokenPriceUsd = await fetchTokenPriceUsd("ETH");
       const gasEstimate = 700000n;
       const costInUsd = gasEstimate * gasPrice;
       setCostInUsd((Number(costInUsd) * tokenPriceUsd) / 10 ** 18);
