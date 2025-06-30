@@ -62,7 +62,7 @@ const useUser = (): UseUserReturn => {
     unselectUser,
     removeUsers,
     setSignupInfo,
-    setLoginInfo
+    setLoginInfo,
   } = useUserStore();
 
   const user = useMemo(() => users.find((user: User) => user.selected), [users]);
