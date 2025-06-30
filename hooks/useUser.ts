@@ -43,7 +43,7 @@ interface UseUserReturn {
   handleSignup: (username: string) => Promise<void>;
   handleLogin: () => Promise<void>;
   handleDummyLogin: () => Promise<void>;
-  handleSelectUser: (username: string) => Promise<void>;
+  handleSelectUser: (username: string) => void;
   handleLogout: () => void;
   handleRemoveUsers: () => void;
   safeAA: (passkey: PasskeyArgType, chain: Chain) => Promise<any>;
