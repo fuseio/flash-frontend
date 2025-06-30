@@ -150,18 +150,33 @@ const useUser = (): UseUserReturn => {
       setSignupInfo({ status: Status.PENDING });
 
       const optionsJSON = await generateRegistrationOptions(username);
+
       const authenticatorResponse = await passkeys.create(optionsJSON);
       if (!authenticatorResponse) {
         throw new Error("Error while creating passkey registration");
       }
 
-      const publicKey = bufferToBase64URLString(authenticatorResponse.response.getPublicKey());
+      const publicKeyData = authenticatorResponse.response.getPublicKey();
+      if (!publicKeyData) {
+        throw new Error("Failed to get public key from authenticator response");
+      }
+
+      // Handle platform differences - mobile returns base64 string, web returns ArrayBuffer
+      const publicKey =
+        typeof publicKeyData === "string"
+          ? publicKeyData // Already base64 encoded on mobile
+          : bufferToBase64URLString(publicKeyData); // Convert ArrayBuffer to base64 on web
+
       const coordinates = await decodePublicKey(authenticatorResponse.response);
-      const smartAccountClient = await safeAA({
-        rawId: authenticatorResponse.rawId,
-        credentialId: authenticatorResponse.id,
-        coordinates,
-      }, mainnet);
+
+      const smartAccountClient = await safeAA(
+        {
+          rawId: authenticatorResponse.rawId,
+          credentialId: authenticatorResponse.id,
+          coordinates: coordinates,
+        },
+        mainnet
+      );
 
       const sessionId = optionsJSON.sessionId;
 
