@@ -5,7 +5,7 @@ import { useEffect, useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { ActivityIndicator, TextInput, View } from "react-native"
 import { formatUnits } from "viem"
-import { useAccount, useWaitForTransactionReceipt } from "wagmi"
+import { useWaitForTransactionReceipt } from "wagmi"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,6 @@ import { useEstimateDepositGas } from "@/hooks/useEstimateDepositGas"
 import { DepositModal, Status } from "@/lib/types"
 import { cn, compactNumberFormat, formatNumber } from "@/lib/utils"
 import { useDepositStore } from "@/store/useDepositStore"
-import { mainnet } from "viem/chains"
 import { CheckConnectionWrapper } from "../CheckConnectionWrapper"
 import ConnectedWalletDropdown from "../ConnectedWalletDropdown"
 import TokenDetails from "../TokenCard/TokenDetails"
@@ -26,7 +25,6 @@ function DepositToVaultForm() {
   const { balance, deposit, depositStatus, hash } = useDepositFromEOA();
   const { isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({ hash });
   const { setDepositModal } = useDepositStore();
-  const { chainId } = useAccount();
 
   const isLoading = depositStatus === Status.PENDING || isPending;
   const { data: totalAPY } = useTotalAPY();
@@ -69,7 +67,6 @@ function DepositToVaultForm() {
   const getButtonText = () => {
     if (errors.amount) return errors.amount.message;
     if (!isValid || !watchedAmount) return "Enter an amount";
-    if (chainId !== mainnet.id) return "Switch to Ethereum";
     if (depositStatus === Status.PENDING) return "Check Wallet";
     if (isPending) return "Depositing...";
     if (isSuccess) return "Successfully deposited!";
