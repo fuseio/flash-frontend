@@ -9,7 +9,7 @@ import {
   type Address
 } from "viem";
 import { mainnet } from "viem/chains";
-import { useAccount, useBlockNumber, useReadContract, useSendTransaction, useSignTypedData } from "wagmi";
+import { useAccount, useBlockNumber, useChainId, useReadContract, useSendTransaction, useSignTypedData, useSwitchChain } from "wagmi";
 
 import ERC20_ABI from "@/lib/abis/ERC20";
 import ETHEREUM_TELLER_ABI from "@/lib/abis/EthereumTeller";
@@ -31,7 +31,8 @@ const useDepositFromEOA = (): DepositResult => {
   const { address: eoaAddress } = useAccount();
   const { signTypedDataAsync } = useSignTypedData();
   const { sendTransactionAsync } = useSendTransaction();
-
+  const { switchChainAsync } = useSwitchChain();
+  const chainId = useChainId();
   const [depositStatus, setDepositStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string | null>(null);
   const [hash, setHash] = useState<Address | undefined>();
@@ -93,6 +94,10 @@ const useDepositFromEOA = (): DepositResult => {
       if (!tokenName) throw new Error("Could not get token name");
       if (fee === undefined) throw new Error("Could not get fee");
       if (!user?.safeAddress) throw new Error("User safe address not found");
+
+      if (chainId !== mainnet.id) {
+        await switchChainAsync({ chainId: mainnet.id })
+      }
 
       setDepositStatus(Status.PENDING);
       setError(null);

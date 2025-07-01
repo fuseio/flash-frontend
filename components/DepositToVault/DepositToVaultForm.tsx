@@ -1,8 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Image } from "expo-image"
-import { useRouter } from "expo-router"
 import { Fuel, Wallet } from "lucide-react-native"
 import { useEffect, useMemo } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { ActivityIndicator, TextInput, View } from "react-native"
 import { formatUnits } from "viem"
@@ -12,26 +11,23 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { useTotalAPY } from "@/hooks/useAnalytics"
 import useDepositFromEOA from "@/hooks/useDepositFromEOA"
-import { useDimension } from "@/hooks/useDimension"
 import { useEstimateDepositGas } from "@/hooks/useEstimateDepositGas"
 import { DepositModal, Status } from "@/lib/types"
 import { cn, compactNumberFormat, formatNumber } from "@/lib/utils"
+import { useDepositStore } from "@/store/useDepositStore"
 import { CheckConnectionWrapper } from "../CheckConnectionWrapper"
+import ConnectedWalletDropdown from "../ConnectedWalletDropdown"
 import TokenDetails from "../TokenCard/TokenDetails"
 import { Skeleton } from "../ui/skeleton"
 import { Text } from "../ui/text"
-import { useDepositStore } from "@/store/useDepositStore"
-import ConnectedWalletDropdown from "../ConnectedWalletDropdown"
 
 function DepositToVaultForm() {
-  const router = useRouter();
-  const { balance, deposit, depositStatus, error, hash } = useDepositFromEOA();
-  const { data: receipt, isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { balance, deposit, depositStatus, hash } = useDepositFromEOA();
+  const { isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({ hash });
   const { setDepositModal } = useDepositStore();
 
   const isLoading = depositStatus === Status.PENDING || isPending;
   const { data: totalAPY } = useTotalAPY();
-  const { isDesktop } = useDimension();
   const { costInUsd, loading } = useEstimateDepositGas();
 
   const formattedBalance = balance ? formatUnits(balance, 6) : "0";
@@ -70,11 +66,11 @@ function DepositToVaultForm() {
 
   const getButtonText = () => {
     if (errors.amount) return errors.amount.message;
+    if (!isValid || !watchedAmount) return "Enter an amount";
     if (depositStatus === Status.PENDING) return "Check Wallet";
     if (isPending) return "Depositing...";
     if (isSuccess) return "Successfully deposited!";
-    if (depositStatus === Status.ERROR) return error || "Error while depositing";
-    if (!isValid || !watchedAmount) return "Enter an amount";
+    if (depositStatus === Status.ERROR) return "Error while depositing";
     return "Deposit";
   };
 
@@ -149,12 +145,14 @@ function DepositToVaultForm() {
               style={{ width: 34, height: 34 }}
               contentFit="contain"
             />
-            <Text className="text-2xl font-semibold">
-              {compactNumberFormat(Number(watchedAmount))}
-            </Text>
-            <Text>
-              soUSD
-            </Text>
+            <View className="flex-row items-baseline gap-2">
+              <Text className="text-2xl font-semibold">
+                {compactNumberFormat(Number(watchedAmount))}
+              </Text>
+              <Text>
+                soUSD
+              </Text>
+            </View>
             {/* <Text className="text-lg opacity-40 text-right">
                       {`(${compactNumberFormat(costInUsd)} USDC in fee)`}
                     </Text> */}
