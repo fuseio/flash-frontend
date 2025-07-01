@@ -1,7 +1,5 @@
 import { Link } from "expo-router";
 import { View } from "react-native";
-
-import BuyCryptoModal from "../BuyCrypto/BuyCryptoModal";
 import { DepositOptionModal } from "../DepositOption";
 import { Text } from "../ui/text";
 import WithdrawModal from "../Withdraw/WithdrawModal";
@@ -22,7 +20,6 @@ const DashboardHeader = () => {
       </View>
       <View className="flex-row items-center gap-5 h-20">
         <DepositOptionModal />
-        <BuyCryptoModal />
         <WithdrawModal />
       </View>
     </View>
