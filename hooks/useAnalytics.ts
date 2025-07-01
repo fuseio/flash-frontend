@@ -61,13 +61,13 @@ export const formatTransactions = async (
         status,
         hash: internalTransaction.transactionHash,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch LZ transaction:', error);
       return {
         title: "Deposit USDC",
         timestamp: internalTransaction.depositTimestamp,
         amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
-        status: LayerZeroTransactionStatus.FAILED,
+        status: error.response.status === 404 ? LayerZeroTransactionStatus.INFLIGHT : LayerZeroTransactionStatus.FAILED,
       };
     }
   });
