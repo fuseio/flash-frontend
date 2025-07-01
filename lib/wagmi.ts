@@ -9,7 +9,7 @@ import { Chain, createPublicClient } from 'viem';
 import { http } from 'wagmi';
 import { fuse, mainnet } from 'wagmi/chains';
 
-import { EXPO_PUBLIC_ETHEREUM_API_KEY, EXPO_PUBLIC_REOWN_PROJECT_ID } from './config';
+import { EXPO_PUBLIC_ALCHEMY_API_KEY, EXPO_PUBLIC_REOWN_PROJECT_ID } from './config';
 import { IS_SERVER } from './utils';
 
 const chains: [Chain, ...Chain[]] = [
@@ -19,7 +19,7 @@ const chains: [Chain, ...Chain[]] = [
 
 export const rpcUrls: Record<number, string> = {
   [fuse.id]: fuse.rpcUrls.default.http[0],
-  [mainnet.id]: `https://eth-mainnet.g.alchemy.com/v2/${EXPO_PUBLIC_ETHEREUM_API_KEY}`,
+  [mainnet.id]: `https://eth-mainnet.g.alchemy.com/v2/${EXPO_PUBLIC_ALCHEMY_API_KEY}`,
 }
 
 export const publicClient = (chainId: number) => createPublicClient({

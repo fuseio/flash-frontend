@@ -1,40 +1,33 @@
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Image } from "expo-image"
-import { useRouter } from "expo-router"
 import { Fuel, Wallet } from "lucide-react-native"
 import { useEffect, useMemo } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { ActivityIndicator, TextInput, View } from "react-native"
 import { formatUnits } from "viem"
-import { useAccount, useSwitchChain, useWaitForTransactionReceipt } from "wagmi"
+import { useWaitForTransactionReceipt } from "wagmi"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import { useTotalAPY } from "@/hooks/useAnalytics"
 import useDepositFromEOA from "@/hooks/useDepositFromEOA"
-import { useDimension } from "@/hooks/useDimension"
 import { useEstimateDepositGas } from "@/hooks/useEstimateDepositGas"
 import { DepositModal, Status } from "@/lib/types"
 import { cn, compactNumberFormat, formatNumber } from "@/lib/utils"
+import { useDepositStore } from "@/store/useDepositStore"
 import { CheckConnectionWrapper } from "../CheckConnectionWrapper"
+import ConnectedWalletDropdown from "../ConnectedWalletDropdown"
 import TokenDetails from "../TokenCard/TokenDetails"
 import { Skeleton } from "../ui/skeleton"
 import { Text } from "../ui/text"
-import { useDepositStore } from "@/store/useDepositStore"
-import ConnectedWalletDropdown from "../ConnectedWalletDropdown"
-import { mainnet } from "viem/chains"
 
 function DepositToVaultForm() {
-  const router = useRouter();
   const { balance, deposit, depositStatus, hash } = useDepositFromEOA();
-  const { data: receipt, isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({ hash });
   const { setDepositModal } = useDepositStore();
-  const { chainId } = useAccount();
-  const { switchChain, isPending: isSwitchingChain } = useSwitchChain();
 
   const isLoading = depositStatus === Status.PENDING || isPending;
   const { data: totalAPY } = useTotalAPY();
-  const { isDesktop } = useDimension();
   const { costInUsd, loading } = useEstimateDepositGas();
 
   const formattedBalance = balance ? formatUnits(balance, 6) : "0";
@@ -74,8 +67,6 @@ function DepositToVaultForm() {
   const getButtonText = () => {
     if (errors.amount) return errors.amount.message;
     if (!isValid || !watchedAmount) return "Enter an amount";
-    if (isSwitchingChain) return "Switching...";
-    if (chainId !== mainnet.id) return "Switch to Ethereum";
     if (depositStatus === Status.PENDING) return "Check Wallet";
     if (isPending) return "Depositing...";
     if (isSuccess) return "Successfully deposited!";
@@ -85,9 +76,6 @@ function DepositToVaultForm() {
 
   const onSubmit = async (data: DepositFormData) => {
     try {
-      if (chainId !== mainnet.id) {
-        return switchChain({ chainId: mainnet.id });
-      }
       await deposit(data.amount.toString());
     } catch (error) {
       // handled by hook
@@ -105,8 +93,7 @@ function DepositToVaultForm() {
     return (
       isLoading ||
       !isValid ||
-      !watchedAmount ||
-      isSwitchingChain
+      !watchedAmount
     );
   };
 
