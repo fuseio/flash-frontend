@@ -73,13 +73,8 @@ export default function Dashboard() {
   useEffect(() => {
     refetchBalance()
     refetchTransactions()
+    refetchFormattedTransactions()
   }, [blockNumber])
-
-  useEffect(() => {
-    if (userDepositTransactions) {
-      refetchFormattedTransactions()
-    }
-  }, [userDepositTransactions])
 
   if (isBalanceLoading || isTransactionsLoading) {
     return <Loading />
