@@ -18,7 +18,7 @@ const BuyCryptoModal = () => {
   console.log("BuyCryptoModal render - isOpen:", isOpen);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
+    <Dialog>
       <DialogTrigger asChild>
         <View
           className={buttonVariants({
