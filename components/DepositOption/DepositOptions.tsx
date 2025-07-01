@@ -9,11 +9,15 @@ import { DepositModal } from "@/lib/types"
 import { useDepositStore } from "@/store/useDepositStore"
 import { useRouter } from "expo-router"
 import DepositOption from "./DepositOption"
+import { useBuyCryptoStore } from "@/store/useBuyCryptoStore"
 
 const DepositOptions = () => {
   const { address } = useAccount();
   const { open } = useAppKit()
   const { setDepositModal } = useDepositStore();
+
+  const { openModal: openBuyCryptoModal } = useBuyCryptoStore();
+
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const router = useRouter();
 
@@ -44,7 +48,7 @@ const DepositOptions = () => {
       icon: <CreditCard color="white" size={26} />,
       onPress: () => {
         setDepositModal(DepositModal.CLOSE);
-        router.push(path.BUY_CRYPTO);
+        openBuyCryptoModal();
       },
       isLoading: false
     },
