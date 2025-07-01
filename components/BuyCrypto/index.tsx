@@ -171,7 +171,8 @@ const BuyCrypto = ({ onClose }: MercuryoIframeWidgetProps = {}) => {
     buildUrl();
   }, [user]); // Also depend on the entire user object, not just safeAddress
 
-  return (
+  
+return (
     <View style={styles.container}>
       {loading && (
         <View className="flex-1 items-center justify-center">
@@ -200,6 +201,8 @@ const BuyCrypto = ({ onClose }: MercuryoIframeWidgetProps = {}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    height: '100%',
+    minHeight: 800,
   },
   loadingText: {
     textAlign: "center",
@@ -216,6 +219,7 @@ const styles = StyleSheet.create({
   iframe: {
     width: "100%",
     height: "100%",
+    minHeight: 500,
   },
 });
 
