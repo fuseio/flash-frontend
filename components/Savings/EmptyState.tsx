@@ -75,7 +75,7 @@ export default function SavingsEmptyState() {
                         contentFit="contain"
                         style={{ width: 64, height: 64 }}
                       />
-                      <Text className="text-3xl max-w-48">
+                      <Text className="text-2xl max-w-32">
                         Deposit as little as $1
                       </Text>
                     </View>
@@ -85,7 +85,7 @@ export default function SavingsEmptyState() {
                         contentFit="contain"
                         style={{ width: 64, height: 64 }}
                       />
-                      <Text className="text-3xl max-w-48">
+                      <Text className="text-2xl max-w-32">
                         Withdraw anytime
                       </Text>
                     </View>
@@ -95,7 +95,7 @@ export default function SavingsEmptyState() {
                         contentFit="contain"
                         style={{ width: 64, height: 64 }}
                       />
-                      <Text className="text-3xl max-w-48">
+                      <Text className="text-2xl max-w-32">
                         Earn every second
                       </Text>
                     </View>
