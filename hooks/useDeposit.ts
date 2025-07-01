@@ -8,7 +8,7 @@ import {
   type Address
 } from "viem";
 import { mainnet } from "viem/chains";
-import { useBlockNumber, useReadContract } from "wagmi";
+import { useBlockNumber, useChainId, useReadContract, useSwitchChain } from "wagmi";
 
 import BridgePayamster_ABI from "@/lib/abis/BridgePayamster";
 import ERC20_ABI from "@/lib/abis/ERC20";
@@ -36,6 +36,8 @@ const useDeposit = (): DepositResult => {
   const [depositStatus, setDepositStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string | null>(null);
   const { data: blockNumber } = useBlockNumber({ watch: true });
+  const { switchChainAsync } = useSwitchChain();
+  const chainId = useChainId();
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
     abi: ERC20_ABI,
