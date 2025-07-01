@@ -27,6 +27,7 @@ import { useDepositStore } from "@/store/useDepositStore"
 import { DepositToVaultForm } from "../DepositToVault"
 import { Button, buttonVariants } from "../ui/button"
 import DepositOptions from "./DepositOptions"
+import BuyCrypto from "../BuyCrypto"
 
 const ANIMATION_DURATION = 150;
 
@@ -34,6 +35,7 @@ const DepositOptionModal = () => {
   const { depositModal, previousDepositModal, setDepositModal } = useDepositStore();
   const { address, status } = useAccount();
   const isForm = address && depositModal === DepositModal.OPEN_FORM;
+  const isBuyCrypto = depositModal === DepositModal.OPEN_BUY_CRYPTO;
   const shouldAnimate = previousDepositModal !== DepositModal.CLOSE;
 
   const dialogHeight = useSharedValue(0)
@@ -113,6 +115,14 @@ const DepositOptionModal = () => {
                 key="deposit-form"
               >
                 <DepositToVaultForm />
+              </Animated.View>
+            ) : isBuyCrypto ? (
+              <Animated.View
+                entering={shouldAnimate ? FadeInLeft.duration(ANIMATION_DURATION) : undefined}
+                exiting={FadeOutLeft.duration(ANIMATION_DURATION)}
+                key="buy-crypto"
+              >
+                <BuyCrypto />
               </Animated.View>
             ) : (
               <Animated.View

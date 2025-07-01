@@ -3,19 +3,17 @@ import { useCallback, useState } from "react"
 import { View } from "react-native"
 import { useAccount } from "wagmi"
 
-import { path } from "@/constants/path"
 import { useAppKit } from "@/lib/reown"
 import { DepositModal } from "@/lib/types"
 import { useDepositStore } from "@/store/useDepositStore"
-import { useRouter } from "expo-router"
 import DepositOption from "./DepositOption"
 
 const DepositOptions = () => {
   const { address } = useAccount();
   const { open } = useAppKit()
   const { setDepositModal } = useDepositStore();
+
   const [isWalletOpen, setIsWalletOpen] = useState(false);
-  const router = useRouter();
 
   const openWallet = useCallback(async () => {
     try {
@@ -43,8 +41,7 @@ const DepositOptions = () => {
       text: "Debit/Credit Card",
       icon: <CreditCard color="white" size={26} />,
       onPress: () => {
-        setDepositModal(DepositModal.CLOSE);
-        router.push(path.BUY_CRYPTO);
+        setDepositModal(DepositModal.OPEN_BUY_CRYPTO);
       },
       isLoading: false
     },

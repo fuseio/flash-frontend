@@ -1,9 +1,8 @@
-import { View } from "react-native";
 import { Link } from "expo-router";
-
+import { View } from "react-native";
+import { DepositOptionModal } from "../DepositOption";
 import { Text } from "../ui/text";
 import WithdrawModal from "../Withdraw/WithdrawModal";
-import { DepositOptionModal } from "../DepositOption";
 
 const DashboardHeader = () => {
   return (
