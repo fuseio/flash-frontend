@@ -60,6 +60,8 @@ export async function buildMercuryoWidgetUrl({
     url += `&signature=${encodeURIComponent(signature)}`;
     url += `&type=buy`;
     url += `&fiat_currency=EUR`;
+    url += `&networks=ETHEREUM`;
+    url += `&currency=USDC`;
 
     return url;
   } catch (error) {
