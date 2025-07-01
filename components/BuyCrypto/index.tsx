@@ -3,7 +3,7 @@ import useUser from "@/hooks/useUser";
 import { getClientIp } from "@/lib/api";
 import * as Crypto from "expo-crypto";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 interface MercuryoIframeWidgetProps {
   onClose?: () => void;
@@ -72,13 +72,13 @@ export async function buildMercuryoWidgetUrl({
 const BuyCrypto = ({ onClose }: MercuryoIframeWidgetProps = {}) => {
   console.log("BuyCrypto component rendering");
   console.log("onClose function:", onClose);
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [finalUrl, setFinalUrl] = useState<string>("");
 
   const { user } = useUser();
-  
+
   console.log("User in BuyCrypto:", user);
   console.log("User safeAddress:", user?.safeAddress);
 
@@ -171,9 +171,8 @@ const BuyCrypto = ({ onClose }: MercuryoIframeWidgetProps = {}) => {
     buildUrl();
   }, [user]); // Also depend on the entire user object, not just safeAddress
 
-  
-return (
-    <View style={styles.container}>
+  return (
+    <View className="flex-1 h-full min-h-[55vh]">
       {loading && (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#000" />
@@ -182,12 +181,14 @@ return (
 
       {error ? (
         <View className="flex-1 items-center justify-center">
-          <Text style={styles.errorText}>{error}</Text>
+          <Text className="text-center mt-5 text-red-500 text-base">
+            {error}
+          </Text>
         </View>
       ) : finalUrl ? (
         <iframe
           src={finalUrl}
-          style={styles.iframe}
+          className="w-full h-[70vh]"
           onLoad={handleIframeLoad}
           onError={handleIframeError}
           allow="camera; microphone; geolocation; payment"
@@ -197,31 +198,6 @@ return (
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    height: '100%',
-    minHeight: 800,
-  },
-  loadingText: {
-    textAlign: "center",
-    marginTop: 20,
-    fontSize: 16,
-    color: "#fff",
-  },
-  errorText: {
-    textAlign: "center",
-    marginTop: 20,
-    color: "red",
-    fontSize: 16,
-  },
-  iframe: {
-    width: "100%",
-    height: "100%",
-    minHeight: 500,
-  },
-});
 
 // Add type declaration
 declare global {
