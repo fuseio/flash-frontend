@@ -4,7 +4,6 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import Navbar from '@/components/Navbar';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { path } from '@/constants/path';
 import { useDimension } from '@/hooks/useDimension';
@@ -14,7 +13,6 @@ export default function TabLayout() {
 
   return (
     <>
-      {isDesktop && <Navbar />}
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "white",

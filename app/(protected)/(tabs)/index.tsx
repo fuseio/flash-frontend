@@ -1,6 +1,7 @@
 import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import FAQ from "@/components/FAQ";
 import Loading from "@/components/Loading";
+import Navbar from "@/components/Navbar";
 import NavbarMobile from "@/components/Navbar/NavbarMobile";
 import Ping from "@/components/Ping";
 import SavingCountUp from "@/components/SavingCountUp";
@@ -92,6 +93,7 @@ export default function Dashboard() {
         edges={["right", "left", "bottom"]}
       >
         <ScrollView className="flex-1">
+          {isDesktop && <Navbar />}
           <View className="gap-16 px-4 py-8 w-full max-w-7xl mx-auto">
             {isScreenMedium ? (
               <DashboardHeader />

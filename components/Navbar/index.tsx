@@ -7,8 +7,8 @@ import AccountCenterModal from "../AccountCenter/AccountCenterModal";
 
 const Navbar = () => {
   return (
-    <SafeAreaView>
-      <View className="bg-background flex-row justify-end md:justify-between items-center p-4 md:p-6">
+    <SafeAreaView className="sticky top-0 z-50 bg-background/10 backdrop-blur-lg border-b border-border/40">
+      <View className="flex-row justify-end md:justify-between items-center p-4 md:p-6">
         <Link href={path.HOME} className="hidden md:flex flex-row items-center gap-2">
           <Image
             source={require("@/assets/images/solid-logo.png")}
