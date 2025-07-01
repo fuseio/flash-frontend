@@ -229,6 +229,7 @@ export type StatusInfo = {
 
 export enum DepositModal {
   OPEN_OPTIONS = "open_options",
+  OPEN_BUY_CRYPTO = "open_buy_crypto",
   OPEN_FORM = "open_form",
   CLOSE = "close",
 }

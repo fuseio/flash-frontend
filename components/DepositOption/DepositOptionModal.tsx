@@ -24,6 +24,7 @@ import { Text } from "@/components/ui/text"
 import { DepositModal } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { useDepositStore } from "@/store/useDepositStore"
+import BuyCrypto from "../BuyCrypto"
 import { DepositToVaultForm } from "../DepositToVault"
 import { Button, buttonVariants } from "../ui/button"
 import DepositOptions from "./DepositOptions"
@@ -34,6 +35,7 @@ const DepositOptionModal = () => {
   const { depositModal, previousDepositModal, setDepositModal } = useDepositStore();
   const { address, status } = useAccount();
   const isForm = address && depositModal === DepositModal.OPEN_FORM;
+  const isBuyCrypto = depositModal === DepositModal.OPEN_BUY_CRYPTO;
   const shouldAnimate = previousDepositModal !== DepositModal.CLOSE;
 
   const dialogHeight = useSharedValue(0)
@@ -79,12 +81,12 @@ const DepositOptionModal = () => {
           </View>
         </View>
       </DialogTrigger>
-      <DialogContent className="p-8 md:max-w-md">
+      <DialogContent className={cn("p-8", isBuyCrypto ? "md:max-w-4xl w-[90vw] h-[70vh]" : "md:max-w-md")}>
         <Animated.View
           style={dialogAnimatedStyle}
           className="overflow-hidden"
         >
-          <View className={cn("md:gap-8", !isForm && "min-h-[40rem]")}
+          <View className={cn("md:gap-8", !isForm && !isBuyCrypto && "min-h-[40rem]")}
             onLayout={(event) => {
               dialogHeight.value = event.nativeEvent.layout.height
             }}
@@ -113,6 +115,14 @@ const DepositOptionModal = () => {
                 key="deposit-form"
               >
                 <DepositToVaultForm />
+              </Animated.View>
+            ) : isBuyCrypto ? (
+              <Animated.View
+                entering={shouldAnimate ? FadeInLeft.duration(ANIMATION_DURATION) : undefined}
+                exiting={FadeOutLeft.duration(ANIMATION_DURATION)}
+                key="buy-crypto"
+              >
+                <BuyCrypto />
               </Animated.View>
             ) : (
               <Animated.View
