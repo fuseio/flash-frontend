@@ -13,6 +13,7 @@ import { useDimension } from "@/hooks/useDimension";
 import { DepositOptionModal } from "../DepositOption";
 import FAQ from "../FAQ";
 import faqs from "@/constants/faqs";
+import Navbar from "../Navbar";
 
 export default function SavingsEmptyState() {
   const { data: totalAPY, isLoading: isTotalAPYLoading } = useTotalAPY()
@@ -26,6 +27,7 @@ export default function SavingsEmptyState() {
         edges={['right', 'left', 'bottom']}
       >
         <ScrollView className="flex-1">
+          {isDesktop && <Navbar />}
           <View className="w-full max-w-7xl mx-auto gap-16 px-4 py-8">
             <View className="md:flex-row justify-between md:items-center gap-y-4">
               <View className="gap-3">
@@ -75,7 +77,7 @@ export default function SavingsEmptyState() {
                         contentFit="contain"
                         style={{ width: 64, height: 64 }}
                       />
-                      <Text className="text-3xl max-w-48">
+                      <Text className="text-2xl max-w-32">
                         Deposit as little as $1
                       </Text>
                     </View>
@@ -85,7 +87,7 @@ export default function SavingsEmptyState() {
                         contentFit="contain"
                         style={{ width: 64, height: 64 }}
                       />
-                      <Text className="text-3xl max-w-48">
+                      <Text className="text-2xl max-w-32">
                         Withdraw anytime
                       </Text>
                     </View>
@@ -95,7 +97,7 @@ export default function SavingsEmptyState() {
                         contentFit="contain"
                         style={{ width: 64, height: 64 }}
                       />
-                      <Text className="text-3xl max-w-48">
+                      <Text className="text-2xl max-w-32">
                         Earn every second
                       </Text>
                     </View>
@@ -110,7 +112,7 @@ export default function SavingsEmptyState() {
                 </View>
               </View>
             </LinearGradient>
-            <View className="flex-col gap-5">
+            <View className="flex-col items-center gap-12 w-full max-w-screen-md mx-auto">
               <Text className="text-3xl font-semibold">
                 Frequently asked questions
               </Text>

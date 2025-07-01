@@ -1,6 +1,7 @@
 import { DashboardHeader, DashboardHeaderMobile } from "@/components/Dashboard";
 import FAQ from "@/components/FAQ";
 import Loading from "@/components/Loading";
+import Navbar from "@/components/Navbar";
 import NavbarMobile from "@/components/Navbar/NavbarMobile";
 import Ping from "@/components/Ping";
 import SavingCountUp from "@/components/SavingCountUp";
@@ -92,6 +93,7 @@ export default function Dashboard() {
         edges={["right", "left", "bottom"]}
       >
         <ScrollView className="flex-1">
+          {isDesktop && <Navbar />}
           <View className="gap-16 px-4 py-8 w-full max-w-7xl mx-auto">
             {isScreenMedium ? (
               <DashboardHeader />
@@ -117,8 +119,8 @@ export default function Dashboard() {
                 <View className="flex-1 bg-transparent p-6 md:px-10 md:py-8 justify-between gap-4 border-b border-border md:border-b-0 md:border-r">
                   <View>
                     <Text className="text-lg text-primary/50 font-medium">Total value</Text>
-                    <View className="flex-row items-center gap-2">
-                      <Text className="text-5xl md:text-8xl font-medium text-foreground">$</Text>
+                    <View className="flex-row items-center">
+                      <Text className="text-5xl md:text-8xl text-foreground">$</Text>
                       <SavingCountUp
                         balance={balance ?? 0}
                         apy={totalAPY ?? 0}
@@ -137,18 +139,17 @@ export default function Dashboard() {
                   <View className="gap-1">
                     <Text className="text-lg text-primary/50 font-medium">Interest earned</Text>
                     <View className="flex-row items-center gap-2">
-                      <Text className="text-2xl md:text-4.5xl font-medium text-brand">$</Text>
+                      <Text className="text-2xl md:text-4.5xl font-medium">$</Text>
                       <SavingCountUp
                         balance={(totalAPY ?? 0 / 100) * (balance ?? 0)}
                         apy={totalAPY ?? 0}
                         lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
                         classNames={{
-                          wrapper: "text-brand",
                           decimalSeparator: "md:text-xl font-medium"
                         }}
                         styles={{
-                          wholeText: { fontSize: isDesktop ? 40 : 24, fontWeight: isDesktop ? "medium" : "semibold", color: "#94F27F" },
-                          decimalText: { fontSize: isDesktop ? 20 : 16, fontWeight: isDesktop ? "medium" : "semibold", color: "#94F27F" }
+                          wholeText: { fontSize: isDesktop ? 40 : 24, fontWeight: "bold", color: "#ffffff" },
+                          decimalText: { fontSize: isDesktop ? 20 : 16, color: "#ffffff" }
                         }}
                       />
                     </View>
@@ -224,7 +225,7 @@ export default function Dashboard() {
               </View>
             </View>
 
-            <View className="flex-col gap-5 md:mt-20">
+            <View className="flex-col items-center gap-12 w-full max-w-screen-md mx-auto md:mt-20">
               <Text className="text-3xl font-semibold">
                 Frequently asked questions
               </Text>
