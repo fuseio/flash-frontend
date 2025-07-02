@@ -92,9 +92,7 @@ const DepositOptionModal = () => {
       <DialogContent
         className={cn(
           "p-8",
-          isBuyCrypto
-            ? "w-[85vw] h-[80vh] md:max-w-3xl md:w-[70vw] md:h-[85vh]"
-            : "md:max-w-md"
+          isBuyCrypto ? "w-[470px] h-[80vh]  md:h-[85vh]" : "md:max-w-md"
         )}
       >
         <Animated.View style={dialogAnimatedStyle} className="overflow-hidden">
