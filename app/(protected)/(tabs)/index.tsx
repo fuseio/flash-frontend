@@ -130,7 +130,7 @@ export default function Dashboard() {
                           decimalSeparator: "text-2xl md:text-4.5xl font-medium"
                         }}
                         styles={{
-                          wholeText: { fontSize: isDesktop ? 96 : 48, fontWeight: isDesktop ? "medium" : "semibold", color: "#ffffff" },
+                          wholeText: { fontSize: isDesktop ? 96 : 48, fontWeight: isDesktop ? "medium" : "semibold", color: "#ffffff", marginRight: -5 },
                           decimalText: { fontSize: isDesktop ? 40 : 24, fontWeight: isDesktop ? "medium" : "semibold", color: "#ffffff" }
                         }}
                       />
