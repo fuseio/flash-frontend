@@ -71,17 +71,11 @@ export async function buildMercuryoWidgetUrl({
 }
 
 const BuyCrypto = ({ onClose }: MercuryoIframeWidgetProps = {}) => {
-  console.log("BuyCrypto component rendering");
-  console.log("onClose function:", onClose);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [finalUrl, setFinalUrl] = useState<string>("");
 
   const { user } = useUser();
-
-  console.log("User in BuyCrypto:", user);
-  console.log("User safeAddress:", user?.safeAddress);
 
   // Handle iframe load events
   const handleIframeLoad = () => {
@@ -130,12 +124,8 @@ const BuyCrypto = ({ onClose }: MercuryoIframeWidgetProps = {}) => {
 
       const address = user?.safeAddress;
 
-      console.log("address", address);
-
       // If user object doesn't exist yet, keep loading
-      if (!user) {
-        return;
-      }
+      if (!user) return;
 
       // If user exists but no address, show error
       if (!address) {
@@ -173,7 +163,7 @@ const BuyCrypto = ({ onClose }: MercuryoIframeWidgetProps = {}) => {
   }, [user]); // Also depend on the entire user object, not just safeAddress
 
   return (
-    <View className="flex-1 h-full min-h-[55vh]">
+    <View className="flex-1 md:max-h-[65vh] lg:max-h-[70vh] 2xl:max-h-[75vh] overflow-y-auto">
       {loading && (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#000" />
@@ -189,7 +179,7 @@ const BuyCrypto = ({ onClose }: MercuryoIframeWidgetProps = {}) => {
       ) : finalUrl ? (
         <iframe
           src={finalUrl}
-          className="w-full h-[70vh]"
+          className="w-full min-h-[100vh]"
           onLoad={handleIframeLoad}
           onError={handleIframeError}
           allow="camera; microphone; geolocation; payment"

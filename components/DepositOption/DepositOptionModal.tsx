@@ -1,6 +1,6 @@
-import { ArrowLeft, Plus } from "lucide-react-native"
-import React, { useEffect } from "react"
-import { Easing, View } from "react-native"
+import { ArrowLeft, Plus } from "lucide-react-native";
+import React, { useEffect } from "react";
+import { Easing, View } from "react-native";
 import Animated, {
   FadeInLeft,
   FadeInRight,
@@ -10,8 +10,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-} from "react-native-reanimated"
-import { useAccount } from "wagmi"
+} from "react-native-reanimated";
+import { useAccount } from "wagmi";
 
 import {
   Dialog,
@@ -19,40 +19,41 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Text } from "@/components/ui/text"
-import { DepositModal } from "@/lib/types"
-import { cn } from "@/lib/utils"
-import { useDepositStore } from "@/store/useDepositStore"
-import BuyCrypto from "../BuyCrypto"
-import { DepositToVaultForm } from "../DepositToVault"
-import { Button, buttonVariants } from "../ui/button"
-import DepositOptions from "./DepositOptions"
+} from "@/components/ui/dialog";
+import { Text } from "@/components/ui/text";
+import { DepositModal } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { useDepositStore } from "@/store/useDepositStore";
+import BuyCrypto from "../BuyCrypto";
+import { DepositToVaultForm } from "../DepositToVault";
+import { Button, buttonVariants } from "../ui/button";
+import DepositOptions from "./DepositOptions";
 
 const ANIMATION_DURATION = 150;
 
 const DepositOptionModal = () => {
-  const { depositModal, previousDepositModal, setDepositModal } = useDepositStore();
+  const { depositModal, previousDepositModal, setDepositModal } =
+    useDepositStore();
   const { address, status } = useAccount();
   const isForm = address && depositModal === DepositModal.OPEN_FORM;
   const isBuyCrypto = depositModal === DepositModal.OPEN_BUY_CRYPTO;
   const shouldAnimate = previousDepositModal !== DepositModal.CLOSE;
 
-  const dialogHeight = useSharedValue(0)
+  const dialogHeight = useSharedValue(0);
 
   const dialogAnimatedStyle = useAnimatedStyle(() => {
     if (!shouldAnimate) {
       return {
         height: dialogHeight.value,
-      }
+      };
     }
     return {
       height: withTiming(dialogHeight.value, {
         duration: ANIMATION_DURATION,
         easing: Easing.inOut(Easing.quad),
       }),
-    }
-  })
+    };
+  });
 
   useEffect(() => {
     if (status === "disconnected" && depositModal !== DepositModal.CLOSE) {
@@ -65,8 +66,8 @@ const DepositOptionModal = () => {
     if (!address && depositModal === DepositModal.OPEN_FORM) {
       return;
     }
-    setDepositModal(value ? DepositModal.OPEN_OPTIONS : DepositModal.CLOSE)
-  }
+    setDepositModal(value ? DepositModal.OPEN_OPTIONS : DepositModal.CLOSE);
+  };
 
   return (
     <Dialog
@@ -74,25 +75,40 @@ const DepositOptionModal = () => {
       onOpenChange={handleOpenChange}
     >
       <DialogTrigger asChild>
-        <View className={buttonVariants({ variant: "brand", className: "h-12 pr-6 rounded-xl" })}>
+        <View
+          className={buttonVariants({
+            variant: "brand",
+            className: "h-12 pr-6 rounded-xl",
+          })}
+        >
           <View className="flex-row items-center gap-4">
             <Plus color="black" />
-            <Text className="text-primary-foreground font-bold hidden md:block">Deposit</Text>
+            <Text className="text-primary-foreground font-bold hidden md:block">
+              Deposit
+            </Text>
           </View>
         </View>
       </DialogTrigger>
-      <DialogContent className={cn("p-8", isBuyCrypto ? "w-[85vw] h-[60vh] md:max-w-3xl md:w-[70vw] md:h-[80vh] overflow-y-auto" : "md:max-w-md")}>
-        <Animated.View
-          style={dialogAnimatedStyle}
-          className="overflow-hidden"
-        >
-          <View className={cn("md:gap-8", !isForm && !isBuyCrypto && "min-h-[40rem]")}
+      <DialogContent
+        className={cn(
+          "p-8",
+          isBuyCrypto
+            ? "w-[85vw] h-[80vh] md:max-w-3xl md:w-[70vw] md:h-[85vh]"
+            : "md:max-w-md"
+        )}
+      >
+        <Animated.View style={dialogAnimatedStyle} className="overflow-hidden">
+          <View
+            className={cn(
+              "md:gap-8",
+              !isForm && !isBuyCrypto && "min-h-[40rem]"
+            )}
             onLayout={(event) => {
-              dialogHeight.value = event.nativeEvent.layout.height
+              dialogHeight.value = event.nativeEvent.layout.height;
             }}
           >
             <DialogHeader className="flex-row justify-between items-center gap-2">
-              {isForm && (
+              {(isForm || isBuyCrypto) && (
                 <Button
                   variant="ghost"
                   className="rounded-full p-0 web:hover:bg-transparent web:hover:opacity-70"
@@ -101,12 +117,12 @@ const DepositOptionModal = () => {
                   <ArrowLeft color="white" size={20} />
                 </Button>
               )}
-              <Animated.View layout={LinearTransition.duration(ANIMATION_DURATION)}>
+              <Animated.View
+                layout={LinearTransition.duration(ANIMATION_DURATION)}
+              >
                 <DialogTitle className="text-2xl">Deposit</DialogTitle>
               </Animated.View>
-              {isForm && (
-                <View className="w-10" />
-              )}
+              {(isForm || isBuyCrypto) && <View className="w-10" />}
             </DialogHeader>
             {isForm ? (
               <Animated.View
@@ -118,7 +134,11 @@ const DepositOptionModal = () => {
               </Animated.View>
             ) : isBuyCrypto ? (
               <Animated.View
-                entering={shouldAnimate ? FadeInLeft.duration(ANIMATION_DURATION) : undefined}
+                entering={
+                  shouldAnimate
+                    ? FadeInLeft.duration(ANIMATION_DURATION)
+                    : undefined
+                }
                 exiting={FadeOutLeft.duration(ANIMATION_DURATION)}
                 key="buy-crypto"
               >
@@ -126,7 +146,11 @@ const DepositOptionModal = () => {
               </Animated.View>
             ) : (
               <Animated.View
-                entering={shouldAnimate ? FadeInLeft.duration(ANIMATION_DURATION) : undefined}
+                entering={
+                  shouldAnimate
+                    ? FadeInLeft.duration(ANIMATION_DURATION)
+                    : undefined
+                }
                 exiting={FadeOutLeft.duration(ANIMATION_DURATION)}
                 key="deposit-options"
               >
@@ -137,7 +161,7 @@ const DepositOptionModal = () => {
         </Animated.View>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default DepositOptionModal
+export default DepositOptionModal;
