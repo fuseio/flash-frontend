@@ -2,12 +2,10 @@ import { useState } from "react";
 import { Pressable, View } from "react-native";
 import Animated, { useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from "react-native-reanimated";
 import { useAccount, useDisconnect } from "wagmi";
-import { ChevronDown, Unlink } from "lucide-react-native";
+import { ChevronDown, Unlink, WalletMinimal } from "lucide-react-native";
 
 import { eclipseAddress } from "@/lib/utils";
 import { Text } from "./ui/text";
-
-import Metamask from "@/assets/images/metamask";
 
 const ConnectedWalletDropdown = () => {
   const { address } = useAccount()
@@ -54,7 +52,7 @@ const ConnectedWalletDropdown = () => {
       >
         <View className="flex-row items-center gap-4">
           <View>
-            <Metamask />
+            <WalletMinimal size={22} color="white" />
           </View>
           <Text>{address ? eclipseAddress(address) : "0x"}</Text>
         </View>
