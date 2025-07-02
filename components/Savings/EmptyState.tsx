@@ -112,7 +112,7 @@ export default function SavingsEmptyState() {
                 </View>
               </View>
             </LinearGradient>
-            <View className="flex-col items-center gap-12 w-full max-w-screen-md mx-auto">
+            <View className="flex-col items-center gap-12 w-full max-w-screen-md mx-auto md:mt-8">
               <Text className="text-3xl font-semibold">
                 Frequently asked questions
               </Text>
