@@ -11,5 +11,21 @@ export const GET_USER_TRANSACTIONS_QUERY = gql`
       shareAmount
       transactionHash
     }
+    withdraws(where: { user: $address }) {
+      user
+      amountOfAssets
+      amountOfShares
+      creationTime
+      requestTimestamp
+      requestStatus
+      requestTxHash
+      solveTxHash
+    }
+    bridges(where: { user: $address }) {
+      user
+      transactionHash
+      shareAmount
+      blockTimestamp
+    }
   }
 `;

@@ -4,12 +4,12 @@ import { formatUnits } from "viem";
 
 import {
   GetUserTransactionsDocument,
-  GetUserTransactionsQuery
+  GetUserTransactionsQuery,
 } from "@/graphql/generated/user-info";
 import {
   fetchLayerZeroBridgeTransactions,
   fetchTokenTransfer,
-  fetchTotalAPY
+  fetchTotalAPY,
 } from "@/lib/api";
 import { LayerZeroTransactionStatus, Transaction } from "@/lib/types";
 
@@ -46,33 +46,112 @@ export const formatTransactions = async (
     return [];
   }
 
-  const transactionPromises = transactions.deposits.map(async (internalTransaction) => {
-    try {
-      const lzTransactions = await fetchLayerZeroBridgeTransactions(
-        internalTransaction.transactionHash
-      );
+  const depositTransactionPromises = transactions.deposits.map(
+    async (internalTransaction) => {
+      try {
+        const lzTransactions = await fetchLayerZeroBridgeTransactions(
+          internalTransaction.transactionHash
+        );
 
-      const status = lzTransactions?.data?.[0]?.status?.name || LayerZeroTransactionStatus.INFLIGHT;
+        const status =
+          lzTransactions?.data?.[0]?.status?.name ||
+          LayerZeroTransactionStatus.INFLIGHT;
 
+        return {
+          title: "Deposit USDC",
+          timestamp: internalTransaction.depositTimestamp,
+          amount: Number(
+            formatUnits(BigInt(internalTransaction.depositAmount), 6)
+          ),
+          status,
+          hash: internalTransaction.transactionHash,
+          type: "deposit",
+        };
+      } catch (error: any) {
+        console.error("Failed to fetch LZ transaction:", error);
+        return {
+          title: "Deposit USDC",
+          timestamp: internalTransaction.depositTimestamp,
+          amount: Number(
+            formatUnits(BigInt(internalTransaction.depositAmount), 6)
+          ),
+          status:
+            error.response.status === 404
+              ? LayerZeroTransactionStatus.INFLIGHT
+              : LayerZeroTransactionStatus.FAILED,
+          type: "deposit",
+        };
+      }
+    }
+  );
+
+  const bridgeTransactionPromises = transactions.bridges.map(
+    async (internalTransaction) => {
+      try {
+        const lzTransactions = await fetchLayerZeroBridgeTransactions(
+          internalTransaction.transactionHash
+        );
+
+        const status =
+          lzTransactions?.data?.[0]?.status?.name ||
+          LayerZeroTransactionStatus.INFLIGHT;
+
+        return {
+          title: "Bridge soUSD",
+          timestamp: internalTransaction.blockTimestamp,
+          amount: Number(
+            formatUnits(BigInt(internalTransaction.shareAmount), 6)
+          ),
+          status,
+          hash: internalTransaction.transactionHash,
+          type: "bridge",
+        };
+      } catch (error: any) {
+        console.error("Failed to fetch LZ transaction:", error);
+        return {
+          title: "Bridge soUSD",
+          timestamp: internalTransaction.blockTimestamp,
+          amount: Number(
+            formatUnits(BigInt(internalTransaction.shareAmount), 6)
+          ),
+          status:
+            error.response.status === 404
+              ? LayerZeroTransactionStatus.INFLIGHT
+              : LayerZeroTransactionStatus.FAILED,
+          type: "bridge",
+        };
+      }
+    }
+  );
+
+  const withdrawTransactionPromises = transactions.withdraws.map(
+    async (internalTransaction) => {
       return {
-        title: "Deposit USDC",
-        timestamp: internalTransaction.depositTimestamp,
-        amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
-        status,
-        hash: internalTransaction.transactionHash,
-      };
-    } catch (error: any) {
-      console.error('Failed to fetch LZ transaction:', error);
-      return {
-        title: "Deposit USDC",
-        timestamp: internalTransaction.depositTimestamp,
-        amount: Number(formatUnits(BigInt(internalTransaction.depositAmount), 6)),
-        status: error.response.status === 404 ? LayerZeroTransactionStatus.INFLIGHT : LayerZeroTransactionStatus.FAILED,
+        title: "Withdraw soUSD",
+        timestamp: internalTransaction.creationTime,
+        amount: Number(
+          formatUnits(BigInt(internalTransaction.amountOfAssets), 6)
+        ),
+        status:
+          internalTransaction.requestStatus === "SOLVED"
+            ? LayerZeroTransactionStatus.DELIVERED
+            : internalTransaction.requestStatus === "CANCELLED"
+            ? LayerZeroTransactionStatus.FAILED
+            : LayerZeroTransactionStatus.INFLIGHT,
+        hash:
+          internalTransaction.requestStatus === "SOLVED"
+            ? internalTransaction.solveTxHash
+            : internalTransaction.requestTxHash,
+        type: "withdraw",
       };
     }
-  });
+  );
 
-  const formattedTransactions = await Promise.all(transactionPromises);
+  const formattedTransactions = await Promise.all([
+    ...depositTransactionPromises,
+    ...bridgeTransactionPromises,
+    ...withdrawTransactionPromises,
+  ]);
 
   // Sort by timestamp (newest first)
   return formattedTransactions.sort((a, b) => b.timestamp - a.timestamp);

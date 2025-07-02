@@ -5,7 +5,7 @@ const config: CodegenConfig = {
   generates: {
     "graphql/generated/user-info.tsx": {
       schema:
-        "https://api.studio.thegraph.com/query/78455/solid-frontend-staging/version/latest",
+        "https://api.studio.thegraph.com/query/78455/solid-frontend-production/v0.0.2",
       documents: [
         "graphql/queries/user-info.ts",
       ],
