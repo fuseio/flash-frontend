@@ -4,8 +4,13 @@ import { Platform, SafeAreaView, View } from "react-native";
 
 import { path } from "@/constants/path";
 import AccountCenterModal from "../AccountCenter/AccountCenterModal";
+import { NavMenu } from "./NavMenu";
+import useUser from "@/hooks/useUser";
 
 const Navbar = () => {
+  const { user } = useUser();
+  const hasDeposited = user?.isDeposited;
+
   return (
     <SafeAreaView className="sticky top-0 z-50 bg-background/10 backdrop-blur-lg border-b border-border/40">
       <View className="flex-row justify-end md:justify-between items-center p-4 md:p-6">
@@ -24,6 +29,9 @@ const Navbar = () => {
             className="hidden md:block"
           />
         </Link>
+        {hasDeposited && (
+          <NavMenu />
+        )}
         {Platform.OS === 'web' && (
           <View className="w-32">
             <AccountCenterModal />

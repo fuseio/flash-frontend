@@ -16,7 +16,7 @@ import useWithdrawToAddress from "@/hooks/useWithdrawToAddress";
 import { ADDRESSES } from "@/lib/config";
 import { cn, formatNumber } from "@/lib/utils";
 import { useRouter } from "expo-router";
-import { ArrowUpRight } from "lucide-react-native";
+import { ArrowUpRight, Wallet } from "lucide-react-native";
 import { useMemo } from "react";
 import { formatUnits, isAddress } from "viem";
 import { mainnet } from "viem/chains";
@@ -114,64 +114,59 @@ const WithdrawToAddress = () => {
   };
 
   return (
-    <View className="flex-col gap-6 px-6 pb-6">
-      <View className="flex-row justify-between items-center mb-2">
+    <View className="gap-8">
+      <View className="gap-3">
         <Text className="opacity-60">Withdraw amount</Text>
-        <Text className="text-sm opacity-60">Balance: {
-          isPending ? (
+
+        <View className={cn('flex-row items-center justify-between gap-4 w-full bg-accent rounded-2xl px-5 py-3', errors.amount && 'border border-red-500')}>
+          <Controller
+            control={control}
+            name="amount"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                keyboardType="decimal-pad"
+                className="w-full text-2xl text-white font-semibold web:focus:outline-none"
+                value={value.toString()}
+                placeholder="0.0"
+                placeholderTextColor="#666"
+                onChangeText={onChange}
+                onBlur={onBlur}
+              />
+            )}
+          />
+          <View className="flex-row items-center gap-2">
+            <Image
+              source={require("@/assets/images/usdc.png")}
+              alt="USDC"
+              style={{ width: 34, height: 34 }}
+            />
+            <Text className="font-semibold text-white text-lg">USDC</Text>
+          </View>
+        </View>
+
+        <Text className="flex items-center gap-1.5 text-muted-foreground text-left">
+          <Wallet size={16} /> {isPending ? (
             <Skeleton className="w-16 h-4 rounded-md" />
           ) : balance ? (
             `${formatUnits(balance, 6)} USDC`
           ) : (
             "0 USDC"
-          )
-        }</Text>
-      </View>
-      <View className={cn('bg-primary/10 rounded-2xl p-4 w-full', errors.amount && 'border border-red-500')}>
-        <View className="flex-row items-center justify-between w-full">
-          <View className="flex-1 min-w-0">
-            <Controller
-              control={control}
-              name="amount"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  keyboardType="decimal-pad"
-                  className="text-4xl text-white font-light web:focus:outline-none"
-                  value={value.toString()}
-                  placeholder="0.0"
-                  placeholderTextColor="#666"
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                />
-              )}
-            />
-          </View>
-          <View className="items-end flex-shrink-0">
-            <View className="flex-row items-center gap-2">
-              <Image
-                source={require("@/assets/images/usdc.png")}
-                alt="USDC"
-                style={{ width: 24, height: 24 }}
-              />
-              <Text className="font-semibold text-white text-lg">USDC</Text>
-            </View>
-            <Text className="text-xs opacity-60 mt-1">On ethereum</Text>
-          </View>
-        </View>
+          )}
+        </Text>
       </View>
 
       {/* {errors.amount && (
         <Text className="text-red-400 text-sm mt-1">{errors.amount.message}</Text>
       )} */}
 
-      <View className="mt-4">
-        <Text className="opacity-60 mb-3">Address</Text>
+      <View className="gap-3">
+        <Text className="opacity-60">To wallet</Text>
         <Controller
           control={control}
           name="address"
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              className={`bg-primary/10 rounded-2xl p-4 text-white web:focus:outline-none ${errors.address ? 'border border-red-500' : ''}`}
+              className={`bg-accent rounded-2xl px-5 py-3 text-2xl text-white font-semibold web:focus:outline-none ${errors.address ? 'border border-red-500' : ''}`}
               value={value}
               placeholder="0x..."
               placeholderTextColor="#666"
@@ -187,7 +182,7 @@ const WithdrawToAddress = () => {
 
       <Button
         variant="brand"
-        className="w-full rounded-2xl mt-6 bg-green-500 h-14"
+        className="rounded-2xl h-12 mt-24"
         onPress={handleSubmit(onSubmit)}
         disabled={isFormDisabled()}
       >
@@ -202,20 +197,18 @@ const WithdrawTrigger = (props: any) => {
   return (
     <Button
       variant="outline"
-      className={buttonVariants({ variant: "secondary", className: "h-12 rounded-xl" })}
+      className={buttonVariants({ variant: "secondary", className: "h-12 rounded-xl gap-4 pr-6" })}
       {...props}
     >
-      <View className="flex-row items-center gap-2">
-        {/* <WithdrawIcon className="size-6" /> */}
-        <ArrowUpRight color="white" />
-        <Text className="font-bold hidden md:block">Withdraw</Text>
-      </View>
+      {/* <WithdrawIcon className="size-6" /> */}
+      <ArrowUpRight color="white" />
+      <Text className="font-bold hidden md:block">Send</Text>
     </Button>
   );
 };
 
 const WithdrawTitle = () => {
-  return <Text className="text-lg font-semibold">Withdraw</Text>;
+  return <Text className="text-2xl font-semibold">Send</Text>;
 };
 
 export { WithdrawTitle, WithdrawToAddress, WithdrawTrigger };

@@ -17,9 +17,9 @@ const WithdrawToAddressModal = () => {
       <DialogTrigger asChild>
         <WithdrawTrigger />
       </DialogTrigger>
-      <DialogContent className="md:gap-8 md:max-w-md">
-        <DialogHeader className="px-6 pt-6">
-          <DialogTitle>
+      <DialogContent className="p-8 md:gap-8 md:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-center">
             <WithdrawTitle />
           </DialogTitle>
         </DialogHeader>

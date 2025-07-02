@@ -14,9 +14,9 @@ const home: MenuItem = {
   href: path.HOME,
 }
 
-const savings: MenuItem = {
-  label: "Savings",
-  href: path.SAVINGS,
+const wallet: MenuItem = {
+  label: "Wallet",
+  href: path.WALLET,
 }
 
 const defaultMenuItems: MenuItem[] = [
@@ -39,7 +39,10 @@ const useNav = () => {
   const hasDeposited = user?.isDeposited;
 
   const menuItems = useMemo<MenuItem[]>(() => {
-    const coreMenuItems = [savings]; // [home, savings];
+    const coreMenuItems = [home];
+    if (hasDeposited) {
+      coreMenuItems.push(wallet);
+    }
     return [...coreMenuItems, ...defaultMenuItems];
   }, [hasDeposited]);
 
