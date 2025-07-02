@@ -4,7 +4,6 @@ import { ChevronRight } from "lucide-react-native";
 import { Button } from "../ui/button";
 import { Text } from "../ui/text";
 import DepositComingSoon from "./DepositComingSoon";
-import { cn } from "@/lib/utils";
 
 type DepositOptionProps = {
   text: string;
@@ -19,8 +18,9 @@ const DepositOption = ({ text, icon, onPress, isLoading, isComingSoon }: Deposit
 
   return (
     <Button
-      className={cn("flex-row items-center justify-between bg-primary/10 rounded-2xl h-20 p-6", isDisabled && "web:hover:opacity-100 web:cursor-default")}
+      className="flex-row items-center justify-between bg-primary/10 rounded-2xl h-20 p-6 disabled:opacity-100 disabled:web:hover:opacity-100"
       onPress={onPress}
+      disabled={isDisabled}
     >
       <View className="flex-row items-center gap-x-2">
         {icon}
