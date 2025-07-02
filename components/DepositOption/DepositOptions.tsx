@@ -49,7 +49,8 @@ const DepositOptions = () => {
       text: "Bank Deposit",
       icon: <Landmark color="white" size={26} />,
       onPress: () => { },
-      isLoading: false
+      isLoading: false,
+      isComingSoon: true
     }
   ]
 
@@ -62,6 +63,7 @@ const DepositOptions = () => {
           icon={option.icon}
           onPress={option.onPress}
           isLoading={option.isLoading}
+          isComingSoon={option.isComingSoon}
         />
       ))}
     </View>

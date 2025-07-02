@@ -120,7 +120,7 @@ export default function Dashboard() {
                   <View>
                     <Text className="text-lg text-primary/50 font-medium">Total value</Text>
                     <View className="flex-row items-center">
-                      <Text className="text-5xl md:text-8xl text-foreground">$</Text>
+                      <Text className="text-5xl md:text-8xl text-foreground font-semibold">$</Text>
                       <SavingCountUp
                         balance={balance ?? 0}
                         apy={totalAPY ?? 0}
@@ -130,7 +130,7 @@ export default function Dashboard() {
                           decimalSeparator: "text-2xl md:text-4.5xl font-medium"
                         }}
                         styles={{
-                          wholeText: { fontSize: isDesktop ? 96 : 48, fontWeight: isDesktop ? "medium" : "semibold", color: "#ffffff" },
+                          wholeText: { fontSize: isDesktop ? 96 : 48, fontWeight: isDesktop ? "medium" : "semibold", color: "#ffffff", marginRight: -5 },
                           decimalText: { fontSize: isDesktop ? 40 : 24, fontWeight: isDesktop ? "medium" : "semibold", color: "#ffffff" }
                         }}
                       />
