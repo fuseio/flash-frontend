@@ -1,14 +1,14 @@
 import "@/global.css";
+import { ApolloProvider } from "@apollo/client";
+import { AppKit } from "@reown/appkit-wagmi-react-native";
 import { PortalHost } from "@rn-primitives/portal";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import Head from "expo-router/head";
+import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { WagmiProvider } from "wagmi";
-import { ApolloProvider } from "@apollo/client";
-import { AppKit } from "@reown/appkit-wagmi-react-native";
-import { Platform } from "react-native";
 
 import { infoClient } from "@/graphql/clients";
 import { toastProps } from "@/lib/toast";
