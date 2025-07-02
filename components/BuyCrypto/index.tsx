@@ -61,6 +61,7 @@ export async function buildMercuryoWidgetUrl({
     url += `&fiat_currency=EUR`;
     url += `&networks=ETHEREUM`;
     url += `&currency=USDC`;
+    url += `&theme=exolix`;
 
     return url;
   } catch (error) {
