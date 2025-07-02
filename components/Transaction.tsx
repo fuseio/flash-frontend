@@ -10,12 +10,14 @@ const Transaction = ({
   amount,
   status,
   hash,
+  type,
 }: {
   title: string;
   timestamp: string;
   amount: number;
   status: LayerZeroTransactionStatus;
   hash: string;
+  type: "deposit" | "bridge" | "withdraw";
 }) => {
   const isSuccess = status === LayerZeroTransactionStatus.DELIVERED;
   const isPending =
@@ -25,13 +27,13 @@ const Transaction = ({
   const statusBgColor = isSuccess
     ? "bg-brand"
     : isPending
-      ? "bg-yellow-200"
-      : "bg-red-200";
+    ? "bg-yellow-200"
+    : "bg-red-200";
   const statusTextColor = isSuccess
     ? "text-brand-foreground"
     : isPending
-      ? "text-yellow-700"
-      : "text-red-700";
+    ? "text-yellow-700"
+    : "text-red-700";
   const statusText = isSuccess ? "Success" : isPending ? "Pending" : "Failed";
 
   return (
@@ -66,7 +68,9 @@ const Transaction = ({
           <Text
             className={cn("text-sm font-bold", statusTextColor)}
             onPress={() => {
-              Linking.openURL(`https://layerzeroscan.com/tx/${hash}`);
+              if (type === "withdraw")
+                Linking.openURL(`https://etherscan.io/tx/${hash}`);
+              else Linking.openURL(`https://layerzeroscan.com/tx/${hash}`);
             }}
           >
             {statusText}
