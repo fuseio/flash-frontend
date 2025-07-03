@@ -43,29 +43,49 @@ const SavingCountUp = ({
 
   const calculateLiveYield = useCallback(
     (currentTime: number) => {
-      if (principal !== undefined && principal > 0) {
-        const deltaTime = currentTime - lastTimestamp;
-        const timeInYears = deltaTime / SECONDS_PER_YEAR;
+      if (
+        !currentTime ||
+        currentTime <= 0 ||
+        !lastTimestamp ||
+        lastTimestamp <= 0
+      ) {
+        return mode === "interest-only" ? 0 : balance;
+      }
 
+      const deltaTime = Math.max(0, currentTime - lastTimestamp);
+
+      if (deltaTime === 0) {
+        return mode === "interest-only" ? 0 : balance;
+      }
+
+      const validAPY = isNaN(apy) || !isFinite(apy) ? 0 : Math.max(0, apy);
+
+      if (principal !== undefined && principal > 0) {
+        const timeInYears = deltaTime / SECONDS_PER_YEAR;
         const compoundedValue =
-          principal * Math.pow(1 + apy / 100, timeInYears);
+          principal * Math.pow(1 + validAPY / 100, timeInYears);
+
+        if (!isFinite(compoundedValue) || compoundedValue < 0) {
+          return mode === "interest-only" ? 0 : balance;
+        }
 
         if (mode === "interest-only") {
-          return compoundedValue - principal;
+          return Math.max(0, compoundedValue - principal);
         } else {
           return compoundedValue;
         }
       }
+
       if (mode === "interest-only") {
-        const deltaTime = currentTime - lastTimestamp;
         const timeInYears = deltaTime / SECONDS_PER_YEAR;
-        const estimatedInterest = balance * (apy / 100) * timeInYears;
-        return estimatedInterest;
+        const estimatedInterest = balance * (validAPY / 100) * timeInYears;
+        return Math.max(0, estimatedInterest);
       }
 
-      const deltaTime = currentTime - lastTimestamp;
-      const yieldEarned = balance * (apy / SECONDS_PER_YEAR) * deltaTime;
-      return balance + yieldEarned;
+      const yieldEarned = balance * (validAPY / SECONDS_PER_YEAR) * deltaTime;
+      const result = balance + yieldEarned;
+
+      return isFinite(result) && result >= 0 ? result : balance;
     },
     [balance, apy, lastTimestamp, principal, mode]
   );
@@ -82,10 +102,10 @@ const SavingCountUp = ({
     return () => clearInterval(interval);
   }, [balance, apy, lastTimestamp, principal, mode, calculateLiveYield]);
 
-  const wholeNumber = Math.floor(liveYield);
-  const decimalPart = Number(
-    (liveYield - wholeNumber).toFixed(decimalPlaces).slice(2)
-  );
+  const safeYield = isFinite(liveYield) && liveYield >= 0 ? liveYield : 0;
+  const wholeNumber = Math.floor(safeYield);
+  const decimalString = safeYield.toFixed(decimalPlaces);
+  const decimalPart = Number(decimalString.split(".")[1] || "0");
 
   return (
     <View className={cn("flex-row items-baseline", classNames?.wrapper)}>

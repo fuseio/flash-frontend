@@ -104,9 +104,7 @@ export default function Dashboard() {
               <DashboardHeaderMobile
                 balance={balance ?? 0}
                 totalAPY={totalAPY ?? 0}
-                lastTimestamp={
-                  firstDepositTimestamp ? firstDepositTimestamp / 1000 : 0
-                }
+                lastTimestamp={firstDepositTimestamp ?? 0}
                 principal={originalDepositAmount}
               />
             )}
@@ -140,11 +138,7 @@ export default function Dashboard() {
                       <SavingCountUp
                         balance={balance ?? 0}
                         apy={totalAPY ?? 0}
-                        lastTimestamp={
-                          firstDepositTimestamp
-                            ? firstDepositTimestamp / 1000
-                            : 0
-                        }
+                        lastTimestamp={firstDepositTimestamp ?? 0}
                         principal={originalDepositAmount}
                         mode="total"
                         classNames={{
@@ -179,11 +173,7 @@ export default function Dashboard() {
                       <SavingCountUp
                         balance={balance ?? 0}
                         apy={totalAPY ?? 0}
-                        lastTimestamp={
-                          firstDepositTimestamp
-                            ? firstDepositTimestamp / 1000
-                            : 0
-                        }
+                        lastTimestamp={firstDepositTimestamp ?? 0}
                         principal={originalDepositAmount}
                         mode="interest-only"
                         decimalPlaces={8}
@@ -256,11 +246,7 @@ export default function Dashboard() {
                       <SavingCountUp
                         balance={balance ?? 0}
                         apy={totalAPY ?? 0}
-                        lastTimestamp={
-                          firstDepositTimestamp
-                            ? firstDepositTimestamp / 1000
-                            : 0
-                        }
+                        lastTimestamp={firstDepositTimestamp ?? 0}
                         principal={originalDepositAmount}
                         mode="total"
                         styles={{

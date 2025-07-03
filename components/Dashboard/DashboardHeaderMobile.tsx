@@ -29,7 +29,7 @@ const DashboardHeaderMobile = ({
         <SavingCountUp
           balance={balance ?? 0}
           apy={totalAPY ?? 0}
-          lastTimestamp={lastTimestamp ? lastTimestamp / 1000 : 0}
+          lastTimestamp={lastTimestamp ?? 0}
           principal={principal}
           mode="total"
         />

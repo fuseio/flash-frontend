@@ -79,6 +79,7 @@ export const formatTransactions = async (
             error.response.status === 404
               ? LayerZeroTransactionStatus.INFLIGHT
               : LayerZeroTransactionStatus.FAILED,
+          hash: internalTransaction.transactionHash,
           type: "deposit",
         };
       }
@@ -118,6 +119,7 @@ export const formatTransactions = async (
             error.response.status === 404
               ? LayerZeroTransactionStatus.INFLIGHT
               : LayerZeroTransactionStatus.FAILED,
+          hash: internalTransaction.transactionHash,
           type: "bridge",
         };
       }
@@ -136,8 +138,8 @@ export const formatTransactions = async (
           internalTransaction.requestStatus === "SOLVED"
             ? LayerZeroTransactionStatus.DELIVERED
             : internalTransaction.requestStatus === "CANCELLED"
-            ? LayerZeroTransactionStatus.FAILED
-            : LayerZeroTransactionStatus.INFLIGHT,
+              ? LayerZeroTransactionStatus.FAILED
+              : LayerZeroTransactionStatus.INFLIGHT,
         hash:
           internalTransaction.requestStatus === "SOLVED"
             ? internalTransaction.solveTxHash
