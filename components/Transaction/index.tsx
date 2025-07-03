@@ -1,8 +1,10 @@
-import { LayerZeroTransactionStatus } from "@/lib/types";
-import { cn, formatNumber } from "@/lib/utils";
 import { Image } from "expo-image";
-import { Linking, View } from "react-native";
-import { Text } from "./ui/text";
+import { View } from "react-native";
+
+import { LayerZeroTransactionStatus, TransactionType } from "@/lib/types";
+import { cn, formatNumber } from "@/lib/utils";
+import { Text } from "../ui/text";
+import TransactionDropdown from "./TransactionDropdown";
 
 const Transaction = ({
   title,
@@ -16,8 +18,8 @@ const Transaction = ({
   timestamp: string;
   amount: number;
   status: LayerZeroTransactionStatus;
-  hash: string;
-  type: "deposit" | "bridge" | "withdraw";
+  hash?: string;
+  type: TransactionType;
 }) => {
   const isSuccess = status === LayerZeroTransactionStatus.DELIVERED;
   const isPending =
@@ -65,17 +67,11 @@ const Transaction = ({
             statusBgColor
           )}
         >
-          <Text
-            className={cn("text-sm font-bold", statusTextColor)}
-            onPress={() => {
-              if (type === "withdraw")
-                Linking.openURL(`https://etherscan.io/tx/${hash}`);
-              else Linking.openURL(`https://layerzeroscan.com/tx/${hash}`);
-            }}
-          >
+          <Text className={cn("text-sm font-bold", statusTextColor)}>
             {statusText}
           </Text>
         </View>
+        <TransactionDropdown hash={hash} type={type} />
       </View>
     </View>
   );
