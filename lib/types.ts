@@ -7,6 +7,13 @@ export enum Status {
   ERROR = "error",
 }
 
+export enum InviteCodeStatus {
+  CHECKING = 'checking',
+  VALID = 'valid',
+  INVALID = 'invalid',
+  NONE = 'none'
+}
+
 // from @safe-global/protocol-kit as the package
 // is throwing static class blocks error
 export type PasskeyCoordinates = {
