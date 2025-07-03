@@ -10,10 +10,7 @@ interface TokenBalance {
   contractName: string;
   contractAddress: string;
   balance: string;
-  balance24h?: string;
   quoteRate?: number;
-  quote?: number;
-  quote24h?: number;
   logoUrl?: string;
   contractDecimals: number;
   type: string;
@@ -132,7 +129,20 @@ export const useBalances = (): BalanceData => {
 
       let ethereumTokens: TokenBalance[] = [];
       let fuseTokens: TokenBalance[] = [];
-      let rate = BigInt(0);
+      let rate = 0;
+
+      // Helper function to check if token is soUSD (vault token)
+      const isSoUSDToken = (contractAddress: string): boolean => {
+        return contractAddress.toLowerCase() === ADDRESSES.ethereum.vault.toLowerCase() ||
+          contractAddress.toLowerCase() === ADDRESSES.fuse.vault.toLowerCase();
+      };
+
+      // Process soUSD rate
+      if (soUSDRate.status === 'fulfilled') {
+        rate = Number(soUSDRate.value) / Math.pow(10, 6);
+      } else {
+        console.warn('Failed to fetch soUSD rate:', soUSDRate.reason);
+      }
 
       // Convert Blockscout format to our standard format
       const convertBlockscoutToTokenBalance = (item: BlockscoutTokenBalance, chainId: number): TokenBalance => ({
@@ -140,8 +150,7 @@ export const useBalances = (): BalanceData => {
         contractName: item.token.name,
         contractAddress: item.token.address,
         balance: item.value,
-        quoteRate: item.token.exchange_rate ? parseFloat(item.token.exchange_rate) : 0,
-        quote: 0, // Will be calculated
+        quoteRate: item.token.exchange_rate ? parseFloat(item.token.exchange_rate) : isSoUSDToken(item.token.address) ? rate : 0,
         logoUrl: item.token.icon_url,
         contractDecimals: parseInt(item.token.decimals),
         type: item.token.type,
@@ -169,37 +178,19 @@ export const useBalances = (): BalanceData => {
         console.warn('Failed to fetch Fuse balances:', fuseResponse.reason);
       }
 
-      // Process soUSD rate
-      if (soUSDRate.status === 'fulfilled') {
-        rate = soUSDRate.value;
-      } else {
-        console.warn('Failed to fetch soUSD rate:', soUSDRate.reason);
-      }
-
-      // Helper function to check if token is soUSD (vault token)
-      const isSoUSDToken = (token: TokenBalance): boolean => {
-        return token.contractAddress.toLowerCase() === ADDRESSES.ethereum.vault.toLowerCase() ||
-          token.contractAddress.toLowerCase() === ADDRESSES.fuse.vault.toLowerCase();
-      };
-
       // Calculate token values separately for soUSD and regular tokens
       const calculateTokenValue = (token: TokenBalance): { soUSDValue: number; regularValue: number } => {
-        if (!token.balance) return { soUSDValue: 0, regularValue: 0 };
+        if (!token.balance || !token.quoteRate) return { soUSDValue: 0, regularValue: 0 };
 
         // Convert balance from raw format to decimal format using contractDecimals
         const formattedBalance = parseFloat(token.balance) / Math.pow(10, token.contractDecimals);
 
-        // Special handling for soUSD tokens - use rate from AccountantWithRateProviders
-        if (isSoUSDToken(token) && rate > 0) {
-          // Rate is in 18 decimals, so divide by 10^18 to get the actual rate
-          const soUSDRate = Number(rate) / Math.pow(10, 6);
-          const value = formattedBalance * soUSDRate;
+        const value = formattedBalance * token.quoteRate;
+
+        if (isSoUSDToken(token.contractAddress)) {
           return { soUSDValue: value, regularValue: 0 };
         }
 
-        // For regular tokens, use quoteRate
-        if (!token.quoteRate) return { soUSDValue: 0, regularValue: 0 };
-        const value = formattedBalance * token.quoteRate;
         return { soUSDValue: 0, regularValue: value };
       };
 
