@@ -53,7 +53,7 @@ const WalletTokenTab = () => {
   const [width, setWidth] = useState(0);
   const { isScreenMedium } = useDimension();
 
-  const { ethereumTokens, fuseTokens, isLoading } = useBalances();
+  const { ethereumTokens, fuseTokens, isLoading, totalUSD } = useBalances();
 
   // Combine and sort tokens by USD value (descending)
   const allTokens = useMemo(() => {
@@ -138,7 +138,7 @@ const WalletTokenTab = () => {
                 <Text className="text-sm">Asset</Text>
               </TableHead>
               <TableHead className='px-3 md:px-6' style={{ width: columnWidths[1] }}>
-                <Text className="text-sm">Balance</Text>
+                <Text className="text-sm">Balance (total ${formatNumber(totalUSD ?? 0)})</Text>
               </TableHead>
               <TableHead className='px-3 md:px-6' style={{ width: columnWidths[2] }}>
                 <Text className="text-sm">Price</Text>
