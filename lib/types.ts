@@ -217,11 +217,19 @@ export type LayerZeroTransaction = {
   }[];
 }
 
+export enum TransactionType {
+  DEPOSIT = "deposit",
+  BRIDGE = "bridge",
+  WITHDRAW = "withdraw",
+}
+
 export type Transaction = {
   title: string;
   timestamp: string;
   amount: number;
   status: LayerZeroTransactionStatus;
+  hash?: string;
+  type: TransactionType;
 }
 
 export type Faq = {
