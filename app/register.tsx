@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
 import useUser from '@/hooks/useUser'
 import { validateInviteCode } from '@/lib/api'
-import { Status } from '@/lib/types'
+import { InviteCodeStatus, Status } from '@/lib/types'
 import { cn } from "@/lib/utils"
 import { clearValidatedInvite, getValidatedInvite, storeValidatedInvite } from '@/store/useInviteStore'
 import { useUserStore } from '@/store/useUserStore'
@@ -34,7 +34,7 @@ export default function Register() {
   const { signupInfo, loginInfo, users } = useUserStore()
   const { code } = useLocalSearchParams<{ code: string }>()
   const router = useRouter()
-  const [inviteCodeStatus, setInviteCodeStatus] = useState<'checking' | 'valid' | 'invalid' | 'none'>('none')
+  const [inviteCodeStatus, setInviteCodeStatus] = useState<InviteCodeStatus>(InviteCodeStatus.NONE)
   const [inviteError, setInviteError] = useState<string | null>(null)
 
   const {
@@ -77,13 +77,13 @@ export default function Register() {
       const storedValidCode = getValidatedInvite();
       if (storedValidCode) {
         console.log('Found previously validated invite code');
-        setInviteCodeStatus('valid');
+        setInviteCodeStatus(InviteCodeStatus.VALID);
         return;
       }
 
       // If there's a code in URL, validate it
       if (code) {
-        setInviteCodeStatus('checking');
+        setInviteCodeStatus(InviteCodeStatus.CHECKING);
         try {
           const response = await validateInviteCode(code);
           console.log('Invite validation response:', response);
@@ -91,20 +91,20 @@ export default function Register() {
           const result = response.data || response;
 
           if (result.valid) {
-            setInviteCodeStatus('valid');
+            setInviteCodeStatus(InviteCodeStatus.VALID);
             // Store the validated invite code for future use
             storeValidatedInvite(code);
           } else {
-            setInviteCodeStatus('invalid');
+            setInviteCodeStatus(InviteCodeStatus.INVALID);
             setInviteError(result.message || 'Invalid or expired invite code');
           }
         } catch (error: any) {
           console.error('Invite code validation failed:', error);
-          setInviteCodeStatus('invalid');
+          setInviteCodeStatus(InviteCodeStatus.INVALID);
           setInviteError('Invalid or expired invite code');
         }
       } else {
-        setInviteCodeStatus('none');
+        setInviteCodeStatus(InviteCodeStatus.NONE);
       }
     };
 
@@ -145,7 +145,7 @@ export default function Register() {
   };
 
   // Show loading while checking invite code
-  if (inviteCodeStatus === 'checking') {
+  if (inviteCodeStatus === InviteCodeStatus.CHECKING) {
     return (
       <SafeAreaView className="bg-background text-foreground flex-1">
         <View className='flex-1 justify-center gap-10 px-4 py-8 w-full max-w-lg mx-auto'>
@@ -169,7 +169,7 @@ export default function Register() {
   }
 
   // Show invite-only message if no valid code
-  if (inviteCodeStatus === 'none' || inviteCodeStatus === 'invalid') {
+  if (inviteCodeStatus === InviteCodeStatus.NONE || inviteCodeStatus === InviteCodeStatus.INVALID) {
     return (
       <SafeAreaView className="bg-background text-foreground flex-1">
         <View className='flex-1 justify-center gap-10 px-4 py-8 w-full max-w-lg mx-auto'>
@@ -237,7 +237,7 @@ export default function Register() {
             <Text className='text-muted-foreground max-w-[23rem]'>
               Sign up with your email or connect a Web3 wallet to get started.
             </Text>
-            {inviteCodeStatus === 'valid' && !code && (
+            {inviteCodeStatus === InviteCodeStatus.VALID && !code && (
               <View className="flex-row items-center gap-2 mt-2">
                 <View className="w-2 h-2 bg-green-500 rounded-full" />
                 <Text className="text-sm text-green-600">

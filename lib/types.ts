@@ -7,6 +7,13 @@ export enum Status {
   ERROR = "error",
 }
 
+export enum InviteCodeStatus {
+  CHECKING = 'checking',
+  VALID = 'valid',
+  INVALID = 'invalid',
+  NONE = 'none'
+}
+
 // from @safe-global/protocol-kit as the package
 // is throwing static class blocks error
 export type PasskeyCoordinates = {
@@ -210,11 +217,19 @@ export type LayerZeroTransaction = {
   }[];
 }
 
+export enum TransactionType {
+  DEPOSIT = "deposit",
+  BRIDGE = "bridge",
+  WITHDRAW = "withdraw",
+}
+
 export type Transaction = {
   title: string;
   timestamp: string;
   amount: number;
   status: LayerZeroTransactionStatus;
+  hash?: string;
+  type: TransactionType;
 }
 
 export type Faq = {

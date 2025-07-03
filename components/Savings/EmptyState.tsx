@@ -77,8 +77,8 @@ export default function SavingsEmptyState() {
                         contentFit="contain"
                         style={{ width: 64, height: 64 }}
                       />
-                      <Text className="text-2xl max-w-32">
-                        Deposit as little as $1
+                      <Text className="text-2xl max-w-36">
+                        Earn from as little as $1
                       </Text>
                     </View>
                     <View className="gap-4">

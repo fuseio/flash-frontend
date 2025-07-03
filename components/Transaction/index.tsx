@@ -1,8 +1,10 @@
-import { LayerZeroTransactionStatus } from "@/lib/types";
-import { cn, formatNumber } from "@/lib/utils";
 import { Image } from "expo-image";
-import { Linking, View } from "react-native";
-import { Text } from "./ui/text";
+import { View } from "react-native";
+
+import { LayerZeroTransactionStatus, TransactionType } from "@/lib/types";
+import { cn, formatNumber } from "@/lib/utils";
+import { Text } from "../ui/text";
+import TransactionDropdown from "./TransactionDropdown";
 
 const Transaction = ({
   title,
@@ -16,8 +18,8 @@ const Transaction = ({
   timestamp: string;
   amount: number;
   status: LayerZeroTransactionStatus;
-  hash: string;
-  type: "deposit" | "bridge" | "withdraw";
+  hash?: string;
+  type: TransactionType;
 }) => {
   const isSuccess = status === LayerZeroTransactionStatus.DELIVERED;
   const isPending =
@@ -25,15 +27,15 @@ const Transaction = ({
     status === LayerZeroTransactionStatus.CONFIRMING;
 
   const statusBgColor = isSuccess
-    ? "bg-brand"
+    ? "bg-brand/10"
     : isPending
-    ? "bg-yellow-200"
-    : "bg-red-200";
+      ? "bg-yellow-400/10"
+      : "bg-red-400/10";
   const statusTextColor = isSuccess
-    ? "text-brand-foreground"
+    ? "text-brand"
     : isPending
-    ? "text-yellow-700"
-    : "text-red-700";
+      ? "text-yellow-400"
+      : "text-red-400";
   const statusText = isSuccess ? "Success" : isPending ? "Pending" : "Failed";
 
   return (
@@ -65,17 +67,11 @@ const Transaction = ({
             statusBgColor
           )}
         >
-          <Text
-            className={cn("text-sm font-bold", statusTextColor)}
-            onPress={() => {
-              if (type === "withdraw")
-                Linking.openURL(`https://etherscan.io/tx/${hash}`);
-              else Linking.openURL(`https://layerzeroscan.com/tx/${hash}`);
-            }}
-          >
+          <Text className={cn("text-sm font-bold", statusTextColor)}>
             {statusText}
           </Text>
         </View>
+        <TransactionDropdown hash={hash} type={type} />
       </View>
     </View>
   );

@@ -11,7 +11,7 @@ import {
   fetchTokenTransfer,
   fetchTotalAPY,
 } from "@/lib/api";
-import { LayerZeroTransactionStatus, Transaction } from "@/lib/types";
+import { LayerZeroTransactionStatus, Transaction, TransactionType } from "@/lib/types";
 
 const ANALYTICS = "analytics";
 
@@ -65,7 +65,7 @@ export const formatTransactions = async (
           ),
           status,
           hash: internalTransaction.transactionHash,
-          type: "deposit",
+          type: TransactionType.DEPOSIT,
         };
       } catch (error: any) {
         console.error("Failed to fetch LZ transaction:", error);
@@ -80,7 +80,7 @@ export const formatTransactions = async (
               ? LayerZeroTransactionStatus.INFLIGHT
               : LayerZeroTransactionStatus.FAILED,
           hash: internalTransaction.transactionHash,
-          type: "deposit",
+          type: TransactionType.DEPOSIT,
         };
       }
     }
@@ -105,7 +105,7 @@ export const formatTransactions = async (
           ),
           status,
           hash: internalTransaction.transactionHash,
-          type: "bridge",
+          type: TransactionType.BRIDGE,
         };
       } catch (error: any) {
         console.error("Failed to fetch LZ transaction:", error);
@@ -120,7 +120,7 @@ export const formatTransactions = async (
               ? LayerZeroTransactionStatus.INFLIGHT
               : LayerZeroTransactionStatus.FAILED,
           hash: internalTransaction.transactionHash,
-          type: "bridge",
+          type: TransactionType.BRIDGE,
         };
       }
     }
@@ -144,7 +144,7 @@ export const formatTransactions = async (
           internalTransaction.requestStatus === "SOLVED"
             ? internalTransaction.solveTxHash
             : internalTransaction.requestTxHash,
-        type: "withdraw",
+        type: TransactionType.WITHDRAW,
       };
     }
   );
