@@ -33,6 +33,7 @@ import {
   withRefreshToken,
 } from "@/lib/utils";
 import { publicClient } from "@/lib/wagmi";
+import { getValidatedInvite } from '@/store/useInviteStore';
 import { useUserStore } from "@/store/useUserStore";
 import { Chain, http } from "viem";
 import { entryPoint07Address } from "viem/account-abstraction";
@@ -191,7 +192,8 @@ const useUser = (): UseUserReturn => {
               },
             },
             sessionId,
-            smartAccountClient.account.address
+            smartAccountClient.account.address,
+            getValidatedInvite()
           ),
         { onError: handleLogin }
       );
