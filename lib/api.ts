@@ -120,6 +120,7 @@ export const verifyRegistration = async (
 	registrationResponse: RegistrationResponseJSON,
 	sessionId: string,
 	address: string,
+	inviteCode?: string
 ): Promise<User> => {
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/passkeys/registration/verify`,
@@ -134,6 +135,7 @@ export const verifyRegistration = async (
 				...registrationResponse,
 				sessionId,
 				address,
+				inviteCode
 			}),
 		},
 	);

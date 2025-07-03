@@ -25,18 +25,18 @@ export const useInviteStore = create<InviteState>()(
 
       getValidatedInvite: () => {
         const { validatedInviteCode, validatedAt } = get();
-        
+
         // Consider validation valid indefinitely for now
         // TODO: Uncomment below to add time-based expiration later
         // Consider validation valid for 1 month (30 days)
         // if (validatedInviteCode && validatedAt && (Date.now() - validatedAt) < 30 * 24 * 60 * 60 * 1000) {
         //   return validatedInviteCode;
         // }
-        
+
         if (validatedInviteCode) {
           return validatedInviteCode;
         }
-        
+
         return null;
       },
 
