@@ -10,6 +10,7 @@ import {
 	EXPO_PUBLIC_ALCHEMY_API_KEY,
 	EXPO_PUBLIC_FLASH_ANALYTICS_API_BASE_URL,
 	EXPO_PUBLIC_FLASH_API_BASE_URL,
+	EXPO_PUBLIC_WAITLIST_API_BASE_URL
 } from "./config";
 import {
 	BlockscoutTransaction,
@@ -85,7 +86,7 @@ export const refreshToken = () => {
 	if (refreshTokenValue) {
 		headers['Authorization'] = `Bearer ${refreshTokenValue}`;
 	}
-	
+
 	return fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/auths/refresh-token`,
 		{
@@ -119,6 +120,7 @@ export const verifyRegistration = async (
 	registrationResponse: RegistrationResponseJSON,
 	sessionId: string,
 	address: string,
+	inviteCode?: string
 ): Promise<User> => {
 	const response = await fetch(
 		`${EXPO_PUBLIC_FLASH_API_BASE_URL}/accounts/v1/passkeys/registration/verify`,
@@ -133,6 +135,7 @@ export const verifyRegistration = async (
 				...registrationResponse,
 				sessionId,
 				address,
+				inviteCode
 			}),
 		},
 	);
@@ -364,3 +367,21 @@ export const getClientIp = async () => {
 		console.error("Error fetching IP from ipify:", error);
 	}
 }
+
+// Waitlist API functions
+export const validateInviteCode = async (inviteCode: string) => {
+	const response = await fetch(
+		`${EXPO_PUBLIC_WAITLIST_API_BASE_URL}/waitlist/v1/waitlist/validate-invite`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				...getPlatformHeaders(),
+			},
+			body: JSON.stringify({ inviteCode }),
+		}
+	);
+
+	if (!response.ok) throw response;
+	return response.json();
+};
