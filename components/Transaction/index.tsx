@@ -27,15 +27,15 @@ const Transaction = ({
     status === LayerZeroTransactionStatus.CONFIRMING;
 
   const statusBgColor = isSuccess
-    ? "bg-brand"
+    ? "bg-brand/10"
     : isPending
-    ? "bg-yellow-200"
-    : "bg-red-200";
+      ? "bg-yellow-400/10"
+      : "bg-red-400/10";
   const statusTextColor = isSuccess
-    ? "text-brand-foreground"
+    ? "text-brand"
     : isPending
-    ? "text-yellow-700"
-    : "text-red-700";
+      ? "text-yellow-400"
+      : "text-red-400";
   const statusText = isSuccess ? "Success" : isPending ? "Pending" : "Failed";
 
   return (
